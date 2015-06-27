@@ -46,8 +46,7 @@ __error__(char *pcFilename, unsigned long ulLine)
 
 
 void delay(unsigned long aValue);
-void f1Data(unsigned long *delay1);
-void f2Clear(unsigned long *delay2);
+void display(unsigned long *delay, char *startChar);
 
 //*****************************************************************************
 //
@@ -69,10 +68,8 @@ main(void)
     RIT128x96x4Init(1000000);
     
     //  define some local variables
-    unsigned long delay1 = 1000;
-    unsigned long delay2 = 2000;
-    unsigned long *ptrDelay1 = &delay1;
-    unsigned long *ptrDelay2 = &delay2;
+    unsigned long delayTime = 1000;
+    char startChar  = 'i';
 
     //
     // The value if i is:
@@ -83,22 +80,19 @@ main(void)
     //  print the digits 9 8 7 6 5 4 3 2 1 0
     while(TRUE)
     {
-      //  working C style string
-      f1Data(ptrDelay1);
-      
-      //  clear the line
-      f2Clear(ptrDelay2);
+      display(&delayTime, &startChar);
     }
 
 }
-//  print out the data in OLED screen
-void f1Data(unsigned long *delay1) {
+//  display a decrementing character stream
+void display(unsigned long *delayTime, char *startChar) {
+    //  working C style string
     volatile int i = 0;
     int k = 15;
     char myData[3];
     for (i = 9; i >=0; i--)
-      {
-        myData[0] = i + '0';        //  convert the int i to ascii
+    {
+        myData[0] = i + *startChar; //  convert the int i to ascii
         myData[1] = '\0';           //  terminate the string
         
         k = k + 10;                //  start at oled position 15
@@ -107,28 +101,23 @@ void f1Data(unsigned long *delay1) {
            
         RIT128x96x4StringDraw(myData, k, 44, 15);
         
-        delay(*delay1);                //  delay so we can read the display
-      }
-}
-
-//  clear out the data in OLED screen
-void f2Clear(unsigned long *delay2) {
-    volatile int i = 0;
-    int k = 15;
-    char myData[3];
+        delay(*delayTime);                //  delay so we can read the display
+    }
+      
+    //  clear the line
+    k = 15;
     
     myData[0] = ' ';              //  print a space
     myData[1] = '\0';
     for (i = 0; i < 10; i++)
-      {    
+    {    
         k = k + 10;
            
         RIT128x96x4StringDraw(myData, k, 44, 15);
         
-        delay(*delay2);
-      }
-      
-      k = 15;
+        delay(*delayTime);
+    }
+
 }
 
 //  software delay
