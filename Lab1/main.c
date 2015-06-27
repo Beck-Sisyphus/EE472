@@ -46,8 +46,8 @@ __error__(char *pcFilename, unsigned long ulLine)
 
 
 void delay(unsigned long aValue);
-void f1Data(unsigned long delay1);
-void f2Clear(unsigned long delay2);
+void f1Data(unsigned long *delay1);
+void f2Clear(unsigned long *delay2);
 
 //*****************************************************************************
 //
@@ -71,6 +71,9 @@ main(void)
     //  define some local variables
     unsigned long delay1 = 1000;
     unsigned long delay2 = 2000;
+    unsigned long *ptrDelay1 = &delay1;
+    unsigned long *ptrDelay2 = &delay2;
+
     //
     // The value if i is:
     //
@@ -81,15 +84,15 @@ main(void)
     while(TRUE)
     {
       //  working C style string
-      f1Data(delay1);
+      f1Data(ptrDelay1);
       
       //  clear the line
-      f2Clear(delay2);
+      f2Clear(ptrDelay2);
     }
 
 }
 //  print out the data in OLED screen
-void f1Data(unsigned long delay1) {
+void f1Data(unsigned long *delay1) {
     volatile int i = 0;
     int k = 15;
     char myData[3];
@@ -104,12 +107,12 @@ void f1Data(unsigned long delay1) {
            
         RIT128x96x4StringDraw(myData, k, 44, 15);
         
-        delay(delay1);                //  delay so we can read the display
+        delay(*delay1);                //  delay so we can read the display
       }
 }
 
 //  clear out the data in OLED screen
-void f2Clear(unsigned long delay2) {
+void f2Clear(unsigned long *delay2) {
     volatile int i = 0;
     int k = 15;
     char myData[3];
@@ -122,7 +125,7 @@ void f2Clear(unsigned long delay2) {
            
         RIT128x96x4StringDraw(myData, k, 44, 15);
         
-        delay(delay2);
+        delay(*delay2);
       }
       
       k = 15;
