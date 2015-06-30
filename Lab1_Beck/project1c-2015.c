@@ -90,13 +90,13 @@ main(void)
 void getData(int* valuePtr)
 {
     //  declare a temp place to store the data
-    int tempValue;
+    // int tempValue;
     static int i = 0;
     
     char myData[2];
 
     //  let valuePtr point to it
-    valuePtr = &tempValue;
+    // valuePtr = &tempValue;
  
     //  get the data
     *valuePtr = i;
@@ -114,7 +114,7 @@ void getData(int* valuePtr)
     
     i = (i+1) % 8;
 
-    return;
+    // return;
 
 }
 

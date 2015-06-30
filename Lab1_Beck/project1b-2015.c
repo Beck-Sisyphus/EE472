@@ -68,7 +68,7 @@ main(void)
     //  define some local variables
     int i = 0;
     
-    char myData[5];							//  declare a character array
+    char myData[11];							//  declare a character array
     
     //
     // myData is:
@@ -79,9 +79,9 @@ main(void)
     while(TRUE)
     {
       
-      for (i = 0; i <= 5; i++)
+      for (i = 0; i <= 9; i++)
       {
-        myData[i] = i + 65;        //  convert the int i to ascii
+        myData[i] = i + '0';        //  convert the int i to ascii
       }
       
       myData[i] = '\0';           //  terminate the string
