@@ -58,34 +58,34 @@ main(void)
 
     while(TRUE)
     {   
-      		if (j == 0)
+      		if (0 ==j)
       		{
       			myData[0] = 'A';
       			myData[2] = 'B';
       			myData[4] = 'C';
       			myData[6] = 'D';
-      		}	else if (j == 1)
+      		}	else if (1 == j)
       		{
       			myData[0] = ' ';
-                        myData[2] = 'B';
+            myData[2] = 'B';
       			myData[4] = ' ';
-                        myData[6] = 'D';
-      		}	else if (j == 2)
+            myData[6] = 'D';
+      		}	else if (2 == j)
       		{
       			myData[0] = 'A';
       			myData[2] = ' ';
       			myData[4] = 'C';
       			myData[6] = ' ';
-      		}	else if (j == 3)
+      		}	else if (3 == j)
       		{
       			myData[0] = ' ';
       			myData[2] = ' ';
-                        myData[4] = ' ';
+            myData[4] = ' ';
       			myData[6] = ' ';
       		} 
       	RIT128x96x4StringDraw(myData, 15, 44, 15);
       	delay(1000);
-        j = (j+1)%4;
+        j = (j+1)%4;              // Four states
     }
 }
 

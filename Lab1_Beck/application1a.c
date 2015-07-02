@@ -45,26 +45,37 @@ main(void)
     
     //  declare a shared variable and a pointer to it
     int i = 0;
+    int j = 0;
     
     char myData[9];                 //  declare a character array
     
     RIT128x96x4StringDraw("The array contains: \n", 10, 24, 15);
 
+    for (i = 0; i <= 8; i++)
+    {
+        myData[i] = ' ';
+    }
+    myData[i] = '\0';             //  terminate the string
+
     while(TRUE)
     {
-      
-      for (i = 0; i <= 3; i++)
+      if (0 == j)
       {
-        myData[2*i] = i + 'A';        //  convert the int i to ascii
-        myData[2*i + 1] = ' ';
+            myData[0] = 'A';
+            myData[2] = 'B';
+            myData[4] = 'C';
+            myData[6] = 'D';
+      } else
+      {
+            myData[0] = ' ';
+            myData[2] = ' ';
+            myData[4] = ' ';
+            myData[6] = ' ';
       }
       
-      myData[2*i] = '\0';             //  terminate the string
-        
-           
       RIT128x96x4StringDraw(myData, 15, 44, 15);
-        
-      delay(1000);                //  delay so we can read the display
+      delay(1000);
+      j = (j+1) % 2;        // Only two states 
     }
 }
 

@@ -58,22 +58,17 @@ main(void)
 
     while(TRUE)
     {   
-      	for (j = 0; j <= 3; j++) {
-      		if (j != 0) {
-      			myData[2*j-2] = ' ';
-      		}  else {
-      			myData[7] = ' ';
-      		}
-      		myData[2*j] = j + 'A';
-      		RIT128x96x4StringDraw(myData, 15, 44, 15);
-      		delay(1000);
-      		myData[2*j] = ' ';
-      		RIT128x96x4StringDraw(myData, 15, 44, 15);
-      		delay(1000);
-      	}
-      	if (j == 4) {
-      		j = 0;
-      	}
+      	if (0 == (j%2))          // if j is 0, 2, 4, 6, add an character in the array
+        {
+          myData[j] = j / 2 + 'A';
+        }   else
+        {
+          myData[j-1] = ' ';
+        }
+
+        RIT128x96x4StringDraw(myData, 15, 44, 15);
+        delay(1000);
+      	j = (j+1) % 8;             // eight states
     }
 }
 
