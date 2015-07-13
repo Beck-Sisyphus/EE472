@@ -1,10 +1,11 @@
 //TODO Include Statements...
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 // #include "inc/hw_types.h"
 // #include "driverlib/debug.h"
 // #include "driverlib/sysctl.h"
 // #include "drivers/rit128x96x4.h"
-#include <stdint.h>
 #include "lab2.h"
 
 
@@ -28,6 +29,8 @@ Bool panelState = FALSE;
 unsigned int thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 Bool fuelLow = FALSE;
 Bool battLow = FALSE;
+unsigned short globalCount = 0;
+Bool majorMinorCycle = 0;
 
 //TODO Global Variable Definitions
 
@@ -42,18 +45,11 @@ int main(){
 	unsigned short motorDrive = 0;
 
 	//TODO Define Data Structs
-	powerSubDataStruct powerSubData;
-	thrusterSubDataStruct thrusterSubData;
-	satelliteCommsDataStruct satelliteCommsData;
-	oledDisplayDataStruct oledDisplayData;
-	warningAlarmDataStruct warningAlarmData;
-
-	//TODO Populate Data Structs
-	powerSubData = (&panelState, &battLevel, &powerConsumption, &powerGeneration);
-	thrusterSubData = (&thrust, &fuelLevel);
-	satelliteCommsData = (&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust);
-	oledDisplayData = (&fuelLow, &battLow, &panelState, &battLevelP, &fuelLevel, &powerConsumption, &powerGeneration);
-	warningAlarmData = (&fuelLow, &battLow, &battLevel, &fuelLevel);
+	powerSubDataStruct powerSubData 			= {&panelState, &battLevel, &powerConsumption, &powerGeneration};
+	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel};
+	satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust};
+	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration};
+	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel};
 
 	//TODO Define TCBs
 	TCB powerSubTCB;
@@ -99,4 +95,6 @@ int main(){
 		}
 		schedule();
 	}
+
+	return EXIT_SUCCESS;
 }

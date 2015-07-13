@@ -20,14 +20,16 @@ extern Bool panelState;
 extern unsigned int thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 extern Bool fuelLow;
 extern Bool battLow;
+extern unsigned short globalCount = 0;
+extern Bool majorMinorCycle = 0;
 
 //TODO
 void schedule(){
 	if (globalCount == 0){								//On first cycle of five...
-		majorMinorCycle = 0;							//Execute a Major Cycle
+		majorMinorCycle = FALSE;							//Execute a Major Cycle
 	}
 	else {												//On all other cycles...
-		majorMinorCycle = 1;							//Execute a Minor Cycle
+		majorMinorCycle = TRUE;							//Execute a Minor Cycle
 	}
 	globalCount = globalCount + 1 % (TASK_QUEUE_LENGTH -1); //count to 5, then start over again
 	delay_ms(1000);
