@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <limits.h>
 #include "lab2.h"
 
 //TODO Define all Functions Here
@@ -23,6 +24,7 @@ extern Bool fuelLow;
 extern Bool battLow;
 extern unsigned short globalCount;
 extern Bool majorMinorCycle;
+int seed = 12;
 
 
 //TODO
@@ -103,18 +105,31 @@ void powerSub(void* taskDataPtr){
 	}
 }
 
-//TODO
+
+// Require : 
+// Modifies: fuelLevel
 void thrusterSub(void* taskDataPtr){
 	//TODO concatenate signals into control command
 	printf("thruster sub system with count at: %i \n", globalCount);
 	//TODO figure out fuel consumption
+	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
+
+	uint16_t temp = *(uint16_t*)(thrustCommandPtr->thrustPtr);
+	printf("the thrust command should change to: %d\n", temp);
 }
 
 //TODO
 void satelliteComms(void* taskDataPtr){
 	//TODO send info
 	printf("Comms at: %i \n", globalCount);
+
+	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
+
 	//TODO receive (rando) thrust commands
+	uint16_t thrustCommand = randomInteger(-100, 100);
+	// char* byteRead = (char*) &thrustCommand;
+	*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
+	
 		//TODO implement rand num gen
 }
 
@@ -155,4 +170,34 @@ void delay_ms(int time_in_ms){
         for (j = 0; j < 100; j++);
     }
     return;
+}
+
+// Import from the function from Prof. Peckol
+int randomInteger(int low, int high)
+{
+	double randNum = 0.0;
+ 	int multiplier = 2743;
+	int addOn = 5923;
+	double max = INT_MAX + 1.0;
+
+	int retVal = 0;
+
+	if (low > high)
+		retVal = randomInteger(high, low);
+	else
+	{
+   		seed = seed*multiplier + addOn;
+   		randNum = seed;
+
+		if (randNum <0)
+		{
+			randNum = randNum + max;
+		}
+
+		randNum = randNum/max;
+
+		retVal =  ((int)((high-low+1)*randNum))+low;
+	}
+	
+	return retVal;
 }
