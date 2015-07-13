@@ -1,15 +1,16 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "lab2.h"
 
 //TODO Define all Functions Here
 
 //define some constants
-extern const int HALF_WARN_LEVEL;
-extern const int FUEL_WARN_LEVEL;
-extern const int BATT_WARN_LEVEL;
-extern const int MAX_FUEL_LEVEL;
-extern const int MAX_BATT_LEVEL;
-extern const int TASK_QUEUE_LENGTH;
+extern const unsigned short HALF_WARN_LEVEL;
+extern const unsigned short FUEL_WARN_LEVEL;
+extern const unsigned short BATT_WARN_LEVEL;
+extern const unsigned short MAX_FUEL_LEVEL;
+extern const unsigned short MAX_BATT_LEVEL;
+extern const unsigned short TASK_QUEUE_LENGTH;
 
 //define and initiallize global variables
 extern unsigned short battLevel;
@@ -17,11 +18,12 @@ extern unsigned short fuelLevel;
 extern unsigned short powerConsumption;
 extern unsigned short powerGeneration;
 extern Bool panelState;
-extern unsigned int thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
+extern uint16_t thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 extern Bool fuelLow;
 extern Bool battLow;
-extern unsigned short globalCount = 0;
-extern Bool majorMinorCycle = 0;
+extern unsigned short globalCount;
+extern Bool majorMinorCycle;
+
 
 //TODO
 void schedule(){
@@ -31,12 +33,13 @@ void schedule(){
 	else {												//On all other cycles...
 		majorMinorCycle = TRUE;							//Execute a Minor Cycle
 	}
-	globalCount = globalCount + 1 % (TASK_QUEUE_LENGTH -1); //count to 5, then start over again
-	delay_ms(1000);
+	globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
+	delay_ms(100000);
 }
 
 //TODO
 void powerSub(void* taskDataPtr){
+	printf("We get to power sub system with count at: %i \n", globalCount);
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
 	unsigned short* battLevel;
@@ -53,10 +56,10 @@ void powerSub(void* taskDataPtr){
 	static unsigned short runCount = 1;				//tracks even/odd calls of this function
 
 	runCount = (runCount + 1) % 2;					//alternates between 1 and 0 for odd/een calls respectively
-	if (*powerConsumption<10)     //TODO, does this work???
+	if (*powerConsumption<10) {    //TODO, does this work???
 		if (runCount==0){							//on even calls...
 			*powerConsumption += 2;		//increment by 2
-		}
+		} 
 		else{										//on odd calls...
 			*powerConsumption -= 1;		//decrement by 1
 		}
@@ -103,14 +106,14 @@ void powerSub(void* taskDataPtr){
 //TODO
 void thrusterSub(void* taskDataPtr){
 	//TODO concatenate signals into control command
-
+	printf("thruster sub system with count at: %i \n", globalCount);
 	//TODO figure out fuel consumption
 }
 
 //TODO
 void satelliteComms(void* taskDataPtr){
 	//TODO send info
-
+	printf("Comms at: %i \n", globalCount);
 	//TODO receive (rando) thrust commands
 		//TODO implement rand num gen
 }
@@ -118,11 +121,12 @@ void satelliteComms(void* taskDataPtr){
 //TODO
 void oledDisplay(void* taskDataPtr){
 	//TODO two modes??
+	printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
 }
 
 void warningAlarm(void* taskDataPtr){
 
-	if ((battLevel<BATT_WARN_LEVEL))&(fuelLevel>HALF_WARN_LEVEL){
+	if ((battLevel<BATT_WARN_LEVEL)&(fuelLevel>HALF_WARN_LEVEL)){
 		//TODO solid green
 	}
 	else{

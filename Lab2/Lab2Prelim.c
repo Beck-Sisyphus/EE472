@@ -13,12 +13,12 @@
 
 
 //define some constants
-const int HALF_WARN_LEVEL = 50;
-const int FUEL_WARN_LEVEL = 10;
-const int BATT_WARN_LEVEL = 10;
-const int MAX_FUEL_LEVEL = 100;
-const int MAX_BATT_LEVEL = 100;
-const int TASK_QUEUE_LENGTH = 6;
+const unsigned short HALF_WARN_LEVEL = 50;
+const unsigned short FUEL_WARN_LEVEL = 10;
+const unsigned short BATT_WARN_LEVEL = 10;
+const unsigned short MAX_FUEL_LEVEL = 100;
+const unsigned short MAX_BATT_LEVEL = 100;
+const unsigned short TASK_QUEUE_LENGTH = 6;
 
 //define and initiallize global variables
 unsigned short battLevel = MAX_BATT_LEVEL;
@@ -26,7 +26,7 @@ unsigned short fuelLevel = MAX_FUEL_LEVEL;
 unsigned short powerConsumption = 0;
 unsigned short powerGeneration = 0;
 Bool panelState = FALSE;
-unsigned int thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
+uint16_t thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 Bool fuelLow = FALSE;
 Bool battLow = FALSE;
 unsigned short globalCount = 0;

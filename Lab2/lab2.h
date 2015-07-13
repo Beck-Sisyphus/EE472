@@ -12,6 +12,7 @@
 	void satelliteComms(void* taskDataPtr);
 	void oledDisplay(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
+	void delay_ms(int time_in_ms);
 
 	//Declare TCB Struct
 
