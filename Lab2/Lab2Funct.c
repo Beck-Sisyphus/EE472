@@ -23,60 +23,78 @@ extern Bool battLow;
 
 //TODO
 void schedule(){
-
+	if (globalCount == 0){								//On first cycle of five...
+		majorMinorCycle = 0;							//Execute a Major Cycle
+	}
+	else {												//On all other cycles...
+		majorMinorCycle = 1;							//Execute a Minor Cycle
+	}
+	globalCount = globalCount + 1 % (TASK_QUEUE_LENGTH -1); //count to 5, then start over again
+	delay_ms(1000);
 }
 
 //TODO
 void powerSub(void* taskDataPtr){
+	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
+
+	unsigned short* battLevel;
+	unsigned short* powerConsumption;
+	unsigned short* powerGeneration;
+	Bool* panelState;
+
+	battLevel = (unsigned short*) dataPtr->battLevelPtr;
+	powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+	powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
+	panelState = (Bool*) dataPtr->panelStatePtr;
 
 	//powerConsumption
 	static unsigned short runCount = 1;				//tracks even/odd calls of this function
 
 	runCount = (runCount + 1) % 2;					//alternates between 1 and 0 for odd/een calls respectively
-	if (*(taskDataPtr->powerConsumptionPtr)<10)     //TODO, does this work???
+	if (*powerConsumption<10)     //TODO, does this work???
 		if (runCount==0){							//on even calls...
-			*(taskDataPtr->powerConsumptionPtr) += 2;		//increment by 2
+			*powerConsumption += 2;		//increment by 2
 		}
 		else{										//on odd calls...
-			*(taskDataPtr->powerConsumptionPtr) -= 1;		//decrement by 1
+			*powerConsumption -= 1;		//decrement by 1
 		}
 	}
 	else{
 		if (runCount==0){							//on even calls...
-			*(taskDataPtr->powerConsumptionPtr) -= 2;	//decrement by 2
+			*powerConsumption -= 2;	//decrement by 2
 		}
 		else{										//on odd calls...
-			*(taskDataPtr->powerConsumptionPtr) += 1;		//increment by 1
+			*powerConsumption += 1;		//increment by 1
 	}
 
 
 	//powerGeneration
-	if (*(taskDataPtr->panelStatePtr)==1){			//if solar panel is deployed...
-		if (*(taskDataPtr->battLevelPtr)<95){		//if battery greater than 95%
-			*(taskDataPtr->panelStatePtr)=0;		//retract solar panel
+	if (*panelState==1){			//if solar panel is deployed...
+		if (*battLevel<95){		//if battery greater than 95%
+			*panelState=0;		//retract solar panel
 		}
 		else{										//else battery less than/equal to 95%
 			if (runCount==0){							//on even calls...
-			*(taskDataPtr->powerGenerationPtr) += 2;		//increment by 2
+			*powerGeneration += 2;		//increment by 2
 			}
-			else if(taskDataPtr->battLevelPtr)<=50){	//on odd calls... while battery less than/equal to 50%
-			*(taskDataPtr->powerGenerationPtr) += 1;		//increment by 1
+			else if(*battLevel<=50){	//on odd calls... while battery less than/equal to 50%
+			*powerGeneration += 1;		//increment by 1
 			}
 		}
 	}
 	else											//else solar panel not deployed...
-		if (*(taskDataPtr->battLevelPtr)<=10){		//if battery less than/equal to 10%
-			*(taskDataPtr->panelStatePtr)=1;		//deploy solar panel
+		if (*battLevel<=10){		//if battery less than/equal to 10%
+			*panelState = 1;		//deploy solar panel
 		}
 	}
 
 
 	//batteryLevel
-	if (*(taskDataPtr->panelStatePtr)==0){
-		(*(taskDataPtr->battLevelPtr)) = (*(taskDataPtr->battLevelPtr)) - 3*(*(taskDataPtr->powerConsumptionPtr));
+	if (*panelState==0){
+		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
 	}
 	else{
-		(*(taskDataPtr->battLevelPtr)) = (*(taskDataPtr->battLevelPtr)) - (*(taskDataPtr->powerConsumptionPtr)) + (*(taskDataPtr->powerGenerationPtr));
+		(*battLevel) = (*battLevel) - (*powerConsumption) + (*powerGeneration);
 	}
 }
 
@@ -123,5 +141,12 @@ void warningAlarm(void* taskDataPtr){
 }
 
 void delay_ms(int time_in_ms){
-	//TODO put stuff in here
+	volatile unsigned long i = 0;
+    volatile unsigned int j = 0;
+    
+    for (i = time_in_ms; i > 0; i--)
+    {
+        for (j = 0; j < 100; j++);
+    }
+    return;
 }

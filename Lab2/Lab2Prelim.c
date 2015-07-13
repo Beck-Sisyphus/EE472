@@ -95,9 +95,8 @@ int main(){
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
 			TCBptr = taskQueue[i];
-
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}
-
-		//delay(localCounter);
+		schedule();
 	}
 }
