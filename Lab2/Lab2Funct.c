@@ -137,6 +137,41 @@ void satelliteComms(void* taskDataPtr){
 void oledDisplay(void* taskDataPtr){
 	//TODO two modes??
 	printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
+
+	        //
+    // Initialize the OLED display.
+    //
+    RIT128x96x4Init(1000000);
+    
+    oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
+    
+    unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
+    unsigned short* fuelLevel = (unsigned short*) dataPtr->fuelLevelPtr;
+    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
+    Bool* battLow = (Bool*) dataPtr->battLowPtr;
+
+    
+    // TODO display bool values in words not ints
+    // Status mode
+    char arrStatus[4][20];
+    sprintf(arrStatus[0], "Solar Panel Deployed: %d", *panelState);
+    sprintf(arrStatus[1], "Battery Level: %d", *battLevel);
+    sprintf(arrStatus[2], "Fuel Level: %d", *fuelLevel);
+    sprintf(arrStatus[3], "Power Consumption: %d", *powerConsumption);
+    
+    // Annunciation mode
+    char arrAnnun[2][20];
+    sprintf(arrAnnun[0], "Fuel Low: %d", *fuelLow);
+    sprintf(arrAnnun[1], "Battery Low: %d", *battLow);
+    
+    for (int i = 0; i < 5; i++)
+    {      
+      char *pcStr = arr[i];
+      
+      RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
+    }
 }
 
 void warningAlarm(void* taskDataPtr){
