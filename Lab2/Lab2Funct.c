@@ -2,17 +2,17 @@
 #include <stdint.h>
 #include <limits.h>
 #include "lab2.h"
-#include "inc/hw_gpio.h"
-#include "inc/hw_ints.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/debug.h"
-#include "driverlib/gpio.h"
-#include "driverlib/interrupt.h"
-#include "driverlib/sysctl.h"
-#include "drivers/rit128x96x4.h"
-#include "inc/lm3s8962.h"
-#include "utils/ustdlib.h"
+// #include "inc/hw_gpio.h"
+// #include "inc/hw_ints.h"
+// #include "inc/hw_memmap.h"
+// #include "inc/hw_types.h"
+// #include "driverlib/debug.h"
+// #include "driverlib/gpio.h"
+// #include "driverlib/interrupt.h"
+// #include "driverlib/sysctl.h"
+// #include "drivers/rit128x96x4.h"
+// #include "inc/lm3s8962.h"
+// #include "utils/ustdlib.h"
 
 //define some constants
 extern const unsigned short HALF_WARN_LEVEL;
@@ -118,13 +118,27 @@ void powerSub(void* taskDataPtr){
 // Require : 
 // Modifies: fuelLevel
 void thrusterSub(void* taskDataPtr){
+	unsigned short left = 0;
+	unsigned short right = 0;
+	unsigned short up = 0;
+	unsigned short down = 0;
+	unsigned short magnitude = 0;
+	unsigned short duration = 0;
 	//TODO concatenate signals into control command
-	printf("thruster sub system with count at: %i \n", globalCount);
-	//TODO figure out fuel consumption
 	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
+	printf("thruster sub system with count at: %i \n", globalCount);
 
-	uint16_t temp = *(uint16_t*)(thrustCommandPtr->thrustPtr);
-	printf("the thrust command should change to: %d\n", temp);
+	//TODO figure out fuel consumption
+	uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
+
+	if (command & 0x0001) { left  = 1; } else { left  = 0;}
+	if (command & 0x0002) { right = 1; } else { right = 0;}
+	if (command & 0x0004) { up    = 1; } else { up    = 0;}
+	if (command & 0x0008) { down  = 1; } else { down  = 0;}
+	magnitude = (command >> 4) & 0x000F;
+	// get duration, unsigned char pointer moves every 8 bits
+	// so it can separate first 8 bits and last 8 bits
+	duration = *((unsigned char*)&command + 1);
 }
 
 //TODO
@@ -134,16 +148,16 @@ void satelliteComms(void* taskDataPtr){
 
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
-	//TODO receive (rando) thrust commands
-	uint16_t thrustCommand = randomInteger(-100, 100);
-	// char* byteRead = (char*) &thrustCommand;
+	//TODO receive (rando) thrust commands, generate from 0 to 2^16 -1
+	uint16_t thrustCommand = randomInteger(0, 65535); 
 	*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
-	
-		//TODO implement rand num gen
+	//TODO implement rand num gen
 }
 
 //TODO
 void oledDisplay(void* taskDataPtr){
+	/*
+
 	//TODO two modes??
 	//printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
         
@@ -173,14 +187,15 @@ void oledDisplay(void* taskDataPtr){
       usnprintf(tempArr0, 24, "Panel Deployed: %d", *panelState); // Goes into fault interrupt if arr[0] is used
       //strcpy(tempArr0, arr[0], 24);
       RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
-      /*usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
-      usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
-      usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);*/
+      // usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
+      // usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
+      // usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);
+    
     } else // Annunciation mode
     {
       arrSize = 2;
-      /*usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
-      usnprintf(arr[1], 24, "Battery Low: %d", *battLow);*/
+      // usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
+      // usnprintf(arr[1], 24, "Battery Low: %d", *battLow);
     }
     
     for (int i = 0; i < arrSize; i++)
@@ -189,13 +204,15 @@ void oledDisplay(void* taskDataPtr){
       
       //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
     }
+
+    */
 }
 
 void warningAlarm(void* taskDataPtr){
-    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
+    // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	if ((battLevel<BATT_WARN_LEVEL)&(fuelLevel>HALF_WARN_LEVEL)){
                 //display solid green LED
-		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
+		// GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	}
 	else{
 		if (battLevel<BATT_WARN_LEVEL){

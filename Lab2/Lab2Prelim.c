@@ -2,18 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "inc/hw_gpio.h"
-#include "inc/hw_ints.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/debug.h"
-#include "driverlib/gpio.h"
-#include "driverlib/interrupt.h"
-#include "driverlib/sysctl.h"
-#include "drivers/rit128x96x4.h"
-#include "inc/lm3s8962.h"
 #include "lab2.h"
-#include "utils/ustdlib.h"
+// #include "inc/hw_gpio.h"
+// #include "inc/hw_ints.h"
+// #include "inc/hw_memmap.h"
+// #include "inc/hw_types.h"
+// #include "driverlib/debug.h"
+// #include "driverlib/gpio.h"
+// #include "driverlib/interrupt.h"
+// #include "driverlib/sysctl.h"
+// #include "drivers/rit128x96x4.h"
+// #include "inc/lm3s8962.h"
+// #include "utils/ustdlib.h"
 
 //TODO Global Variables...
 
@@ -51,10 +51,7 @@ Bool majorMinorCycle = 0;
 
 int main(){
 	//TODO Local Variable Declarations
-	unsigned short left = 0;
-	unsigned short right = 0;
-	unsigned short up = 0;
-	unsigned short down = 0;
+	
 
 	unsigned short motorDrive = 0;
         
@@ -94,9 +91,7 @@ int main(){
 
 
 	//TODO Task Queue (Array of Structs)
-	//TCB* taskQueue[TASK_QUEUE_LENGTH];
-        TCB* taskQueue[6];
-
+	TCB* taskQueue[TASK_QUEUE_LENGTH];
 
 	taskQueue[0] = &powerSubTCB;
 	taskQueue[1] = &thrusterSubTCB;
@@ -104,21 +99,21 @@ int main(){
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
-    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-                   SYSCTL_XTAL_8MHZ);
+    // SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+    //                SYSCTL_XTAL_8MHZ);
 
-    //Enable GPIO C
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+    // Enable GPIO C
+    // SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
         
-    //Set C5 as an output
-    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
-    
+    // Set C5 as an output
+    // GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
+
 	//Run... forever!!!
 	while(1){
 		//dispatch each task in turn
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
-                  printf("Global count: %d", globalCount);
+                  printf("Global count: %d \n", globalCount);
 			TCBptr = taskQueue[i];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}
