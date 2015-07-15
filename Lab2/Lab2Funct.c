@@ -23,14 +23,6 @@ extern const unsigned short MAX_BATT_LEVEL;
 extern const unsigned short TASK_QUEUE_LENGTH;
 
 //define and initiallize global variables
-extern unsigned short battLevel;
-extern unsigned short fuelLevel;
-extern unsigned short powerConsumption;
-extern unsigned short powerGeneration;
-extern Bool panelState;
-extern uint16_t thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
-extern Bool fuelLow;
-extern Bool battLow;
 extern unsigned short globalCount;
 extern Bool majorMinorCycle;
 int seed = 12;
@@ -224,22 +216,28 @@ void oledDisplay(void* taskDataPtr){
 }
 
 void warningAlarm(void* taskDataPtr){
+	warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
+	Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
+	Bool* battLow = (Bool*)dataPtr->battLowPtr;
+	unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
+	unsigned short* fuelLevel = (unsigned short*)dataPtr->fuelLevelPtr;
+
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
-	if ((battLevel<BATT_WARN_LEVEL)&(fuelLevel>HALF_WARN_LEVEL)){
+	if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_WARN_LEVEL)){
                 //display solid green LED
 		// GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	}
 	else{
-		if (battLevel<BATT_WARN_LEVEL){
+		if (*battLevel<BATT_WARN_LEVEL){
 			//TODO flash red 1 sec
 		}
-		else if (fuelLevel<FUEL_WARN_LEVEL){
+		else if (*fuelLevel<FUEL_WARN_LEVEL){
 			//TODO flash red 2 sec
 		}
-		if (battLevel<BATT_WARN_LEVEL){
+		if (*battLevel<BATT_WARN_LEVEL){
 			//TODO flash red 1 sec
 		}
-		else if (fuelLevel<FUEL_WARN_LEVEL){
+		else if (*fuelLevel<FUEL_WARN_LEVEL){
 			//TODO flash red 2 sec
 		}
 	}
