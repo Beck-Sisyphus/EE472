@@ -138,12 +138,13 @@ void oledDisplay(void* taskDataPtr){
 	//TODO two modes??
 	//printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
   
-      SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                    SYSCTL_XTAL_8MHZ);
         
     // Initialize the OLED display.
-    //RIT128x96x4Init(1000000);
+    RIT128x96x4Init(1000000);
     //RIT128x96x4Clear();
+    RIT128x96x4StringDraw("After clear", 5, 24, 15);
     
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
@@ -154,7 +155,7 @@ void oledDisplay(void* taskDataPtr){
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
-    char arr[4][30];
+    char arr[4][24];
     int arrSize;
     // TODO display bool values in words not ints
     // Status mode
@@ -162,9 +163,11 @@ void oledDisplay(void* taskDataPtr){
     if (statusMode)
     {
       arrSize = 4;
-      char tempArr0[32];
-      /*usnprintf(tempArr0, 32, "Solar Panel Deployed: %d", *panelState);
-      usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
+      char tempArr0[24];
+      usnprintf(tempArr0, 24, "Panel Deployed: %d", *panelState); // Goes into fault interrupt if arr[0] is used
+      //strcpy(tempArr0, arr[0], 24);
+      RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
+      /*usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
       usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
       usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);*/
     } else // Annunciation mode
