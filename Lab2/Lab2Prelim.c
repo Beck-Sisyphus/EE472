@@ -2,15 +2,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/sysctl.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/sysctl.h"
 // #include "drivers/rit128x96x4.h"
 #include "lab2.h"
+#include "funct.c"
 
 
 //TODO Global Variables...
 
+
+//define some constants
+/*#define HALF_WARN_LEVEL 50
+#define FUEL_WARN_LEVEL 10
+#define BATT_WARN_LEVEL 10
+#define MAX_FUEL_LEVEL 100
+#define MAX_BATT_LEVEL 100
+#define TASK_QUEUE_LENGTH 6*/
 
 //define some constants
 const unsigned short HALF_WARN_LEVEL = 50;
@@ -20,9 +29,9 @@ const unsigned short MAX_FUEL_LEVEL = 100;
 const unsigned short MAX_BATT_LEVEL = 100;
 const unsigned short TASK_QUEUE_LENGTH = 6;
 
-//define and initiallize global variables
-unsigned short battLevel = MAX_BATT_LEVEL;
-unsigned short fuelLevel = MAX_FUEL_LEVEL;
+//define and initialize global variables
+unsigned short battLevel;// = MAX_BATT_LEVEL; // complains that these expressions must have a constant value
+unsigned short fuelLevel;// = MAX_FUEL_LEVEL;
 unsigned short powerConsumption = 0;
 unsigned short powerGeneration = 0;
 Bool panelState = FALSE;
@@ -43,11 +52,14 @@ int main(){
 	unsigned short down = 0;
 
 	unsigned short motorDrive = 0;
+        
+        battLevel = MAX_BATT_LEVEL;
+        fuelLevel = MAX_FUEL_LEVEL;
 
 	//TODO Define Data Structs
-	powerSubDataStruct powerSubData 			= {&panelState, &battLevel, &powerConsumption, &powerGeneration};
+	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration};
 	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel};
-	satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust};
+	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust};
 	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration};
 	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel};
 
@@ -77,7 +89,9 @@ int main(){
 
 
 	//TODO Task Queue (Array of Structs)
-	TCB* taskQueue[TASK_QUEUE_LENGTH];
+	//TCB* taskQueue[TASK_QUEUE_LENGTH];
+        TCB* taskQueue[6];
+
 
 	taskQueue[0] = &powerSubTCB;
 	taskQueue[1] = &thrusterSubTCB;
@@ -90,6 +104,7 @@ int main(){
 		//dispatch each task in turn
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
+                  printf("Global count: %d", globalCount);
 			TCBptr = taskQueue[i];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}

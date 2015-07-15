@@ -1,6 +1,11 @@
+
 #include <stdio.h>
 #include <stdint.h>
-#include <limits.h>
+#include "utils/ustdlib.h" // sprintf fix
+//#include "drivers/rit128x96x4.c" // should be .h, but doesn't work?
+#include "driverlib/sysctl.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
 #include "lab2.h"
 
 //TODO Define all Functions Here
@@ -24,7 +29,8 @@ extern Bool fuelLow;
 extern Bool battLow;
 extern unsigned short globalCount;
 extern Bool majorMinorCycle;
-int seed = 12;
+
+
 
 
 //TODO
@@ -41,7 +47,7 @@ void schedule(){
 
 //TODO
 void powerSub(void* taskDataPtr){
-	printf("We get to power sub system with count at: %i \n", globalCount);
+	//printf("We get to power sub system with count at: %i \n", globalCount);
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
 	unsigned short* battLevel;
@@ -105,43 +111,32 @@ void powerSub(void* taskDataPtr){
 	}
 }
 
-
-// Require : 
-// Modifies: fuelLevel
+//TODO
 void thrusterSub(void* taskDataPtr){
 	//TODO concatenate signals into control command
-	printf("thruster sub system with count at: %i \n", globalCount);
+	//printf("thruster sub system with count at: %i \n", globalCount);
 	//TODO figure out fuel consumption
-	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
-
-	uint16_t temp = *(uint16_t*)(thrustCommandPtr->thrustPtr);
-	printf("the thrust command should change to: %d\n", temp);
 }
 
 //TODO
 void satelliteComms(void* taskDataPtr){
 	//TODO send info
-	printf("Comms at: %i \n", globalCount);
-
-	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
-
+	//printf("Comms at: %i \n", globalCount);
 	//TODO receive (rando) thrust commands
-	uint16_t thrustCommand = randomInteger(-100, 100);
-	// char* byteRead = (char*) &thrustCommand;
-	*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
-	
 		//TODO implement rand num gen
 }
 
 //TODO
 void oledDisplay(void* taskDataPtr){
 	//TODO two modes??
-	printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
-
-	        //
+	//printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
+  
+      SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+                   SYSCTL_XTAL_8MHZ);
+        
     // Initialize the OLED display.
-    //
-    RIT128x96x4Init(1000000);
+    //RIT128x96x4Init(1000000);
+    //RIT128x96x4Clear();
     
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
@@ -152,25 +147,31 @@ void oledDisplay(void* taskDataPtr){
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
-    
+    char arr[4][30];
+    int arrSize;
     // TODO display bool values in words not ints
     // Status mode
-    char arrStatus[4][20];
-    sprintf(arrStatus[0], "Solar Panel Deployed: %d", *panelState);
-    sprintf(arrStatus[1], "Battery Level: %d", *battLevel);
-    sprintf(arrStatus[2], "Fuel Level: %d", *fuelLevel);
-    sprintf(arrStatus[3], "Power Consumption: %d", *powerConsumption);
+    Bool statusMode = 1;
+    if (statusMode)
+    {
+      arrSize = 4;
+      char tempArr0[32];
+      /*usnprintf(tempArr0, 32, "Solar Panel Deployed: %d", *panelState);
+      usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
+      usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
+      usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);*/
+    } else // Annunciation mode
+    {
+      arrSize = 2;
+      /*usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
+      usnprintf(arr[1], 24, "Battery Low: %d", *battLow);*/
+    }
     
-    // Annunciation mode
-    char arrAnnun[2][20];
-    sprintf(arrAnnun[0], "Fuel Low: %d", *fuelLow);
-    sprintf(arrAnnun[1], "Battery Low: %d", *battLow);
-    
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < arrSize; i++)
     {      
       char *pcStr = arr[i];
       
-      RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
+      //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
     }
 }
 
@@ -205,34 +206,4 @@ void delay_ms(int time_in_ms){
         for (j = 0; j < 100; j++);
     }
     return;
-}
-
-// Import from the function from Prof. Peckol
-int randomInteger(int low, int high)
-{
-	double randNum = 0.0;
- 	int multiplier = 2743;
-	int addOn = 5923;
-	double max = INT_MAX + 1.0;
-
-	int retVal = 0;
-
-	if (low > high)
-		retVal = randomInteger(high, low);
-	else
-	{
-   		seed = seed*multiplier + addOn;
-   		randNum = seed;
-
-		if (randNum <0)
-		{
-			randNum = randNum + max;
-		}
-
-		randNum = randNum/max;
-
-		retVal =  ((int)((high-low+1)*randNum))+low;
-	}
-	
-	return retVal;
 }
