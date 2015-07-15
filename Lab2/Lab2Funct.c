@@ -2,17 +2,17 @@
 #include <stdint.h>
 #include <limits.h>
 #include "lab2.h"
-// #include "inc/hw_gpio.h"
-// #include "inc/hw_ints.h"
-// #include "inc/hw_memmap.h"
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/gpio.h"
-// #include "driverlib/interrupt.h"
-// #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
-// #include "inc/lm3s8962.h"
-// #include "utils/ustdlib.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
+#include "utils/ustdlib.h"
 
 //define some constants
 extern const unsigned short HALF_WARN_LEVEL;
@@ -163,7 +163,7 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
-	/*
+	
 
 	//TODO two modes??
 	//printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
@@ -212,7 +212,7 @@ void oledDisplay(void* taskDataPtr){
       //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
     }
 
-    */
+    
 }
 
 void warningAlarm(void* taskDataPtr){
@@ -222,10 +222,10 @@ void warningAlarm(void* taskDataPtr){
 	unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
 	unsigned short* fuelLevel = (unsigned short*)dataPtr->fuelLevelPtr;
 
-    // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
+    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_WARN_LEVEL)){
                 //display solid green LED
-		// GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
+		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	}
 	else{
 		if (*battLevel<BATT_WARN_LEVEL){

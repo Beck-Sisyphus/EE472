@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab2.h"
-// #include "inc/hw_gpio.h"
-// #include "inc/hw_ints.h"
-// #include "inc/hw_memmap.h"
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/gpio.h"
-// #include "driverlib/interrupt.h"
-// #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
-// #include "inc/lm3s8962.h"
-// #include "utils/ustdlib.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
+#include "utils/ustdlib.h"
 
 //TODO Global Variables...
 
@@ -55,8 +55,8 @@ int main(){
 
 	unsigned short motorDrive = 0;
         
-        battLevel = MAX_BATT_LEVEL;
-        fuelLevel = MAX_FUEL_LEVEL;
+    battLevel = MAX_BATT_LEVEL;
+    fuelLevel = MAX_FUEL_LEVEL;
 
 	//TODO Define Data Structs
 	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration};
@@ -99,21 +99,21 @@ int main(){
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
-    // SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-    //                SYSCTL_XTAL_8MHZ);
+    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+                   SYSCTL_XTAL_8MHZ);
 
     // Enable GPIO C
-    // SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
         
     // Set C5 as an output
-    // GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
+    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
 
 	//Run... forever!!!
 	while(1){
 		//dispatch each task in turn
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
-                  printf("Global count: %d \n", globalCount);
+            printf("Global count: %d \n", globalCount);
 			TCBptr = taskQueue[i];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}
