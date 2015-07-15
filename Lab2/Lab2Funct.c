@@ -145,8 +145,23 @@ void thrusterSub(void* taskDataPtr){
 void satelliteComms(void* taskDataPtr){
 	//TODO send info
 	printf("Comms at: %i \n", globalCount);
-
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
+
+	Bool* fuelLowSignal = (Bool*)commPtr->fuelLowPtr;
+	Bool* battLowSignal = (Bool*)commPtr->battLowPtr;
+	unsigned short* battLevelSignal = (unsigned short*)commPtr->battLevelPtr;
+	unsigned short* fuelLevelSignal = (unsigned short*)commPtr->fuelLevelPtr;
+	unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
+	unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
+	Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;
+
+	printf("fuel low is : %u\n", *fuelLowSignal);
+	printf("battery low is : %u\n", *battLowSignal);
+	printf("battery level : %hu\n", *battLevelSignal);
+	printf("fuel level : %hu\n", *fuelLevelSignal);
+	printf("power consumption is: %hu\n", *powerConsumptionSignal);
+	printf("power generation is : %hu\n", *powerGenerationSignal);
+	printf("panel state is : %u\n", *panelStateSignal);
 
 	//TODO receive (rando) thrust commands, generate from 0 to 2^16 -1
 	uint16_t thrustCommand = randomInteger(0, 65535); 
