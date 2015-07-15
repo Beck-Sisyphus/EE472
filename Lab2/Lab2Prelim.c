@@ -2,13 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
 #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
 #include "lab2.h"
-#include "funct.c"
-
+#include "utils/ustdlib.h"
 
 //TODO Global Variables...
 
@@ -99,6 +104,15 @@ int main(){
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
+    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+                   SYSCTL_XTAL_8MHZ);
+
+    //Enable GPIO C
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+        
+    //Set C5 as an output
+    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
+    
 	//Run... forever!!!
 	while(1){
 		//dispatch each task in turn

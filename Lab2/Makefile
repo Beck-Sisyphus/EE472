@@ -10,4 +10,4 @@ Lab2Prelim.o: lab2.h Lab2Prelim.c
 Lab2Funct.o: lab2.h Lab2Funct.c
 	$(CC) $(CFLAGS) Lab2Funct.c
 clean:
-	rm -f *~ *.o lab2
+	rm -f *~ *.o lab2 random
