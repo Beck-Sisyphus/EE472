@@ -23,82 +23,79 @@ extern const unsigned short MAX_BATT_LEVEL;
 extern const unsigned short TASK_QUEUE_LENGTH;
 
 //define and initiallize global variables
-extern unsigned short globalCount;
-extern Bool majorMinorCycle;
 int seed = 12;
 
 
 //TODO
-void schedule(){
-	if (globalCount == 0){								//On first cycle of five...
-		majorMinorCycle = FALSE;							//Execute a Major Cycle
+void schedule(scheduleDataStruct scheduleData){
+        unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
+        Bool* majorMinorCycle = (Bool*) scheduleData.majorMinorCyclePtr;
+        
+	if ((*globalCount) == 0){					//On first cycle of five...
+		*majorMinorCycle = FALSE;			//Execute a Major Cycle
 	}
-	else {												//On all other cycles...
-		majorMinorCycle = TRUE;							//Execute a Minor Cycle
+	else {							//On all other cycles...
+		*majorMinorCycle = TRUE;				//Execute a Minor Cycle
 	}
-	globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
+	(*globalCount) = ((*globalCount) + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
 	delay_ms(100);
 }
 
 //TODO
 void powerSub(void* taskDataPtr){
-	//printf("We get to power sub system with count at: %i \n", globalCount);
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
-
-	unsigned short* battLevel;
-	unsigned short* powerConsumption;
-	unsigned short* powerGeneration;
-	Bool* panelState;
-
-	battLevel = (unsigned short*) dataPtr->battLevelPtr;
-	powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-	powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
-	panelState = (Bool*) dataPtr->panelStatePtr;
+        
+        unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+        Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+	unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
+	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
+	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
 
 	//powerConsumption
 	static unsigned short runCount = 1;				//tracks even/odd calls of this function
 
 	runCount = (runCount + 1) % 2;					//alternates between 1 and 0 for odd/een calls respectively
-	if (*powerConsumption<10) {    //TODO, does this work???
+	if ((*powerConsumption)<10) {    //TODO, does this work???
 		if (runCount==0){							//on even calls...
-			*powerConsumption += 2;		//increment by 2
+			(*powerConsumption) += 2;		//increment by 2
 		} 
 		else{										//on odd calls...
-			*powerConsumption -= 1;		//decrement by 1
+			(*powerConsumption) -= 1;		//decrement by 1
 		}
 	}
 	else{
 		if (runCount==0){							//on even calls...
-			*powerConsumption -= 2;	//decrement by 2
+			(*powerConsumption) -= 2;	//decrement by 2
 		}
 		else{										//on odd calls...
-			*powerConsumption += 1;		//increment by 1
-	}
-
-
+			(*powerConsumption) += 1;		//increment by 1
+                }
+        }        
+        
 	//powerGeneration
-	if (*panelState==1){			//if solar panel is deployed...
-		if (*battLevel<95){		//if battery greater than 95%
-			*panelState=0;		//retract solar panel
+        if ((*panelState)==FALSE){											//else solar panel not deployed...
+		if ((*battLevel)<=10){		//if battery less than/equal to 10%
+			(*panelState) = TRUE;		//deploy solar panel
+		}
+	}
+	if ((*panelState)==TRUE){			//if solar panel is deployed...
+		if ((*battLevel)>95){		//if battery greater than 95%
+			(*panelState)=FALSE;		//retract solar panel
 		}
 		else{										//else battery less than/equal to 95%
 			if (runCount==0){							//on even calls...
-			*powerGeneration += 2;		//increment by 2
+			(*powerGeneration) += 2;		//increment by 2
 			}
-			else if(*battLevel<=50){	//on odd calls... while battery less than/equal to 50%
-			*powerGeneration += 1;		//increment by 1
+			else if((*battLevel)<=50){	//on odd calls... while battery less than/equal to 50%
+			(*powerGeneration) += 1;		//increment by 1
 			}
-		}
-	}
-	else											//else solar panel not deployed...
-		if (*battLevel<=10){		//if battery less than/equal to 10%
-			*panelState = 1;		//deploy solar panel
 		}
 	}
 
 
 	//batteryLevel
-	if (*panelState==0){
+	if ((*panelState)==FALSE){
 		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
 	}
 	else{
@@ -110,6 +107,11 @@ void powerSub(void* taskDataPtr){
 // Require : 
 // Modifies: fuelLevel
 void thrusterSub(void* taskDataPtr){
+        thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
+        
+        unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
+        Bool* majorMinorCycle = (Bool*) thrustCommandPtr->majorMinorCyclePtr;
+  
 	unsigned short left = 0;
 	unsigned short right = 0;
 	unsigned short up = 0;
@@ -117,8 +119,6 @@ void thrusterSub(void* taskDataPtr){
 	unsigned short magnitude = 0;
 	unsigned short duration = 0;
 	//TODO concatenate signals into control command
-	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
-	//printf("thruster sub system with count at: %i \n", globalCount);
 
 	//TODO figure out fuel consumption
 	uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
@@ -135,8 +135,8 @@ void thrusterSub(void* taskDataPtr){
 
 //TODO
 void satelliteComms(void* taskDataPtr){
+        /*
 	//TODO send info
-	//printf("Comms at: %i \n", globalCount);
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
 	Bool* fuelLowSignal = (Bool*)commPtr->fuelLowPtr;
@@ -146,6 +146,8 @@ void satelliteComms(void* taskDataPtr){
 	unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
 	unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
 	Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;
+        unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
+        Bool* majorMinorCycle = (Bool*) commPtr->majorMinorCyclePtr;
 
 	//printf("fuel low is : %u\n", *fuelLowSignal);
 	//printf("battery low is : %u\n", *battLowSignal);
@@ -159,10 +161,16 @@ void satelliteComms(void* taskDataPtr){
 	uint16_t thrustCommand = randomInteger(0, 65535); 
 	*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
 	//TODO implement rand num gen
+  */
 }
 
 //TODO
 void oledDisplay(void* taskDataPtr){
+  /*
+    // Initialize the OLED display.
+    RIT128x96x4Init(1000000);
+    //RIT128x96x4Clear();
+    RIT128x96x4StringDraw("After clear", 5, 24, 15);
     
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
@@ -172,60 +180,39 @@ void oledDisplay(void* taskDataPtr){
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
+    unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+    Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
 
-    // TODO get statusMode from a button
+    char arr[4][24];
+    int arrSize;
+    // TODO display bool values in words not ints
     // Status mode
-    //volatile unsigned long statusMode;
-    int statusMode = 0;
-
-    //char arr[4][24];
-    char tempArr0[24];
-    int arrSize = 0;
-    
-    if (0 == statusMode)//0 == statusMode)
+    Bool statusMode = 1;
+    if (statusMode)
     {
-      //arrSize = 4;
-      char panelDepl = (1 == *panelState) ? 'Y' : 'N';
-      usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl); // Goes into fault interrupt if arr[0] is used
+      arrSize = 4;
+      char tempArr0[24];
+      usnprintf(tempArr0, 24, "Panel Deployed: %d", *panelState); // Goes into fault interrupt if arr[0] is used
       //strcpy(tempArr0, arr[0], 24);
-      RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
-
-      usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
-      RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
-
-      usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
-      RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
-
-      usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
       RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
-
-
       // usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
       // usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
       // usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);
     
     } else // Annunciation mode
     {
-      //arrSize = 2;
-
-      char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-      usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
-      RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
-
-      char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-      usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
-      RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+      arrSize = 2;
       // usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
       // usnprintf(arr[1], 24, "Battery Low: %d", *battLow);
     }
     
     for (int i = 0; i < arrSize; i++)
     {      
-      //char *pcStr = arr[i];
+      char *pcStr = arr[i];
       
       //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
     }
-
+*/
     
 }
 
@@ -235,24 +222,35 @@ void warningAlarm(void* taskDataPtr){
 	Bool* battLow = (Bool*)dataPtr->battLowPtr;
 	unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
 	unsigned short* fuelLevel = (unsigned short*)dataPtr->fuelLevelPtr;
+        unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+        Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
 
-    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
 	if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_WARN_LEVEL)){
                 //display solid green LED
-		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xF0);
+                //
+		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
 	}
 	else{
+          
+          //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
 		if (*battLevel<BATT_WARN_LEVEL){
+			//TODO flash yellow 1 sec
+                  if ((*globalCount)%2)
+                        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+                  else
+                        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+		}
+		else if (*battLevel<HALF_WARN_LEVEL){
+			//TODO flash yellow 2 sec
+                        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+		}
+		if (*fuelLevel<FUEL_WARN_LEVEL){
 			//TODO flash red 1 sec
+                        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
 		}
-		else if (*fuelLevel<FUEL_WARN_LEVEL){
+		else if (*fuelLevel<HALF_WARN_LEVEL){
 			//TODO flash red 2 sec
-		}
-		if (*battLevel<BATT_WARN_LEVEL){
-			//TODO flash red 1 sec
-		}
-		else if (*fuelLevel<FUEL_WARN_LEVEL){
-			//TODO flash red 2 sec
+                        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
 		}
 	}
 	return;

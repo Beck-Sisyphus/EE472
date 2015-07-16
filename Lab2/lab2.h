@@ -13,7 +13,6 @@
 	void oledDisplay(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
 	void delay_ms(int time_in_ms);
-	int randomInteger(int low, int high);
 
 	//Declare TCB Struct
 
@@ -23,17 +22,25 @@
 	} TCB;
 
 	//Declare DataStruct Structs
-
+        typedef struct scheduleDataStruct{
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
+        } scheduleDataStruct;
+        
 	typedef struct powerSubDataStruct{
 		void* panelStatePtr;
 		void* battLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
 	} powerSubDataStruct;
 	
 	typedef struct thrusterSubDataStruct{
 		void* thrustPtr;
 		void* fuelLevelPtr;
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
 	} thrusterSubDataStruct;
 
 	typedef struct satelliteCommsDataStruct{
@@ -45,6 +52,8 @@
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
 		void* thrustPtr;
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
 	} satelliteCommsDataStruct;
 
 	typedef struct oledDisplayDataStruct{
@@ -55,6 +64,8 @@
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct{
@@ -62,6 +73,8 @@
 		void* battLowPtr;
 		void* battLevelPtr;
 		void* fuelLevelPtr;
+                void* globalCountPtr;
+                void* majorMinorCyclePtr;
 	} warningAlarmDataStruct;
 
 #endif

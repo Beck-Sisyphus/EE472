@@ -1,4 +1,4 @@
-//TODO Include Statements...
+//Include Statements...
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -15,18 +15,7 @@
 #include "inc/lm3s8962.h"
 #include "utils/ustdlib.h"
 
-//TODO Global Variables...
-
-
-//define some constants
-/*#define HALF_WARN_LEVEL 50
-#define FUEL_WARN_LEVEL 10
-#define BATT_WARN_LEVEL 10
-#define MAX_FUEL_LEVEL 100
-#define MAX_BATT_LEVEL 100
-#define TASK_QUEUE_LENGTH 6*/
-
-//define some constants
+//Define some Constants...
 const unsigned short HALF_WARN_LEVEL = 50;
 const unsigned short FUEL_WARN_LEVEL = 10;
 const unsigned short BATT_WARN_LEVEL = 10;
@@ -34,36 +23,35 @@ const unsigned short MAX_FUEL_LEVEL = 100;
 const unsigned short MAX_BATT_LEVEL = 100;
 const unsigned short TASK_QUEUE_LENGTH = 6;
 
-//define and initialize global variables
-unsigned short battLevel;// = MAX_BATT_LEVEL; // complains that these expressions must have a constant value
-unsigned short fuelLevel;// = MAX_FUEL_LEVEL;
+//Define and Initialize Global Variables
+unsigned short battLevel;
+unsigned short fuelLevel;
 unsigned short powerConsumption = 0;
 unsigned short powerGeneration = 0;
 Bool panelState = FALSE;
 uint16_t thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 Bool fuelLow = FALSE;
 Bool battLow = FALSE;
+Bool majorMinorCycle = FALSE;
 unsigned short globalCount = 0;
-Bool majorMinorCycle = 0;
-
 
 int main(){
 	//TODO Local Variable Declarations
-	
-
+  
 	unsigned short motorDrive = 0;
         
-    battLevel = MAX_BATT_LEVEL;
-    fuelLevel = MAX_FUEL_LEVEL;
+        battLevel = MAX_BATT_LEVEL;
+        fuelLevel = MAX_FUEL_LEVEL;
 
-	//TODO Define Data Structs
-	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration};
-	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel};
-	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust};
-	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration};
-	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel};
+	//Define Data Structs
+	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &majorMinorCycle};
+	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel, &globalCount, &majorMinorCycle};
+	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &majorMinorCycle};
+	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &majorMinorCycle};
+	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &majorMinorCycle};
+        scheduleDataStruct scheduleData 	        = {&globalCount, &majorMinorCycle};
 
-	//TODO Define TCBs
+	//Define TCBs
 	TCB powerSubTCB;
 	TCB thrusterSubTCB;
 	TCB satelliteCommsTCB;
@@ -99,28 +87,24 @@ int main(){
 
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                    SYSCTL_XTAL_8MHZ);
-    
-        // Initialize the OLED display.
-    RIT128x96x4Init(1000000);
-
-    // Push button activation: source is gpio_jtag.c file in IAR
 
     // Enable GPIO C
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
         
-    // Set C5 as an output
-    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_5);
+    // Set pins C4, C5, C6, C7 as an output
+    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
+                          GPIO_PIN_7);
 
-	//Run... forever!!!
-	while(1){
-		//dispatch each task in turn
-		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
-		{
-			TCBptr = taskQueue[i];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-		}
-		schedule();
-	}
-
-	return EXIT_SUCCESS;
+    //Run... forever!!!
+    while(1){
+            //dispatch each task in turn
+            for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
+            {
+        //printf("Global count: %d \n", globalCount);
+                    TCBptr = taskQueue[i];
+                    TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            }
+            schedule(scheduleData);
+    }
+    return EXIT_SUCCESS;
 }
