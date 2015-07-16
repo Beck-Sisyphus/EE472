@@ -29,8 +29,8 @@ const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 const unsigned short TASK_QUEUE_LENGTH = 6;
 
 //Define and Initialize Global Variables
-unsigned short battLevel = MAX_BATT_LEVEL;
-uint32_t fuelLevel = MAX_FUEL_LEVEL;;
+unsigned short battLevel;
+uint32_t fuelLevel;
 unsigned short powerConsumption = 0;
 unsigned short powerGeneration = 0;
 Bool panelState = FALSE;
@@ -44,6 +44,9 @@ int main(){
 	//TODO Local Variable Declarations
   
 	unsigned short motorDrive = 0;
+
+	battLevel = MAX_BATT_LEVEL;
+	fuelLevel = MAX_FUEL_LEVEL;
 
 	//Define Data Structs
 	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
