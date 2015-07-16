@@ -24,8 +24,8 @@ const unsigned short BATT_WARN_LEVEL = 10;
 // setting a total fuel level as 15 * y helps to calculate the fuel easier
 // Assuming the minor cycle is running at 1 second per cycle rate.
 const uint32_t MAX_FUEL_LEVEL = 11664000;
-const uint32_t HALF_FUEL_LEVEL = MAX_FUEL_LEVEL / 2; // at 50% level
-const uint32_t FUEL_WARN_LEVEL = MAX_FUEL_LEVEL / 10; // below 10% is warnning level
+const uint32_t HALF_FUEL_LEVEL = 5832000; // at 50% level
+const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 const unsigned short TASK_QUEUE_LENGTH = 6;
 
 //Define and Initialize Global Variables
