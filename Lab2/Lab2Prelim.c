@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab2.h"
-// #include "inc/hw_gpio.h"
-// #include "inc/hw_ints.h"
-// #include "inc/hw_memmap.h"
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/gpio.h"
-// #include "driverlib/interrupt.h"
-// #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
-// #include "inc/lm3s8962.h"
-// #include "utils/ustdlib.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
+#include "utils/ustdlib.h"
 
 //Define some Constants...
 const unsigned short MAX_BATT_LEVEL = 100;
@@ -90,15 +90,15 @@ int main(){
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
-    // SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-    //                SYSCTL_XTAL_8MHZ);
+	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+                   SYSCTL_XTAL_8MHZ);
 
-    // // Enable GPIO C
-    // SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+	// Enable GPIO C
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
         
-    // // Set pins C4, C5, C6, C7 as an output
-    // GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
-    //                       GPIO_PIN_7);
+	// Set pins C4, C5, C6, C7 as an output
+	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
+                          GPIO_PIN_7);
 
     //Run... forever!!!
     while(1){

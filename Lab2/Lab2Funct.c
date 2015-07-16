@@ -2,17 +2,17 @@
 #include <stdint.h>
 // #include <limits.h>
 #include "lab2.h"
-// #include "inc/hw_gpio.h"
-// #include "inc/hw_ints.h"
-// #include "inc/hw_memmap.h"
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/gpio.h"
-// #include "driverlib/interrupt.h"
-// #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
-// #include "inc/lm3s8962.h"
-// #include "utils/ustdlib.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
+#include "utils/ustdlib.h"
 
 //define some constants
 extern const unsigned short MAX_BATT_LEVEL;
@@ -320,7 +320,7 @@ void warningAlarm(void* taskDataPtr){
 
     if (*isMajorCycle)
     {
-		/*
+		
 		if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_FUEL_LEVEL)){
 			//display solid green LED
 			//
@@ -348,7 +348,7 @@ void warningAlarm(void* taskDataPtr){
 				GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
 			}
 		}
-			*/
+			
     }
 
 	
