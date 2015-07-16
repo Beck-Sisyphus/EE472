@@ -163,15 +163,6 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
-	
-
-	//TODO two modes??
-	////printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
-        
-    // Initialize the OLED display.
-    RIT128x96x4Init(1000000);
-    //RIT128x96x4Clear();
-    RIT128x96x4StringDraw("After clear", 5, 24, 15);
     
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
@@ -182,32 +173,55 @@ void oledDisplay(void* taskDataPtr){
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
-    char arr[4][24];
-    int arrSize;
-    // TODO display bool values in words not ints
+    // TODO get statusMode from a button
     // Status mode
-    Bool statusMode = 1;
-    if (statusMode)
+    //volatile unsigned long statusMode;
+    int statusMode = 0;
+
+    //char arr[4][24];
+    char tempArr0[24];
+    int arrSize = 0;
+    
+    if (0 == statusMode)//0 == statusMode)
     {
-      arrSize = 4;
-      char tempArr0[24];
-      usnprintf(tempArr0, 24, "Panel Deployed: %d", *panelState); // Goes into fault interrupt if arr[0] is used
+      //arrSize = 4;
+      char panelDepl = (1 == *panelState) ? 'Y' : 'N';
+      usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl); // Goes into fault interrupt if arr[0] is used
       //strcpy(tempArr0, arr[0], 24);
+      RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+
+      usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
+      RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+
+      usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
+      RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
+
+      usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
       RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
+
+
       // usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
       // usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
       // usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);
     
     } else // Annunciation mode
     {
-      arrSize = 2;
+      //arrSize = 2;
+
+      char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
+      usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
+      RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+
+      char battLowStr = (1 == *battLow) ? 'Y' : 'N';
+      usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
+      RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
       // usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
       // usnprintf(arr[1], 24, "Battery Low: %d", *battLow);
     }
     
     for (int i = 0; i < arrSize; i++)
     {      
-      char *pcStr = arr[i];
+      //char *pcStr = arr[i];
       
       //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
     }

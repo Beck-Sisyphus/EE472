@@ -46,8 +46,6 @@ Bool battLow = FALSE;
 unsigned short globalCount = 0;
 Bool majorMinorCycle = 0;
 
-//TODO Global Variable Definitions
-
 
 int main(){
 	//TODO Local Variable Declarations
@@ -101,6 +99,11 @@ int main(){
 
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                    SYSCTL_XTAL_8MHZ);
+    
+        // Initialize the OLED display.
+    RIT128x96x4Init(1000000);
+
+    // Push button activation: source is gpio_jtag.c file in IAR
 
     // Enable GPIO C
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
@@ -113,7 +116,6 @@ int main(){
 		//dispatch each task in turn
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
-            //printf("Global count: %d \n", globalCount);
 			TCBptr = taskQueue[i];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}
