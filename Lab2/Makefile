@@ -3,11 +3,13 @@
 
 CC = gcc
 CFLAGS=-Wall -g -std=c11 -c
-lab2: Lab2Prelim.o Lab2Funct.o
-	$(CC) Lab2Prelim.o Lab2Funct.o -o lab2
+lab2: Lab2Prelim.o Lab2Funct.o random.o
+	$(CC) Lab2Prelim.o Lab2Funct.o random.o -o lab2
 Lab2Prelim.o: lab2.h Lab2Prelim.c
 	$(CC) $(CFLAGS) Lab2Prelim.c
 Lab2Funct.o: lab2.h Lab2Funct.c
 	$(CC) $(CFLAGS) Lab2Funct.c
+random.o: lab2.h randomInteger.c
+	$(CC) $(CFLAGS) randomInteger.c
 clean:
-	rm -f *~ *.o lab2 random
+	rm -f *~ *.o lab2
