@@ -30,11 +30,9 @@ int seed = 12;
 void schedule(scheduleDataStruct scheduleData){
 	unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
 	Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
-        
 
 	*isMajorCycle = ((*globalCount) == 0);			//Execute a Major Cycle when the count is zero.
 
-	printf("The major cycle pointer points to: %d\n", *isMajorCycle);
 	(*globalCount) = ((*globalCount) + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
 	delay_ms(100);
 }
@@ -52,11 +50,14 @@ void powerSub(void* taskDataPtr){
 
 	//powerConsumption
 	static unsigned short runCount = 1;				//tracks even/odd calls of this function
-
+        static Bool consumpUpDown = TRUE;
+        
 	runCount = (runCount + 1) % 2;					//alternates between 1 and 0 for odd/een calls respectively
-	if ((*powerConsumption)<10) {    //TODO, does this work???
+	if (consumpUpDown) {    //TODO, does this work???
 		if (runCount==0){							//on even calls...
 			(*powerConsumption) += 2;		//increment by 2
+                        if ((*powerConsumption)>=10)
+                          consumpUpDown = FALSE;
 		} 
 		else{										//on odd calls...
 			(*powerConsumption) -= 1;		//decrement by 1
@@ -65,6 +66,8 @@ void powerSub(void* taskDataPtr){
 	else{
 		if (runCount==0){							//on even calls...
 			(*powerConsumption) -= 2;	//decrement by 2
+                        if ((*powerConsumption)<=5)
+                          consumpUpDown = TRUE;
 		}
 		else{										//on odd calls...
 			(*powerConsumption) += 1;		//increment by 1
@@ -101,13 +104,19 @@ void powerSub(void* taskDataPtr){
 	}
 }
 
-
-// Require : 
+	// typedef struct thrusterSubDataStruct{
+	// 	void* thrustPtr;
+	// 	void* fuelLevelPtr;
+	// 	void* globalCountPtr;
+	// 	void* isMajorCyclePtr;
+	// } thrusterSubDataStruct;
+// Require : isMajorCycle as input
 // Modifies: fuelLevel
 void thrusterSub(void* taskDataPtr){
+
 	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
         
-	unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
+	// unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
 	Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
   
 	unsigned short left = 0;

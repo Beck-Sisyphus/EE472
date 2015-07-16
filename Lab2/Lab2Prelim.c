@@ -25,7 +25,7 @@ const unsigned short TASK_QUEUE_LENGTH = 6;
 
 //Define and Initialize Global Variables
 unsigned short battLevel;
-unsigned short fuelLevel;
+uint32_t fuelLevel = 12441600; // 6 month has 6*30*24*60*60 seconds, and 
 unsigned short powerConsumption = 0;
 unsigned short powerGeneration = 0;
 Bool panelState = FALSE;
