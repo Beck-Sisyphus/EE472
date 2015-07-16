@@ -13,6 +13,7 @@
 	void oledDisplay(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
 	void delay_ms(int time_in_ms);
+	int randomInteger(int low, int high);
 
 	//Declare TCB Struct
 
