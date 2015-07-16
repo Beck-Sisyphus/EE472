@@ -91,7 +91,7 @@ int main(){
 
 
 	//TODO Task Queue (Array of Structs)
-	TCB* taskQueue[TASK_QUEUE_LENGTH];
+	TCB* taskQueue[6];
 
 	taskQueue[0] = &powerSubTCB;
 	taskQueue[1] = &thrusterSubTCB;
@@ -113,7 +113,7 @@ int main(){
 		//dispatch each task in turn
 		for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
 		{
-            printf("Global count: %d \n", globalCount);
+            //printf("Global count: %d \n", globalCount);
 			TCBptr = taskQueue[i];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 		}

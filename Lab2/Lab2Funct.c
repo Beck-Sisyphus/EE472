@@ -37,12 +37,12 @@ void schedule(){
 		majorMinorCycle = TRUE;							//Execute a Minor Cycle
 	}
 	globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
-	delay_ms(100000);
+	delay_ms(100);
 }
 
 //TODO
 void powerSub(void* taskDataPtr){
-	printf("We get to power sub system with count at: %i \n", globalCount);
+	//printf("We get to power sub system with count at: %i \n", globalCount);
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
 	unsigned short* battLevel;
@@ -118,7 +118,7 @@ void thrusterSub(void* taskDataPtr){
 	unsigned short duration = 0;
 	//TODO concatenate signals into control command
 	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
-	printf("thruster sub system with count at: %i \n", globalCount);
+	//printf("thruster sub system with count at: %i \n", globalCount);
 
 	//TODO figure out fuel consumption
 	uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
@@ -136,7 +136,7 @@ void thrusterSub(void* taskDataPtr){
 //TODO
 void satelliteComms(void* taskDataPtr){
 	//TODO send info
-	printf("Comms at: %i \n", globalCount);
+	//printf("Comms at: %i \n", globalCount);
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
 	Bool* fuelLowSignal = (Bool*)commPtr->fuelLowPtr;
@@ -147,13 +147,13 @@ void satelliteComms(void* taskDataPtr){
 	unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
 	Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;
 
-	printf("fuel low is : %u\n", *fuelLowSignal);
-	printf("battery low is : %u\n", *battLowSignal);
-	printf("battery level : %hu\n", *battLevelSignal);
-	printf("fuel level : %hu\n", *fuelLevelSignal);
-	printf("power consumption is: %hu\n", *powerConsumptionSignal);
-	printf("power generation is : %hu\n", *powerGenerationSignal);
-	printf("panel state is : %u\n", *panelStateSignal);
+	//printf("fuel low is : %u\n", *fuelLowSignal);
+	//printf("battery low is : %u\n", *battLowSignal);
+	//printf("battery level : %hu\n", *battLevelSignal);
+	//printf("fuel level : %hu\n", *fuelLevelSignal);
+	//printf("power consumption is: %hu\n", *powerConsumptionSignal);
+	//printf("power generation is : %hu\n", *powerGenerationSignal);
+	//printf("panel state is : %u\n", *panelStateSignal);
 
 	//TODO receive (rando) thrust commands, generate from 0 to 2^16 -1
 	uint16_t thrustCommand = randomInteger(0, 65535); 
@@ -166,7 +166,7 @@ void oledDisplay(void* taskDataPtr){
 	
 
 	//TODO two modes??
-	//printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
+	////printf("OLED Display wooorrrrrrrrrkkkkkkkkkkkkkkkkk at: %i \n", globalCount);
         
     // Initialize the OLED display.
     RIT128x96x4Init(1000000);
