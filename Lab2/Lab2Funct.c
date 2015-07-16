@@ -45,7 +45,7 @@ void powerSub(void* taskDataPtr){
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
         
 	unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-	Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+	Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 	unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
 	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
@@ -197,7 +197,7 @@ void oledDisplay(void* taskDataPtr){
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-    Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
     // TODO get statusMode from a button or based on globalCount
     // Status mode

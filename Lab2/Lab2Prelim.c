@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab2.h"
-// #include "inc/hw_gpio.h"
-// #include "inc/hw_ints.h"
-// #include "inc/hw_memmap.h"
-// #include "inc/hw_types.h"
-// #include "driverlib/debug.h"
-// #include "driverlib/gpio.h"
-// #include "driverlib/interrupt.h"
-// #include "driverlib/sysctl.h"
-// #include "drivers/rit128x96x4.h"
-// #include "inc/lm3s8962.h"
-// #include "utils/ustdlib.h"
+#include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
+#include "inc/lm3s8962.h"
+#include "utils/ustdlib.h"
 
 //Define some Constants...
 const unsigned short MAX_BATT_LEVEL = 100;
