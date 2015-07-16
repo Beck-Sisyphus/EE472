@@ -22,25 +22,25 @@
 	} TCB;
 
 	//Declare DataStruct Structs
-        typedef struct scheduleDataStruct{
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
-        } scheduleDataStruct;
+	typedef struct scheduleDataStruct{
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
+	} scheduleDataStruct;
         
 	typedef struct powerSubDataStruct{
 		void* panelStatePtr;
 		void* battLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
 	} powerSubDataStruct;
 	
 	typedef struct thrusterSubDataStruct{
 		void* thrustPtr;
 		void* fuelLevelPtr;
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
 	} thrusterSubDataStruct;
 
 	typedef struct satelliteCommsDataStruct{
@@ -52,8 +52,8 @@
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
 		void* thrustPtr;
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
 	} satelliteCommsDataStruct;
 
 	typedef struct oledDisplayDataStruct{
@@ -64,8 +64,8 @@
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct{
@@ -73,8 +73,8 @@
 		void* battLowPtr;
 		void* battLevelPtr;
 		void* fuelLevelPtr;
-                void* globalCountPtr;
-                void* majorMinorCyclePtr;
+		void* globalCountPtr;
+		void* isMajorCyclePtr;
 	} warningAlarmDataStruct;
 
 #endif

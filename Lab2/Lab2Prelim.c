@@ -32,7 +32,7 @@ Bool panelState = FALSE;
 uint16_t thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 Bool fuelLow = FALSE;
 Bool battLow = FALSE;
-Bool majorMinorCycle = FALSE;
+Bool isMajorCycle = TRUE;
 unsigned short globalCount = 0;
 
 int main(){
@@ -44,12 +44,12 @@ int main(){
         fuelLevel = MAX_FUEL_LEVEL;
 
 	//Define Data Structs
-	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &majorMinorCycle};
-	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel, &globalCount, &majorMinorCycle};
-	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &majorMinorCycle};
-	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &majorMinorCycle};
-	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &majorMinorCycle};
-        scheduleDataStruct scheduleData 	        = {&globalCount, &majorMinorCycle};
+	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
+	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &isMajorCycle};
+        scheduleDataStruct scheduleData 	        = {&globalCount, &isMajorCycle};
 
 	//Define TCBs
 	TCB powerSubTCB;

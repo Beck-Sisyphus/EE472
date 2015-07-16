@@ -28,15 +28,13 @@ int seed = 12;
 
 //TODO
 void schedule(scheduleDataStruct scheduleData){
-        unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
-        Bool* majorMinorCycle = (Bool*) scheduleData.majorMinorCyclePtr;
+	unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
+	Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
         
-	if ((*globalCount) == 0){					//On first cycle of five...
-		*majorMinorCycle = FALSE;			//Execute a Major Cycle
-	}
-	else {							//On all other cycles...
-		*majorMinorCycle = TRUE;				//Execute a Minor Cycle
-	}
+
+	*isMajorCycle = ((*globalCount) == 0);			//Execute a Major Cycle when the count is zero.
+
+	printf("The major cycle pointer points to: %d\n", *isMajorCycle);
 	(*globalCount) = ((*globalCount) + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
 	delay_ms(100);
 }
@@ -45,8 +43,8 @@ void schedule(scheduleDataStruct scheduleData){
 void powerSub(void* taskDataPtr){
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
         
-        unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-        Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+	unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+	Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 	unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
 	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
@@ -107,10 +105,10 @@ void powerSub(void* taskDataPtr){
 // Require : 
 // Modifies: fuelLevel
 void thrusterSub(void* taskDataPtr){
-        thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
+	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
         
-        unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
-        Bool* majorMinorCycle = (Bool*) thrustCommandPtr->majorMinorCyclePtr;
+	unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
+	Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
   
 	unsigned short left = 0;
 	unsigned short right = 0;
@@ -135,7 +133,7 @@ void thrusterSub(void* taskDataPtr){
 
 //TODO
 void satelliteComms(void* taskDataPtr){
-        /*
+        
 	//TODO send info
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
@@ -146,22 +144,14 @@ void satelliteComms(void* taskDataPtr){
 	unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
 	unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
 	Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;
-        unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
-        Bool* majorMinorCycle = (Bool*) commPtr->majorMinorCyclePtr;
-
-	//printf("fuel low is : %u\n", *fuelLowSignal);
-	//printf("battery low is : %u\n", *battLowSignal);
-	//printf("battery level : %hu\n", *battLevelSignal);
-	//printf("fuel level : %hu\n", *fuelLevelSignal);
-	//printf("power consumption is: %hu\n", *powerConsumptionSignal);
-	//printf("power generation is : %hu\n", *powerGenerationSignal);
-	//printf("panel state is : %u\n", *panelStateSignal);
+	unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
+	Bool* isMajorCycle = (Bool*) commPtr->isMajorCyclePtr;
 
 	//TODO receive (rando) thrust commands, generate from 0 to 2^16 -1
 	uint16_t thrustCommand = randomInteger(0, 65535); 
 	*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
 	//TODO implement rand num gen
-  */
+  
 }
 
 //TODO
@@ -181,7 +171,7 @@ void oledDisplay(void* taskDataPtr){
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-    Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
     char arr[4][24];
     int arrSize;
@@ -217,13 +207,14 @@ void oledDisplay(void* taskDataPtr){
 }
 
 void warningAlarm(void* taskDataPtr){
+	/*
 	warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
 	Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
 	Bool* battLow = (Bool*)dataPtr->battLowPtr;
 	unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
 	unsigned short* fuelLevel = (unsigned short*)dataPtr->fuelLevelPtr;
         unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-        Bool* majorMinorCycle = (Bool*) dataPtr->majorMinorCyclePtr;
+        Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
 	if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_WARN_LEVEL)){
                 //display solid green LED
@@ -254,6 +245,7 @@ void warningAlarm(void* taskDataPtr){
 		}
 	}
 	return;
+	*/
 }
 
 void delay_ms(int time_in_ms){
