@@ -1,19 +1,13 @@
 //Include Statements...
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab2.h"
 #include "inc/hw_gpio.h"
-#include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
-#include "driverlib/debug.h"
 #include "driverlib/gpio.h"
-#include "driverlib/interrupt.h"
 #include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
-#include "inc/lm3s8962.h"
-#include "utils/ustdlib.h"
 
 //Define some Constants...
 const unsigned short MAX_BATT_LEVEL = 100;
@@ -31,37 +25,40 @@ const unsigned short TASK_QUEUE_LENGTH = 6;
 //Define and Initialize Global Variables
 unsigned short battLevel;
 uint32_t fuelLevel;
-unsigned short powerConsumption = 0;
-unsigned short powerGeneration = 0;
-Bool panelState = FALSE;
-uint16_t thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
-Bool fuelLow = FALSE;
-Bool battLow = FALSE;
-Bool isMajorCycle = TRUE;
+unsigned short powerConsumption;
+unsigned short powerGeneration;
+Bool panelState;
+uint16_t thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
+Bool fuelLow;
+Bool battLow;
+Bool isMajorCycle;
 unsigned short globalCount;
 unsigned short blinkTimer;
+uint32_t fuelLevellll;
 
 int main(){
-  
+        // Initialize SysClk.
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
 	      SYSCTL_XTAL_8MHZ);
+        
 	// Initialize the OLED display.
 	RIT128x96x4Init(1000000);
 
-	unsigned short motorDrive = 0;
+	// unsigned short motorDrive = 0;
 
-	//battLevel = MAX_BATT_LEVEL;
-	//fuelLevel = MAX_FUEL_LEVEL;
-	//powerConsumption = 0;
-	//powerGeneration = 0;
-	//panelState = FALSE;
-	//thrust = 0;
-	//fuelLow = FALSE;
-	//battLow = FALSE;
-	//isMajorCycle = TRUE;
+	battLevel = MAX_BATT_LEVEL;
+	fuelLevel = MAX_FUEL_LEVEL;
+	powerConsumption = 0;
+	powerGeneration = 0;
+	panelState = FALSE;
+	thrust = 0;
+	fuelLow = FALSE;
+	battLow = FALSE;
+	isMajorCycle = TRUE;
 	globalCount = 0;
-	//blinkTimer = 0;
-
+	blinkTimer = 0;
+        
+ 
 	//Define Data Structs
 	powerSubDataStruct powerSubData           = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
@@ -95,12 +92,12 @@ int main(){
 	warningAlarmTCB.taskPtr = warningAlarm;
 
 
-	//TODO Task Queue (Array of Structs)
+	//Task Queue (Array of Structs)
 	TCB* taskQueue[6];
 
 	taskQueue[0] = &powerSubTCB;
-	taskQueue[1] = &thrusterSubTCB;
-	taskQueue[2] = &satelliteCommsTCB;
+	taskQueue[2] = &thrusterSubTCB;
+	taskQueue[1] = &satelliteCommsTCB;
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
@@ -128,23 +125,21 @@ int main(){
 
     //Run... forever!!!
     while(1){
-        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
-
+            // Turn on test signal before task execution
+            GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
             //dispatch each task in turn
-      TCBptr = taskQueue[0];
-      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-      TCBptr = taskQueue[1];
-      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-      TCBptr = taskQueue[2];
-      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-      TCBptr = taskQueue[3];
-      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-      TCBptr = taskQueue[4];
-      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-
-      // Turn off the oscillascope before delay   
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
-
+            TCBptr = taskQueue[0];
+            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            TCBptr = taskQueue[1];
+            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            TCBptr = taskQueue[2];
+            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            TCBptr = taskQueue[3];
+            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            TCBptr = taskQueue[4];
+            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            // Turn off test signal before delay   
+            GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
             schedule(scheduleData);
     }
     return EXIT_SUCCESS;
