@@ -21,6 +21,8 @@ extern const uint32_t MAX_FUEL_LEVEL;
 extern const uint32_t HALF_FUEL_LEVEL;
 extern const uint32_t FUEL_WARN_LEVEL;
 extern const unsigned short TASK_QUEUE_LENGTH;
+extern unsigned short globalCount;
+extern unsigned short blinkTimer;
 
 //define and initiallize global variables
 const int fuelBuringRatio = 20; // Set as a large number in demo
@@ -35,7 +37,7 @@ void schedule(scheduleDataStruct scheduleData){
 	*isMajorCycle = (0  == globalCount);			//Execute a Major Cycle when the count is zero.
 
 	(globalCount) = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
-	delay_ms(100);
+	delay_ms(10000);
 }
 
 // Requires: power sub data struct
@@ -43,7 +45,7 @@ void schedule(scheduleDataStruct scheduleData){
 void powerSub(void* taskDataPtr){
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
-	// unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+	unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
 	Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 	unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
@@ -54,53 +56,50 @@ void powerSub(void* taskDataPtr){
 	static unsigned short runCount = 1;				//tracks even/odd calls of this function
 	static Bool consumpUpDown = TRUE;
 
-	if (*isMajorCycle)
-	{
-		runCount = (runCount + 1) % 2;					//alternates between 1 and 0 for odd/een calls respectively
-		if (consumpUpDown) {    //TODO, does this work???
-			if (runCount==0){							//on even calls...
-				(*powerConsumption) += 2;		//increment by 2
-				if ((*powerConsumption)>=10) {
-					consumpUpDown = FALSE;
-				}
-			} 
-			else{										//on odd calls...
-				(*powerConsumption) -= 1;		//decrement by 1
-			}
-		}
-		else {
-			if (runCount==0){							//on even calls...
-				(*powerConsumption) -= 2;	//decrement by 2
-				if ((*powerConsumption)<=5) {
-					consumpUpDown = TRUE;
-				}
-			}
-			else{										//on odd calls...
-				(*powerConsumption) += 1;		//increment by 1
-			}
-		}        
-		    
-		//powerGeneration
-		if ((*panelState)==FALSE) {											//else solar panel not deployed...
-			if ((*battLevel)<=30){		//if battery less than/equal to 10%
-				(*panelState) = TRUE;		//deploy solar panel
-			}
-		}
-		if ((*panelState)==TRUE) {			//if solar panel is deployed...
-			if ((*battLevel)>95){		//if battery greater than 95%
-				(*panelState)=FALSE;		//retract solar panel
-				(*powerGeneration) = 0;         //SPEC CHANGE
-			}
-			else{										//else battery less than/equal to 95%
-				if (runCount==0){							//on even calls...
-					(*powerGeneration) += 2;		//increment by 2
-				}
-				else if((*battLevel)<=50){	//on odd calls... while battery less than/equal to 50%
-					(*powerGeneration) += 1;		//increment by 1
-				}
-			}
-		}
-	}
+        runCount = (runCount + 1) % 2;			        //alternates between 1 and 0 for odd/een calls respectively
+        if (consumpUpDown) {    //TODO, does this work???
+                if (runCount==0){				//on even calls...
+                        (*powerConsumption) += 2;		//increment by 2
+                        if ((*powerConsumption)>=10) {
+                                consumpUpDown = FALSE;
+                        }
+                } 
+                else{						//on odd calls...
+                        (*powerConsumption) -= 1;		//decrement by 1
+                }
+        }
+        else {
+                if (runCount==0){		                //on even calls...
+                        (*powerConsumption) -= 2;	        //decrement by 2
+                        if ((*powerConsumption)<=5) {
+                                consumpUpDown = TRUE;
+                        }
+                }
+                else{						//on odd calls...
+                        (*powerConsumption) += 1;		//increment by 1
+                }
+        }        
+            
+        //powerGeneration
+        if ((*panelState)==FALSE) {	         //else solar panel not deployed...
+                if ((*battLevel)<=30){		//if battery less than/equal to 10%
+                        (*panelState) = TRUE;		//deploy solar panel
+                }
+        }
+        if ((*panelState)==TRUE) {			//if solar panel is deployed...
+                if ((*battLevel)>95){		//if battery greater than 95%
+                        (*panelState)=FALSE;		//retract solar panel
+                        (*powerGeneration) = 0;         //SPEC CHANGE
+                }
+                else{					//else battery less than/equal to 95%
+                        if (runCount==0){			//on even calls...
+                                (*powerGeneration) += 2;		//increment by 2
+                        }
+                        else if((*battLevel)<=50){	//on odd calls... while battery less than/equal to 50%
+                                (*powerGeneration) += 1;		//increment by 1
+                        }
+                }
+        }
 
 	//batteryLevel
 	if ((*panelState)==FALSE){
@@ -200,7 +199,6 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
-/*
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
     unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
@@ -225,8 +223,7 @@ void oledDisplay(void* taskDataPtr){
 	    if (0 == statusMode)//0 == statusMode)
 	    {
 	      //arrSize = 4;
-	      char panelDepl = 'Y';//(1 == *panelState) ? 'Y' : 'N';
-	      //usnprintf(tempArr0, 10, "Yellow");
+	      char panelDepl = (1 == *panelState) ? 'Y' : 'N';
 	      //usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
 	      //RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
 
@@ -250,67 +247,65 @@ void oledDisplay(void* taskDataPtr){
 	      //RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
 	    }
     }
-    	    */
     return;
 }
 
 
 // Require : warning alarm data struct;
 // Modifies: fuelLow pointer, battLow pointer.
-void warningAlarm(void* taskDataPtr){
+void warningAlarm(void* taskDataPtr){void warningAlarm(void* taskDataPtr){
 	
-	warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
-	Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
-	Bool* battLow = (Bool*)dataPtr->battLowPtr;
-	unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
-	uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
-	// unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-	Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
+    warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
+    Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
+    Bool* battLow = (Bool*)dataPtr->battLowPtr;
+    unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
+    uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
+    unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
     if (*fuelLevel < FUEL_WARN_LEVEL) { *fuelLow = TRUE; } else { *fuelLow = FALSE; }
     if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
-
-    long buttonRead = 0;
-
-    buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
-
-/*
-    if (*isMajorCycle)
-    {
-		
-		if ((*battLevel<BATT_WARN_LEVEL)&(*fuelLevel>HALF_FUEL_LEVEL)){
-			//display solid green LED
-			//
-			GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
-		}
-		else{
-			//SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
-			if (*battLevel<BATT_WARN_LEVEL){
-				//TODO flash yellow 1 sec
-				if ((*globalCount)%2)
-					GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-				else
-					GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
-			}
-			else if (*battLevel<HALF_BATT_LEVEL){
-				//TODO flash yellow 2 sec
-				GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-			}
-			if (*fuelLevel<FUEL_WARN_LEVEL){
-				//TODO flash red 1 sec
-				GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-			}
-			else if (*fuelLevel<HALF_FUEL_LEVEL){
-				//TODO flash red 2 sec
-				GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-			}
-		}
-			
+    
+    if (((*battLevel)>HALF_BATT_LEVEL)&((*fuelLevel)>HALF_FUEL_LEVEL)){
+      //display solid green LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
+      //clear yellow LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+      //clear red LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
     }
-*/
-	
-	return;
-
+    else{
+      //clear solid green LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
+      //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
+            if ((*battLevel<BATT_WARN_LEVEL)&(*battLevel<HALF_BATT_LEVEL)){
+                    //TODO flash yellow 1 sec
+              if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|
+                  (6==blinkTimer))
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+             if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|
+                  (7==blinkTimer))
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+            }
+            else if (*battLevel<HALF_BATT_LEVEL){
+                    //TODO flash yellow 2 sec
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+            }
+            if ((*fuelLevel<FUEL_WARN_LEVEL)&(*fuelLevel<HALF_FUEL_LEVEL)){
+                    //TODO flash red 1 sec
+              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|
+                  (5==blinkTimer))
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|
+                  (7==blinkTimer))
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+            }
+            else if (*fuelLevel<HALF_FUEL_LEVEL){
+                    //TODO flash red 2 sec
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+            }
+    }
+    return;
 }
 
 void delay_ms(int time_in_ms){

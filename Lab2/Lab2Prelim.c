@@ -39,14 +39,13 @@ Bool fuelLow = FALSE;
 Bool battLow = FALSE;
 Bool isMajorCycle = TRUE;
 unsigned short globalCount;
+unsigned short blinkTimer;
 
 int main(){
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
 					SYSCTL_XTAL_8MHZ);
 	// Initialize the OLED display.
 	RIT128x96x4Init(1000000);
-	//RIT128x96x4Clear();
-	RIT128x96x4StringDraw("After clear", 5, 24, 15);
   
 	unsigned short motorDrive = 0;
 
@@ -60,6 +59,7 @@ int main(){
 	// battLow = FALSE;
 	// isMajorCycle = TRUE;
 	globalCount = 0;
+	blinkTimer = 0;
 
 	//Define Data Structs
 	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
@@ -106,6 +106,7 @@ int main(){
 	// Enable GPIO C
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
 	// Set pins C4, C5, C6, C7 as an output
+	// C4 is used for oscillascope
 	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
                           GPIO_PIN_7);
 
@@ -114,11 +115,18 @@ int main(){
 
 	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_1);
 
+	// Set up a pull up resistor for the button so it wouldn't float
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
+			GPIO_PIN_TYPE_STD_WPU);
+
     //Run... forever!!!
     while(1){
-            //dispatch each task in turn
+            // Turn on the oscillascope to measure
+    		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 			TCBptr = taskQueue[0];
+
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+
 			TCBptr = taskQueue[1];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 			TCBptr = taskQueue[2];
@@ -127,6 +135,9 @@ int main(){
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 			TCBptr = taskQueue[4];
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+
+			// Turn off the oscillascope before delay
+			GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
 
             schedule(scheduleData);
     }
