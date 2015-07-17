@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdint.h>
-// #include <limits.h>
 #include "lab2.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -26,16 +25,18 @@ extern const unsigned short TASK_QUEUE_LENGTH;
 //define and initiallize global variables
 const int fuelBuringRatio = 20; // Set as a large number in demo
 
-
+extern unsigned short globalCount;
 //TODO
 void schedule(scheduleDataStruct scheduleData){
-	unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
+	// unsigned short* globalCount = (unsigned short*) scheduleData.globalCountPtr;
+
 	Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
 
-	*isMajorCycle = ((*globalCount) == 0);			//Execute a Major Cycle when the count is zero.
+	*isMajorCycle = (0  == globalCount);			//Execute a Major Cycle when the count is zero.
 
-	(*globalCount) = ((*globalCount) + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
+	(globalCount) = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
 	delay_ms(100);
+	printf("global counts, in C 99 version: %d\n", *globalCount);
 }
 
 // Requires: power sub data struct
@@ -195,6 +196,7 @@ void satelliteComms(void* taskDataPtr){
 		uint16_t thrustCommand = randomInteger(globalCount);
 		*(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
 	}
+	return;
 }
 
 //TODO
@@ -248,58 +250,9 @@ void oledDisplay(void* taskDataPtr){
 	      //usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
 	      //RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
 	    }
-	    */
-
-	  /*
-	    // Initialize the OLED display.
-	    RIT128x96x4Init(1000000);
-	    //RIT128x96x4Clear();
-	    RIT128x96x4StringDraw("After clear", 5, 24, 15);
-	    
-	    oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
-	    
-	    unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
-	    unsigned short* fuelLevel = (unsigned short*) dataPtr->fuelLevelPtr;
-	    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-	    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-	    Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
-	    Bool* battLow = (Bool*) dataPtr->battLowPtr;
-	    unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-	    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
-
-	    char arr[4][24];
-	    int arrSize;
-	    // TODO display bool values in words not ints
-	    // Status mode
-	    Bool statusMode = 1;
-	    if (statusMode)
-	    {
-	      arrSize = 4;
-	      char tempArr0[24];
-	      usnprintf(tempArr0, 24, "Panel Deployed: %d", *panelState); // Goes into fault interrupt if arr[0] is used
-	      //strcpy(tempArr0, arr[0], 24);
-	      RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
-	      // usnprintf(arr[1], 24, "Battery Level: %d", *battLevel);
-	      // usnprintf(arr[2], 24, "Fuel Level: %d", *fuelLevel);
-	      // usnprintf(arr[3], 24, "Power Consumption: %d", *powerConsumption);
-	    
-	    } else // Annunciation mode
-	    {
-	      arrSize = 2;
-	      // usnprintf(arr[0], 24, "Fuel Low: %d", *fuelLow);
-	      // usnprintf(arr[1], 24, "Battery Low: %d", *battLow);
-	    }
-	    
-	    for (int i = 0; i < arrSize; i++)
-	    {      
-	      char *pcStr = arr[i];
-	      
-	      //RIT128x96x4StringDraw(pcStr, 5, 24 + 10*i, 15);
-	    }
-
     }
-    
-*/
+    	    */
+    return;
 }
 
 
@@ -318,6 +271,11 @@ void warningAlarm(void* taskDataPtr){
     if (*fuelLevel < FUEL_WARN_LEVEL) { *fuelLow = TRUE; } else { *fuelLow = FALSE; }
     if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
 
+    long buttonRead = 0;
+
+    buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
+
+/*
     if (*isMajorCycle)
     {
 		
@@ -350,7 +308,7 @@ void warningAlarm(void* taskDataPtr){
 		}
 			
     }
-
+*/
 	
 	return;
 
@@ -366,4 +324,6 @@ void delay_ms(int time_in_ms){
     }
     return;
 }
+
+
 

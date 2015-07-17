@@ -13,7 +13,7 @@
 	void oledDisplay(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
 	void delay_ms(int time_in_ms);
-	uint16_t randomInteger(unsigned short* globalCount);
+	uint16_t randomInteger(const unsigned short* globalCount);
 
 	//Declare TCB Struct
 

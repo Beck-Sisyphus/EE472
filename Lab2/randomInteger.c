@@ -5,7 +5,7 @@
 // int seed = 12;
 
 // Import from the function from Prof. Peckol
-uint16_t randomInteger(unsigned short* globalCount){
+uint16_t randomInteger(const unsigned short* globalCount){
 	uint16_t retVal = 0;
 	// It's always at 2
 	switch (*globalCount) {

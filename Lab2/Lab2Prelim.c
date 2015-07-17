@@ -38,15 +38,28 @@ uint16_t thrust = 0; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitud
 Bool fuelLow = FALSE;
 Bool battLow = FALSE;
 Bool isMajorCycle = TRUE;
-unsigned short globalCount = 0;
+unsigned short globalCount;
 
 int main(){
-	//TODO Local Variable Declarations
+	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
+					SYSCTL_XTAL_8MHZ);
+	// Initialize the OLED display.
+	RIT128x96x4Init(1000000);
+	//RIT128x96x4Clear();
+	RIT128x96x4StringDraw("After clear", 5, 24, 15);
   
 	unsigned short motorDrive = 0;
 
-	battLevel = MAX_BATT_LEVEL;
-	fuelLevel = MAX_FUEL_LEVEL;
+	// battLevel = MAX_BATT_LEVEL;
+	// fuelLevel = MAX_FUEL_LEVEL;
+	// powerConsumption = 0;
+	// powerGeneration = 0;
+	// panelState = FALSE;
+	// thrust = 0;
+	// fuelLow = FALSE;
+	// battLow = FALSE;
+	// isMajorCycle = TRUE;
+	globalCount = 0;
 
 	//Define Data Structs
 	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
@@ -90,15 +103,16 @@ int main(){
 	taskQueue[3] = &oledDisplayTCB;
 	taskQueue[4] = &warningAlarmTCB;
 
-	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-                   SYSCTL_XTAL_8MHZ);
-
 	// Enable GPIO C
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-        
 	// Set pins C4, C5, C6, C7 as an output
 	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
                           GPIO_PIN_7);
+
+	// Set select button as input
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+
+	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_1);
 
     //Run... forever!!!
     while(1){
