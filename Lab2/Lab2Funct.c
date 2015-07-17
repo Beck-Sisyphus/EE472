@@ -35,8 +35,8 @@ void schedule(scheduleDataStruct scheduleData){
 	*isMajorCycle = (0  == globalCount);			//Execute a Major Cycle when the count is zero.
 
 	(globalCount) = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
-	delay_ms(100);
-	printf("global counts, in C 99 version: %d\n", *globalCount);
+	delay_ms(10000);
+	//printf("global counts, in C 99 version: %d\n", globalCount);
 }
 
 // Requires: power sub data struct
@@ -184,13 +184,13 @@ void satelliteComms(void* taskDataPtr){
 		unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
 		unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
 		Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;	
-		printf("fuel low is : %u\n", *fuelLowSignal);
-		printf("battery low is : %u\n", *battLowSignal);
-		printf("battery level : %hu\n", *battLevelSignal);
-		printf("fuel level : %u\n", *fuelLevelSignal);
-		printf("power consumption is: %hu\n", *powerConsumptionSignal);
-		printf("power generation is : %hu\n", *powerGenerationSignal);
-		printf("panel state is : %u\n", *panelStateSignal);
+		//printf("fuel low is : %u\n", *fuelLowSignal);
+		//printf("battery low is : %u\n", *battLowSignal);
+		//printf("battery level : %hu\n", *battLevelSignal);
+		//printf("fuel level : %u\n", *fuelLevelSignal);
+		//printf("power consumption is: %hu\n", *powerConsumptionSignal);
+		//printf("power generation is : %hu\n", *powerGenerationSignal);
+		//printf("panel state is : %u\n", *panelStateSignal);
 
 		// receive (rando) thrust commands, generate from 0 to 2^16 -1
 		uint16_t thrustCommand = randomInteger(globalCount);
@@ -201,7 +201,7 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
-/*
+
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
     unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
@@ -217,41 +217,44 @@ void oledDisplay(void* taskDataPtr){
     // TODO get statusMode from a button or based on globalCount
     // Status mode
     // volatile unsigned long statusMode;
-    if (*isMajorCycle)
+    if (!*isMajorCycle)
     {
 
-		int statusMode = 0;//(globalCount % 2 == 0) ? 0 : 1;
+        int statusMode = (*globalCount % 2 == 0) ? 0 : 1;
 
-	    char tempArr0[24];    
-	    if (0 == statusMode)//0 == statusMode)
-	    {
-	      //arrSize = 4;
-	      char panelDepl = 'Y';//(1 == *panelState) ? 'Y' : 'N';
-	      //usnprintf(tempArr0, 10, "Yellow");
-	      //usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+        char tempArr0[24];    
+        if (0 == statusMode)
+        {
+          RIT128x96x4Clear();
+          
+          //arrSize = 4;
+          char panelDepl = 'Y';//(1 == *panelState) ? 'Y' : 'N';
+          usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
+          RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
 
-	      //usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+          usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
+          RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
 
-	      //usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
+          usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
+          RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
 
-	      //usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
-	    
-	    } else // Annunciation mode
-	    {
-	      char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-	      //usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+          usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
+          RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
+        
+        } else // Annunciation mode
+        {
+          RIT128x96x4Clear();
+          
+          char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
+          usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
+          RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
 
-	      char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-	      //usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
-	      //RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
-	    }
+          char battLowStr = (1 == *battLow) ? 'Y' : 'N';
+          usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
+          RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+        }
     }
-    	    */
+    	    
     return;
 }
 
