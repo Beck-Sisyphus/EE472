@@ -37,7 +37,8 @@ void schedule(scheduleDataStruct scheduleData){
 	*isMajorCycle = (0  == globalCount);			//Execute a Major Cycle when the count is zero.
 
 	(globalCount) = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
-	delay_ms(10000);
+	blinkTimer = (blinkTimer + 1) % 8;
+    delay_ms(10000);
 }
 
 // Requires: power sub data struct
@@ -82,7 +83,7 @@ void powerSub(void* taskDataPtr){
             
         //powerGeneration
         if ((*panelState)==FALSE) {	         //else solar panel not deployed...
-                if ((*battLevel)<=30){		//if battery less than/equal to 10%
+                if ((*battLevel)<=40){		//if battery less than/equal to 10%
                         (*panelState) = TRUE;		//deploy solar panel
                 }
         }
@@ -108,8 +109,11 @@ void powerSub(void* taskDataPtr){
 	else{
 		(*battLevel) = (*battLevel) - (*powerConsumption) + (*powerGeneration);
 	}
-	if((*battLevel)>100){ //"OVERLOAD PROTECTION"
+	if(((*battLevel)>100)&((*battLevel)<300)){ //"OVERLOAD PROTECTION"
 		(*battLevel)=100;
+	}
+	if((*battLevel)>65000){                    //"NEGATIVE PROTECTION"
+		(*battLevel)=0;
 	}
 }
 
@@ -211,52 +215,48 @@ void oledDisplay(void* taskDataPtr){
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
-    // TODO get statusMode from a button or based on globalCount
-    // Status mode
-    // volatile unsigned long statusMode;
-    if (!*isMajorCycle)
-    {
-        int statusMode = (*globalCount % 2 == 0) ? 0 : 1;
+        // Push select button to change to annunciation mode on OLED
+    long buttonRead = 2;
+    // Pushed = 0, released = 2
+    buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
 
-        char tempArr0[24];    
-        if (0 == statusMode)
-        {
-          RIT128x96x4Clear();
-          
-          //arrSize = 4;
-          char panelDepl = 'Y';//(1 == *panelState) ? 'Y' : 'N';
-          usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
-          RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
-
-          usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
-          RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
-
-          usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
-          RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
-
-          usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
-          RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
+      char tempArr0[24];    
+      if (2 == buttonRead)
+      {
+        RIT128x96x4Clear();
         
-        } else // Annunciation mode
-        {
-          RIT128x96x4Clear();
-          
-          char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-          usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
-          RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+        char panelDepl = (1 == *panelState) ? 'Y' : 'N';
+        usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
+        RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
 
-          char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-          usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
-          RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
-        }
-    }
+        usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
+        RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+
+        usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
+        RIT128x96x4StringDraw(tempArr0, 5, 30, 15);
+
+        usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
+        RIT128x96x4StringDraw(tempArr0, 5, 40, 15);
+      
+      } else if (0 == buttonRead) // Annunciation mode
+      {
+        RIT128x96x4Clear();
+        
+        char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
+        usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
+        RIT128x96x4StringDraw(tempArr0, 5, 10, 15);
+
+        char battLowStr = (1 == *battLow) ? 'Y' : 'N';
+        usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
+        RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
+      }
     return;
 }
 
 
 // Require : warning alarm data struct;
 // Modifies: fuelLow pointer, battLow pointer.
-void warningAlarm(void* taskDataPtr){void warningAlarm(void* taskDataPtr){
+void warningAlarm(void* taskDataPtr){
 	
     warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
     Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
@@ -292,23 +292,27 @@ void warningAlarm(void* taskDataPtr){void warningAlarm(void* taskDataPtr){
             }
             else if (*battLevel<HALF_BATT_LEVEL){
                     //TODO flash yellow 2 sec
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
             }
             if ((*fuelLevel<FUEL_WARN_LEVEL)&(*fuelLevel<HALF_FUEL_LEVEL)){
                     //TODO flash red 1 sec
-              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|
-                  (5==blinkTimer))
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|
-                  (7==blinkTimer))
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+              if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|(6==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+              if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|(7==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
             else if (*fuelLevel<HALF_FUEL_LEVEL){
                     //TODO flash red 2 sec
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
-    }
-    return;
+     }
+     return;
 }
 
 void delay_ms(int time_in_ms){

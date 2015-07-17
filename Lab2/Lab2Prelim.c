@@ -49,8 +49,8 @@ int main(){
   
 	unsigned short motorDrive = 0;
 
-	// battLevel = MAX_BATT_LEVEL;
-	// fuelLevel = MAX_FUEL_LEVEL;
+	battLevel = MAX_BATT_LEVEL;
+	fuelLevel = MAX_FUEL_LEVEL;
 	// powerConsumption = 0;
 	// powerGeneration = 0;
 	// panelState = FALSE;
@@ -59,7 +59,7 @@ int main(){
 	// battLow = FALSE;
 	// isMajorCycle = TRUE;
 	globalCount = 0;
-	blinkTimer = 0;
+	// blinkTimer = 0;
 
 	//Define Data Structs
 	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
@@ -119,6 +119,13 @@ int main(){
 	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
 			GPIO_PIN_TYPE_STD_WPU);
 
+      //clear green LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
+      //clear yellow LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+      //clear red LED
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+      
     //Run... forever!!!
     while(1){
             // Turn on the oscillascope to measure
