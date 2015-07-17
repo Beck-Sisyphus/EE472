@@ -124,7 +124,6 @@ int main(){
             // Turn on the oscillascope to measure
     		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 			TCBptr = taskQueue[0];
-
 			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 
 			TCBptr = taskQueue[1];
