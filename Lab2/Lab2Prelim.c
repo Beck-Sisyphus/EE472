@@ -117,11 +117,17 @@ int main(){
     //Run... forever!!!
     while(1){
             //dispatch each task in turn
-            for (int i = 0; i < TASK_QUEUE_LENGTH - 1; ++i)
-            {
-                    TCBptr = taskQueue[i];
-                    TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            }
+			TCBptr = taskQueue[0];
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+			TCBptr = taskQueue[1];
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+			TCBptr = taskQueue[2];
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+			TCBptr = taskQueue[3];
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+			TCBptr = taskQueue[4];
+			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+
             schedule(scheduleData);
     }
     return EXIT_SUCCESS;
