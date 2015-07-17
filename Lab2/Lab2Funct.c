@@ -203,6 +203,7 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
+	
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
     unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
@@ -251,6 +252,7 @@ void oledDisplay(void* taskDataPtr){
         RIT128x96x4StringDraw(tempArr0, 5, 20, 15);
       }
     return;
+
 }
 
 
@@ -325,6 +327,3 @@ void delay_ms(int time_in_ms){
     }
     return;
 }
-
-
-

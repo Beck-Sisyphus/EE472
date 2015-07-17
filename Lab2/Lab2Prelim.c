@@ -42,32 +42,33 @@ unsigned short globalCount;
 unsigned short blinkTimer;
 
 int main(){
+  
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-					SYSCTL_XTAL_8MHZ);
+	      SYSCTL_XTAL_8MHZ);
 	// Initialize the OLED display.
 	RIT128x96x4Init(1000000);
-  
+
 	unsigned short motorDrive = 0;
 
-	battLevel = MAX_BATT_LEVEL;
-	fuelLevel = MAX_FUEL_LEVEL;
-	// powerConsumption = 0;
-	// powerGeneration = 0;
-	// panelState = FALSE;
-	// thrust = 0;
-	// fuelLow = FALSE;
-	// battLow = FALSE;
-	// isMajorCycle = TRUE;
+	//battLevel = MAX_BATT_LEVEL;
+	//fuelLevel = MAX_FUEL_LEVEL;
+	//powerConsumption = 0;
+	//powerGeneration = 0;
+	//panelState = FALSE;
+	//thrust = 0;
+	//fuelLow = FALSE;
+	//battLow = FALSE;
+	//isMajorCycle = TRUE;
 	globalCount = 0;
-	// blinkTimer = 0;
+	//blinkTimer = 0;
 
 	//Define Data Structs
-	powerSubDataStruct powerSubData 	        = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
-	thrusterSubDataStruct thrusterSubData 		= {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
+	powerSubDataStruct powerSubData           = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData 		= {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
-	warningAlarmDataStruct warningAlarmData 	= {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &isMajorCycle};
-        scheduleDataStruct scheduleData 	        = {&globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &isMajorCycle};
+	    scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
 
 	//Define TCBs
 	TCB powerSubTCB;
@@ -106,44 +107,43 @@ int main(){
 	// Enable GPIO C
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
 	// Set pins C4, C5, C6, C7 as an output
-	// C4 is used for oscillascope
 	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
-                          GPIO_PIN_7);
+	                      GPIO_PIN_7);
 
 	// Set select button as input
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_1);
-
-	// Set up a pull up resistor for the button so it wouldn't float
+	    
 	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
-			GPIO_PIN_TYPE_STD_WPU);
+	                     GPIO_PIN_TYPE_STD_WPU);
 
-      //clear green LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
-      //clear yellow LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
-      //clear red LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
-      
+			
+	//clear green LED		
+	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
+	//clear yellow LED		
+	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);		
+	//clear red LED		
+	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+
     //Run... forever!!!
     while(1){
-            // Turn on the oscillascope to measure
-    		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
-			TCBptr = taskQueue[0];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 
-			TCBptr = taskQueue[1];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-			TCBptr = taskQueue[2];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-			TCBptr = taskQueue[3];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-			TCBptr = taskQueue[4];
-			TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+            //dispatch each task in turn
+      TCBptr = taskQueue[0];
+      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+      TCBptr = taskQueue[1];
+      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+      TCBptr = taskQueue[2];
+      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+      TCBptr = taskQueue[3];
+      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+      TCBptr = taskQueue[4];
+      TCBptr->taskPtr( (TCBptr->taskDataPtr) );
 
-			// Turn off the oscillascope before delay
-			GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
+      // Turn off the oscillascope before delay   
+      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
 
             schedule(scheduleData);
     }
