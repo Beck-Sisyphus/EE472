@@ -35,12 +35,8 @@ void schedule(scheduleDataStruct scheduleData){
 	*isMajorCycle = (0  == globalCount);			//Execute a Major Cycle when the count is zero.
 
 	(globalCount) = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
-<<<<<<< HEAD
 	delay_ms(10000);
 	//printf("global counts, in C 99 version: %d\n", globalCount);
-=======
-	delay_ms(100);
->>>>>>> origin/master
 }
 
 // Requires: power sub data struct
@@ -188,7 +184,6 @@ void satelliteComms(void* taskDataPtr){
 		unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
 		unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
 		Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;	
-<<<<<<< HEAD
 		//printf("fuel low is : %u\n", *fuelLowSignal);
 		//printf("battery low is : %u\n", *battLowSignal);
 		//printf("battery level : %hu\n", *battLevelSignal);
@@ -196,15 +191,6 @@ void satelliteComms(void* taskDataPtr){
 		//printf("power consumption is: %hu\n", *powerConsumptionSignal);
 		//printf("power generation is : %hu\n", *powerGenerationSignal);
 		//printf("panel state is : %u\n", *panelStateSignal);
-=======
-		// printf("fuel low is : %u\n", *fuelLowSignal);
-		// printf("battery low is : %u\n", *battLowSignal);
-		// printf("battery level : %hu\n", *battLevelSignal);
-		// printf("fuel level : %u\n", *fuelLevelSignal);
-		// printf("power consumption is: %hu\n", *powerConsumptionSignal);
-		// printf("power generation is : %hu\n", *powerGenerationSignal);
-		// printf("panel state is : %u\n", *panelStateSignal);
->>>>>>> origin/master
 
 		// receive (rando) thrust commands, generate from 0 to 2^16 -1
 		uint16_t thrustCommand = randomInteger(globalCount);
