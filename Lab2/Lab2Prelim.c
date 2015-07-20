@@ -1,4 +1,4 @@
-//Include Statements...
+// Include Statements
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab2.h"
@@ -9,7 +9,7 @@
 #include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
 
-//Define some Constants...
+// Define some Constants
 const unsigned short MAX_BATT_LEVEL = 100;
 const unsigned short HALF_BATT_LEVEL = 50;
 const unsigned short BATT_WARN_LEVEL = 10;
@@ -22,30 +22,32 @@ const uint32_t HALF_FUEL_LEVEL = 5832000; // at 50% level
 const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 const unsigned short TASK_QUEUE_LENGTH = 6;
 
-//Define and Initialize Global Variables
+// Define Global Variables storing status data
 unsigned short battLevel;
 uint32_t fuelLevel;
 unsigned short powerConsumption;
 unsigned short powerGeneration;
 Bool panelState;
-uint16_t thrust; //16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
+//16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
+uint16_t thrust; 
 Bool fuelLow;
 Bool battLow;
 Bool isMajorCycle;
+
+// Global variable created for passing data through different function safer
 unsigned short globalCount;
 unsigned short blinkTimer;
 uint32_t fuelLevellll;
 
 int main(){
-        // Initialize SysClk.
+	// Initialize SysClk.
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
-	      SYSCTL_XTAL_8MHZ);
+		SYSCTL_XTAL_8MHZ);
         
 	// Initialize the OLED display.
 	RIT128x96x4Init(1000000);
 
-	// unsigned short motorDrive = 0;
-
+	// Initialization 
 	battLevel = MAX_BATT_LEVEL;
 	fuelLevel = MAX_FUEL_LEVEL;
 	powerConsumption = 0;
@@ -59,15 +61,15 @@ int main(){
 	blinkTimer = 0;
         
  
-	//Define Data Structs
+	// Define Data Structs
 	powerSubDataStruct powerSubData           = {&panelState, &battLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &isMajorCycle};
-	    scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
+	scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
 
-	//Define TCBs
+	// Define TCBs
 	TCB powerSubTCB;
 	TCB thrusterSubTCB;
 	TCB satelliteCommsTCB;
@@ -75,7 +77,7 @@ int main(){
 	TCB warningAlarmTCB;
 	TCB* TCBptr; //ptr to active TCB
 
-	//TODO Populate TCBs
+	// Populate TCBs
 	powerSubTCB.taskDataPtr = (void*)&powerSubData;
 	powerSubTCB.taskPtr = powerSub;
 
@@ -92,7 +94,7 @@ int main(){
 	warningAlarmTCB.taskPtr = warningAlarm;
 
 
-	//Task Queue (Array of Structs)
+	// Task Queue (Array of Structs with length of 6)
 	TCB* taskQueue[6];
 
 	taskQueue[0] = &powerSubTCB;
@@ -107,7 +109,7 @@ int main(){
 	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
 	                      GPIO_PIN_7);
 
-	// Set select button as input
+	// Set select button as input with a pull up resistor 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_1);
@@ -116,31 +118,28 @@ int main(){
 	                     GPIO_PIN_TYPE_STD_WPU);
 
 			
-	//clear green LED		
+	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
-	//clear yellow LED		
+	// clear yellow LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);		
-	//clear red LED		
+	// clear red LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
 
-    //Run... forever!!!
+    // Run... forever!!!
     while(1){
-            // Turn on test signal before task execution
-            GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
-            //dispatch each task in turn
-            TCBptr = taskQueue[0];
-            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            TCBptr = taskQueue[1];
-            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            TCBptr = taskQueue[2];
-            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            TCBptr = taskQueue[3];
-            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            TCBptr = taskQueue[4];
-            TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-            // Turn off test signal before delay   
-            GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
-            schedule(scheduleData);
+    	// dispatch each task in turn
+    	// can not use a for loop nested in while loop for cross compile
+    	TCBptr = taskQueue[0];
+    	TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    	TCBptr = taskQueue[1];
+    	TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    	TCBptr = taskQueue[2];
+    	TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    	TCBptr = taskQueue[3];
+    	TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    	TCBptr = taskQueue[4];
+    	TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    	schedule(scheduleData);
     }
     return EXIT_SUCCESS;
 }

@@ -14,7 +14,7 @@
 #include "inc/lm3s8962.h"
 #include "utils/ustdlib.h"
 
-//define some constants
+// Constants defined in main
 extern const unsigned short MAX_BATT_LEVEL;
 extern const unsigned short HALF_BATT_LEVEL;
 extern const unsigned short BATT_WARN_LEVEL;
@@ -26,22 +26,27 @@ extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 
-//define and initiallize global variables
+// local variable used in functions
 const int fuelBuringRatio = 20000; // Set as a large number in demo
 
+// Control the major or minor cycle in main function
 void schedule(scheduleDataStruct scheduleData){
     Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
 
     if (0  == globalCount) {*isMajorCycle = TRUE;} else {*isMajorCycle = FALSE;}			//Execute a Major Cycle when the count is zero.
 
+    delay_ms(7500);
     globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
     blinkTimer = (blinkTimer + 1) % 8;
-    delay_ms(7500);
+
 }
 
 // Requires: power sub data struct
 // Modifies: powerConsumption, powerGeneration, battLevel, panelState
 void powerSub(void* taskDataPtr){
+    // Start oscillascope measurement
+    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
+
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
 	unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
@@ -52,59 +57,57 @@ void powerSub(void* taskDataPtr){
 	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
 
 	//powerConsumption
-	static unsigned short runCount = 1;				//tracks even/odd calls of this function
+	static unsigned short runCount = 1;         //tracks even/odd calls of this function
 	static Bool consumpUpDown = TRUE;
         
-        //powerGeneration
-        if (FALSE==(*panelState)) {	         //else solar panel not deployed...
-                if ((*battLevel)<=30){		//if battery less than/equal to 10%
-                       (*panelState) = TRUE;		//deploy solar panel
-               }
-        } 
-       if (*panelState) {			//if solar panel is deployed...
-                if ((*battLevel)>95){		//if battery greater than 75%
-                        (*powerGeneration) = 0;         //SPEC CHANGE
-                        (*panelState)=FALSE;		//retract solar panel
-                }
-                else{					//else battery less than/equal to 95%
-                        if (0==runCount){			//on even calls...
-                            (*powerGeneration) += 2;		//increment by 2
-                        }
-                        else if((*battLevel)<=50){	//on odd calls... while battery less than/equal to 50%
-                            (*powerGeneration) += 1;		//increment by 1
-                        }
-                }
-        } 
-        
-        
-
-        runCount = (runCount + 1) % 2;			        //alternates between 1 and 0 for odd/een calls respectively
-        if (consumpUpDown) {    //TODO, does this work???
-                if (0==runCount){				//on even calls...
-                        (*powerConsumption) += 2;		//increment by 2
-                        if ((*powerConsumption)>=10) {
-                                consumpUpDown = FALSE;
-                        }
-                } 
-                else{						//on odd calls...
-                        (*powerConsumption) -= 1;		//decrement by 1
-                }
+    //powerGeneration
+    if (!(*panelState)) {                       //else solar panel not deployed...
+        if ((*battLevel)<=30){                  //if battery less than/equal to 10%
+            (*panelState) = TRUE;               //deploy solar panel
         }
-        else {
-                if (0==runCount){		                //on even calls...
-                        (*powerConsumption) -= 2;	        //decrement by 2
-                        if ((*powerConsumption)<=5) {
-                                consumpUpDown = TRUE;
-                        }
-                }
-                else{						//on odd calls...
-                        (*powerConsumption) += 1;		//increment by 1
-                }
-        }        
+    } 
+    if (*panelState) {                          //if solar panel is deployed...
+        if ((*battLevel)>95){		            //if battery greater than 75%
+            (*powerGeneration) = 0;             //SPEC CHANGE
+            (*panelState)=FALSE;		        //retract solar panel
+        }
+        else{					                //else battery less than/equal to 95%
+            if (0==runCount){			        //on even calls...
+                (*powerGeneration) += 2;		//increment by 2
+            }
+            else if((*battLevel)<=50){	        //on odd calls... while battery less than/equal to 50%
+                (*powerGeneration) += 1;		//increment by 1
+            }
+        }
+    } 
+
+    runCount = !runCount;			            //alternates between zero and non zero for odd/een calls respectively
+    if (consumpUpDown) {
+        if (0==runCount){				        //on even calls...
+            (*powerConsumption) += 2;		    //increment by 2
+            if ((*powerConsumption)>=10) {
+                consumpUpDown = FALSE;
+            }
+        } 
+        else{						            //on odd calls...
+            (*powerConsumption) -= 1;		    //decrement by 1
+        }
+    }
+    else {
+        if (0==runCount){		                //on even calls...
+            (*powerConsumption) -= 2;	        //decrement by 2
+            if ((*powerConsumption)<=5) {
+                consumpUpDown = TRUE;
+            }
+        }
+        else{						            //on odd calls...
+            (*powerConsumption) += 1;		    //increment by 1
+        }
+    }
             
         
 	//batteryLevel
-	if ((*panelState)==FALSE){
+	if (!(*panelState)){
 		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
 	}
 	else{
@@ -114,9 +117,12 @@ void powerSub(void* taskDataPtr){
         if(((*battLevel)>100)&((*battLevel)<300)){ //"OVERLOAD PROTECTION"
 		(*battLevel)=100;
 	}
-	if((*battLevel)>65000){                    //"NEGATIVE PROTECTION"
+	if((*battLevel)>65000){                        //"NEGATIVE PROTECTION"
 		(*battLevel)=0;
 	}
+
+    // End oscillascope measurement
+    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
 }
 
 // Require : the minor clock running at 1 second per cycle, 
@@ -152,7 +158,7 @@ void thrusterSub(void* taskDataPtr){
 		if (duration) { magnitude = (command >> 4) & 0x000F; }
 	}
 
-	//If the new command ask use a 
+	// If the new command ask use a 
 	if (duration)
 	{
 		*fuelPtr -= magnitude * fuelBuringRatio;
@@ -165,9 +171,11 @@ void thrusterSub(void* taskDataPtr){
 		*fuelPtr = 0;
 	}
         
-        
-      uint32_t fuelLevelOOO = *fuelPtr * 100;
-      fuelLevellll = fuelLevelOOO / MAX_FUEL_LEVEL;
+    // Convert inner counter to 100 scale for OLED display
+    fuelLevellll = ((*fuelPtr) * 100) / MAX_FUEL_LEVEL;
+    // Memory protection, since we detect memory corruption at fuelLevellll
+    int *temp = (int *)malloc(10*sizeof(int));
+    free(temp);
 }
 
 // Communication only store the command without decoding it
@@ -176,9 +184,7 @@ void thrusterSub(void* taskDataPtr){
 // Modifies: thrust command.
 void satelliteComms(void* taskDataPtr){
         
-
 	satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
-
 
 	unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
 	Bool* isMajorCycle = (Bool*) commPtr->isMajorCyclePtr;
@@ -209,7 +215,8 @@ void satelliteComms(void* taskDataPtr){
 
 //TODO
 void oledDisplay(void* taskDataPtr){
-	
+
+  
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
     unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
@@ -222,59 +229,53 @@ void oledDisplay(void* taskDataPtr){
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 
-        // Push select button to change to annunciation mode on OLED
+    // Push select button to change to annunciation mode on OLED
     long buttonRead = 2;
     char* bufferPtr;
 
-    
-    // Pushed = 0, released = 2
+    // Pushed = 0, released = 2 from our measurement
     buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
-
-    
-      //char tempArr0[24];    
-      if (2 == buttonRead)
-      {
+ 
+    if (2 == buttonRead)    // Status display mode
+    {
         RIT128x96x4Clear();
-        
-        
+
+        // Display panel state.
         char panelDepl = (1 == *panelState) ? 'Y' : 'N';
-        //usnprintf(tempArr0, 24, "Panel Deployed: %c", panelDepl);
         RIT128x96x4StringDraw("Panel Deployed: ", 5, 10, 15);
         RIT128x96x4StringDraw(&panelDepl, 5, 20, 25);
         
-        //usnprintf(tempArr0, 24, "Battery Level: %d", *battLevel);
+        // Display battery level. Cast interger to char array using snprintf
         snprintf(bufferPtr, 20, "%d", *battLevel);
         RIT128x96x4StringDraw("Battery Level: ", 5, 30, 15);
-        //bufferPtr = &buffer[0];
         RIT128x96x4StringDraw( bufferPtr , 5, 40, 25);
 
-        //usnprintf(tempArr0, 24, "Fuel Level: %d", *fuelLevel);
-
+        // Display fuel level.
         snprintf(bufferPtr, 20, "%d", fuelLevellll);
         RIT128x96x4StringDraw("Fuel Level: ", 5, 50, 15);
         RIT128x96x4StringDraw( bufferPtr , 5, 60, 25);
 
-        //usnprintf(tempArr0, 24, "Power Consumption: %d", *powerConsumption);
+        // Display power consumption.
         snprintf(bufferPtr, 20, "%d", *powerConsumption);
         RIT128x96x4StringDraw("Power Consumption: ", 5, 70, 15);
         RIT128x96x4StringDraw( bufferPtr , 5, 80, 25);
       
-      } else if (0 == buttonRead) // Annunciation mode
-      {
+    } else if (0 == buttonRead) // Annunciation mode
+    {
         RIT128x96x4Clear();
         
+        // Display fuel low flag.
         char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-        // usnprintf(tempArr0, 24, "Fuel Low: %c", fuelLowStr);
         RIT128x96x4StringDraw("Fuel Low: ", 5, 10, 15);
         RIT128x96x4StringDraw(&fuelLowStr, 5, 20, 25);
 
+        // Display battery low flag.
         char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-        // usnprintf(tempArr0, 24, "Battery Low: %c", battLowStr);
         RIT128x96x4StringDraw("Battery Low: ", 5, 30, 15);
         RIT128x96x4StringDraw( &battLowStr , 5, 40, 25);
-      }
-    return;
+    }
 
+    return;
 }
 
 
@@ -294,46 +295,46 @@ void warningAlarm(void* taskDataPtr){
     if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
     
     if (((*battLevel)>HALF_BATT_LEVEL)&((*fuelLevel)>HALF_FUEL_LEVEL)){
-      //display solid green LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
-      //clear yellow LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
-      //clear red LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+        //display solid green LED
+        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
+        //clear yellow LED
+        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+        //clear red LED
+        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
     }
     else{
-      //clear solid green LED
-      GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
-      //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
+        //clear solid green LED
+        GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
+        //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
             if ((*battLevel<BATT_WARN_LEVEL)&(*battLevel<HALF_BATT_LEVEL)){
-                    //TODO flash yellow 1 sec
-              if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|
-                  (6==blinkTimer))
+                //TODO flash yellow 1 sec
+                if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|
+                    (6==blinkTimer))
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-             if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|
-                  (7==blinkTimer))
+                if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|
+                    (7==blinkTimer))
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
             }
             else if (*battLevel<HALF_BATT_LEVEL){
-                    //TODO flash yellow 2 sec
-              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+                //TODO flash yellow 2 sec
+                if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+                if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
             }
             if ((*fuelLevel<FUEL_WARN_LEVEL)&(*fuelLevel<HALF_FUEL_LEVEL)){
-                    //TODO flash red 1 sec
-              if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|(6==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-              if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|(7==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+                //TODO flash red 1 sec
+                if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|(6==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+                if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|(7==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
             else if (*fuelLevel<HALF_FUEL_LEVEL){
-                    //TODO flash red 2 sec
-              if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-              if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
-                GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+                //TODO flash red 2 sec
+                if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+                if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
      }
      return;

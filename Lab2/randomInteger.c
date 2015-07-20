@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "lab2.h"
-// int seed = 12;
 
-// Import from the function from Prof. Peckol
+// Implement a new pseudo random number generator
 uint16_t randomInteger(const unsigned short* globalCount){
 	uint16_t retVal = 0;
 	// It's always at 2
