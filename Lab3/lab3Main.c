@@ -49,30 +49,8 @@ uint32_t fuelLevellll;
 
 int main(){
 	enableOLED();
-
-	// Initialization 
-	unsigned int battLevel[16];
-	battLevelPtr = battLevel; // equivalent to = &battLevel[0]
-
-	fuelLevel = 0;
-	powerConsumption = 0;
-	powerGeneration = 0;
-	panelState = FALSE;
-	panelDeploy = FALSE;
-	panelRetract = FALSE;
-	panelMotorSpeedUp = FALSE;
-	panelMotorSpeedDown = FALSE;
-
-	thrust = 0;
-	fuelLow = FALSE;
-	battLow = FALSE;
-
-	// vehicleCommand ＝ NULL; Can't initialize as NULL, just left it as its default
-	// vehicleResponse = NULL;
-
-	isMajorCycle = TRUE;
-	globalCount = 0;
-	blinkTimer = 0;
+	enableGPIO();
+	initializeGlobalVariables();
 
 	// Define Data Structs
 	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, &battLevel, &powerConsumption, &powerGeneration};
@@ -134,8 +112,6 @@ int main(){
 	taskQueue[6] = &keyboardDataTCB;
 	taskQueue[7] = &warningAlarmTCB;
 
-	enableGPIO();
-
     // Run... forever!!!
     while(1){
     	// dispatch each task in turn
@@ -192,4 +168,30 @@ void enableGPIO() {
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);		
 	// clear red LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+}
+
+void initializeGlobalVariables() {
+	// Initialization 
+	unsigned int battLevel[16];
+	battLevelPtr = battLevel; // equivalent to = &battLevel[0]
+
+	fuelLevel = 0;
+	powerConsumption = 0;
+	powerGeneration = 0;
+	panelState = FALSE;
+	panelDeploy = FALSE;
+	panelRetract = FALSE;
+	panelMotorSpeedUp = FALSE;
+	panelMotorSpeedDown = FALSE;
+
+	thrust = 0;
+	fuelLow = FALSE;
+	battLow = FALSE;
+
+	// vehicleCommand ＝ NULL; Can't initialize as NULL, just left it as its default
+	// vehicleResponse = NULL;
+
+	isMajorCycle = TRUE;
+	globalCount = 0;
+	blinkTimer = 0;
 }
