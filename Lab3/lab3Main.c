@@ -53,14 +53,14 @@ int main(){
 	initializeGlobalVariables();
 
 	// Define Data Structs
-	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, &battLevel, &powerConsumption, &powerGeneration};
+	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, battLevelPtr, &powerConsumption, &powerGeneration};
 	solarPanelStruct solarPanelData           = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
-	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, &battLevel, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	keyboardDataStruct keyboardData           = {&panelMotorSpeedUp, &panelMotorSpeedDown};
-	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, &battLevel, &fuelLevel, &globalCount, &isMajorCycle};
+	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
 	scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
 
 	// Define TCBs
