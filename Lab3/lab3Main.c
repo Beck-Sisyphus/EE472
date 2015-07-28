@@ -58,9 +58,9 @@ int main(){
 	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	keyboardDataStruct keyboardData           = {&panelMotorSpeedUp, &panelMotorSpeedDown};
-	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
+	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, &battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
 	scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
 
 	// Define TCBs

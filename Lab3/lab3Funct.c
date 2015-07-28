@@ -256,7 +256,7 @@ void oledDisplay(void* taskDataPtr){
         
         // Display battery level. Cast integer to char array using snprintf
         snprintf(bufferPtr, 20, "%d", *battLevel);
-        RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15);
+        RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
         RIT128x96x4StringDraw( bufferPtr, 5, 40, 15);
 
         // Display fuel level.
@@ -298,7 +298,7 @@ void warningAlarm(void* taskDataPtr){
     warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
     Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*)dataPtr->battLowPtr;
-    unsigned short* battLevel = (unsigned short*)dataPtr->battLevelPtr;
+    unsigned int* battLevel = (unsigned int*)dataPtr->battLevelPtr;
     uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
@@ -306,7 +306,7 @@ void warningAlarm(void* taskDataPtr){
     if (*fuelLevel < FUEL_WARN_LEVEL) { *fuelLow = TRUE; } else { *fuelLow = FALSE; }
     if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
     
-    if (((*battLevel)>HALF_BATT_LEVEL)&((*fuelLevel)>HALF_FUEL_LEVEL)){
+    if (((*battLevel)>HALF_BATT_LEVEL)&&((*fuelLevel)>HALF_FUEL_LEVEL)){
         //display solid green LED
         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0xFF);
         //clear yellow LED
@@ -318,34 +318,34 @@ void warningAlarm(void* taskDataPtr){
         //clear solid green LED
         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);
         //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
-            if ((*battLevel<BATT_WARN_LEVEL)&(*battLevel<HALF_BATT_LEVEL)){
+            if ((*battLevel<BATT_WARN_LEVEL)&&(*battLevel<HALF_BATT_LEVEL)){
                 //TODO flash yellow 1 sec
-                if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|
+                if ((0==blinkTimer)||(2==blinkTimer)||(4==blinkTimer)||
                     (6==blinkTimer))
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-                if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|
+                if ((1==blinkTimer)||(3==blinkTimer)||(5==blinkTimer)||
                     (7==blinkTimer))
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
             }
             else if (*battLevel<HALF_BATT_LEVEL){
                 //TODO flash yellow 2 sec
-                if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                if ((0==blinkTimer)||(1==blinkTimer)||(4==blinkTimer)||(5==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-                if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                if ((2==blinkTimer)||(3==blinkTimer)||(6==blinkTimer)||(7==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
             }
             if ((*fuelLevel<FUEL_WARN_LEVEL)&(*fuelLevel<HALF_FUEL_LEVEL)){
                 //TODO flash red 1 sec
-                if ((0==blinkTimer)|(2==blinkTimer)|(4==blinkTimer)|(6==blinkTimer))  
+                if ((0==blinkTimer)||(2==blinkTimer)||(4==blinkTimer)||(6==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-                if ((1==blinkTimer)|(3==blinkTimer)|(5==blinkTimer)|(7==blinkTimer))  
+                if ((1==blinkTimer)||(3==blinkTimer)||(5==blinkTimer)||(7==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
             else if (*fuelLevel<HALF_FUEL_LEVEL){
                 //TODO flash red 2 sec
-                if ((0==blinkTimer)|(1==blinkTimer)|(4==blinkTimer)|(5==blinkTimer))  
+                if ((0==blinkTimer)||(1==blinkTimer)||(4==blinkTimer)||(5==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-                if ((2==blinkTimer)|(3==blinkTimer)|(6==blinkTimer)|(7==blinkTimer))  
+                if ((2==blinkTimer)||(3==blinkTimer)||(6==blinkTimer)||(7==blinkTimer))  
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
             }
      }
