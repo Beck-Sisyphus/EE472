@@ -53,9 +53,9 @@ int main(){
 	initializeGlobalVariables();
 
 	// Define Data Structs
-	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, battLevelPtr, &powerConsumption, &powerGeneration};
+	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, &battLevelPtr, &powerConsumption, &powerGeneration};
 	solarPanelStruct solarPanelData           = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
-	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
 	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
@@ -172,7 +172,10 @@ void enableGPIO() {
 
 void initializeGlobalVariables() {
 	// Initialization 
-	unsigned int battLevel[16];
+  unsigned int battLevel[16] = {100, 0, 0, 0,
+                                0, 0, 0, 0, 
+                                0, 0, 0, 0, 
+                                0, 0, 0, 0};
 	battLevelPtr = battLevel; // equivalent to = &battLevel[0]
 
 	fuelLevel = 0;

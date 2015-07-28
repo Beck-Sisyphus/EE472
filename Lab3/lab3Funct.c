@@ -51,7 +51,7 @@ void powerSub(void* taskDataPtr){
 
 	// unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
 	// Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
-	unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
+	unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
 	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
 	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
@@ -114,7 +114,7 @@ void powerSub(void* taskDataPtr){
 		(*battLevel) = (*battLevel) - (*powerConsumption) + (*powerGeneration);
 	}
 	
-        if(((*battLevel)>100)&((*battLevel)<300)){ //"OVERLOAD PROTECTION"
+        if(((*battLevel)>100)&&((*battLevel)<300)){ //"OVERLOAD PROTECTION"
 		(*battLevel)=100;
 	}
 	if((*battLevel)>65000){                        //"NEGATIVE PROTECTION"
@@ -228,7 +228,7 @@ void oledDisplay(void* taskDataPtr){
   
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
-    unsigned short* battLevel = (unsigned short*) dataPtr->battLevelPtr;
+    unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
     uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
     unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
@@ -251,23 +251,23 @@ void oledDisplay(void* taskDataPtr){
 
         // Display panel state.
         char panelDepl = (1 == *panelState) ? 'Y' : 'N';
-        RIT128x96x4StringDraw("Panel Deployed: ", 5, 10, 15);
-        RIT128x96x4StringDraw(&panelDepl, 5, 20, 25);
+        RIT128x96x4StringDraw( "Panel Deployed: ", 5, 10, 15);
+        RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
         
-        // Display battery level. Cast interger to char array using snprintf
+        // Display battery level. Cast integer to char array using snprintf
         snprintf(bufferPtr, 20, "%d", *battLevel);
-        RIT128x96x4StringDraw("Battery Level: ", 5, 30, 15);
-        RIT128x96x4StringDraw( bufferPtr , 5, 40, 25);
+        RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15);
+        RIT128x96x4StringDraw( bufferPtr, 5, 40, 15);
 
         // Display fuel level.
         snprintf(bufferPtr, 20, "%d", fuelLevellll);
-        RIT128x96x4StringDraw("Fuel Level: ", 5, 50, 15);
-        RIT128x96x4StringDraw( bufferPtr , 5, 60, 25);
+        RIT128x96x4StringDraw( "Fuel Level: ", 5, 50, 15);
+        RIT128x96x4StringDraw( bufferPtr, 5, 60, 15);
 
         // Display power consumption.
         snprintf(bufferPtr, 20, "%d", *powerConsumption);
-        RIT128x96x4StringDraw("Power Consumption: ", 5, 70, 15);
-        RIT128x96x4StringDraw( bufferPtr , 5, 80, 25);
+        RIT128x96x4StringDraw( "Power Consumption: ", 5, 70, 15);
+        RIT128x96x4StringDraw( bufferPtr, 5, 80, 15);
       
     } else if (0 == buttonRead) // Annunciation mode
     {
@@ -275,13 +275,13 @@ void oledDisplay(void* taskDataPtr){
         
         // Display fuel low flag.
         char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-        RIT128x96x4StringDraw("Fuel Low: ", 5, 10, 15);
-        RIT128x96x4StringDraw(&fuelLowStr, 5, 20, 25);
+        RIT128x96x4StringDraw( "Fuel Low: ", 5, 10, 15);
+        RIT128x96x4StringDraw( &fuelLowStr, 5, 20, 15);
 
         // Display battery low flag.
         char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-        RIT128x96x4StringDraw("Battery Low: ", 5, 30, 15);
-        RIT128x96x4StringDraw( &battLowStr , 5, 40, 25);
+        RIT128x96x4StringDraw( "Battery Low: ", 5, 30, 15);
+        RIT128x96x4StringDraw( &battLowStr, 5, 40, 15);
     }
 
     return;
