@@ -104,8 +104,9 @@ void powerSub(void* taskDataPtr){
             (*powerConsumption) += 1;		    //increment by 1
         }
     }
-            
-    /* // DEPRECATED    
+    
+    // TODO remove this before final version; included for testing
+    /*/ // DEPRECATED    
 	//batteryLevel
 	if (!(*panelState)){
 		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
@@ -125,15 +126,35 @@ void powerSub(void* taskDataPtr){
     // following interrupt:
     // delay 600us
     delay_ms(100); // TODO determine correct value for 600us
-    // get adReading
-    // convert adReading from 4.25V to 36V scale
+    // Below code for ADC measurement adapted from single_ended.c
+    //  in IAR example file
+    // Clear interrupt status flag
+    ADCIntClear(ADC0_BASE, 3);
+    ADCProcessorTrigger(ADC0_BASE, 3);
+
+    // Wait for conversion to be completed.
+    while(!ADCIntStatus(ADC0_BASE, 3, false))
+    {
+    }
+
+    // Clear the ADC interrupt flag.
+    ADCIntClear(ADC0_BASE, 3);
+    // Create array to hold ADC value
+    unsigned int adcReading[1]; // TODO ADC returns long or int?
+    // Read ADC Value.
+    ADCSequenceDataGet(ADC0_BASE, 3, ulADC0_Value);
+
+    // convert adcReading from 4.25V to 36V scale
+    // If ADC returns 10bit int (0-1023), each digit ~= 0.00415V
+    // Then, multiply by 8.4706 to get to 36V range
+    unsigned int adcReadingConverted = adcReading[0] * 0.00415 * 8.4706;
     // move previous readings to next array slot
     for (int i = sizeof(battLevel) - 2; i > 0; --i)
     {
         battLevel[i+1] = battLevel[i];
     }
     // Add new reading to front of circular buffer
-    //battLevel[0] = adReading;
+    battLevel[0] = adcReadingConverted;
 
     // // End oscillascope measurement
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
