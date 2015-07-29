@@ -5,6 +5,7 @@
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "driverlib/adc.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
@@ -50,6 +51,7 @@ uint32_t fuelLevellll;
 int main(){
 	enableOLED();
 	enableGPIO();
+	enableADC();
 	initializeGlobalVariables();
 
 	// Define Data Structs
@@ -161,6 +163,9 @@ void enableGPIO() {
 	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
 	                     GPIO_PIN_TYPE_STD_WPU);
 
+	// Set GPIO for ADC
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+	GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_7);
 			
 	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
@@ -170,13 +175,30 @@ void enableGPIO() {
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
 }
 
+void enableADC() 
+{
+	// Enable ADC0
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+	// Set sampling rate to lowest rate, 125K/s
+	SysCtlADCSpeedSet(SYSCTL_ADCSPEED_125KSPS);
+	// Enable sample sequence 0 to be triggered on external
+	// TODO configure proper trigger for battery
+	ADCSequenceConfigure(ADC0_BASE, 0, ADC_TRIGGER_EXTERNAL, 0);
+	// Configure step 0 on sequence 0
+	ADCSequenceStepConfigure(ADC0_BASE, 0, 0, ADC_CTL_CH0 | ADC_CTL_IE |
+                             ADC_CTL_END);
+	// Enable sequence 0
+	ADCSequenceEnable(ADC0_BASE, 0);
+
+}
+
 void initializeGlobalVariables() {
 	// Initialization 
-  unsigned int battLevel[16] = {100, 0, 0, 0,
+  unsigned int batteryLevelArray[16] = {100, 0, 0, 0,
                                 0, 0, 0, 0, 
                                 0, 0, 0, 0, 
                                 0, 0, 0, 0};
-	battLevelPtr = battLevel; // equivalent to = &battLevel[0]
+	battLevelPtr = batteryLevelArray; // equivalent to = &battLevel[0]
 
 	fuelLevel = 0;
 	powerConsumption = 0;

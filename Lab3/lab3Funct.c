@@ -105,7 +105,7 @@ void powerSub(void* taskDataPtr){
         }
     }
             
-        
+    /* // DEPRECATED    
 	//batteryLevel
 	if (!(*panelState)){
 		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
@@ -119,7 +119,21 @@ void powerSub(void* taskDataPtr){
 	}
 	if((*battLevel)>65000){                        //"NEGATIVE PROTECTION"
 		(*battLevel)=0;
-	}
+	}/**/
+
+    // Battery measurement
+    // following interrupt:
+    // delay 600us
+    delay_ms(100); // TODO determine correct value for 600us
+    // get adReading
+    // convert adReading from 4.25V to 36V scale
+    // move previous readings to next array slot
+    for (int i = sizeof(battLevel) - 2; i > 0; --i)
+    {
+        battLevel[i+1] = battLevel[i];
+    }
+    // Add new reading to front of circular buffer
+    //battLevel[0] = adReading;
 
     // // End oscillascope measurement
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);

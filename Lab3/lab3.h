@@ -11,6 +11,7 @@
 	//Function Prototypes
 	void enableOLED();
 	void enableGPIO();
+	void enableADC();
 	void initializeGlobalVariables();
 	void schedule();
 	void powerSub(void* taskDataPtr);
