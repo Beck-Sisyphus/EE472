@@ -143,7 +143,7 @@ void powerSub(void* taskDataPtr){
     // Create array to hold ADC value
     unsigned int adcReading[1]; // TODO ADC returns long or int?
     // Read ADC Value.
-    ADCSequenceDataGet(ADC0_BASE, 3, ulADC0_Value);
+    ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
 
     // convert adcReading from 4.25V to 36V scale
     // If ADC returns 10bit int (0-1023), each digit ~= 0.00415V
