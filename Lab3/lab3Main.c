@@ -162,18 +162,36 @@ void enableGPIO() {
 	    
 	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
 	                     GPIO_PIN_TYPE_STD_WPU);
-
-	// Set GPIO for ADC
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-	GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_7);
-			
+        
+        
+        // Set GPIO Pins A0 and A1 for input from keypad
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1);
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA,
+	                     GPIO_PIN_TYPE_STD_WPU);
+        
+        
 	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
 	// clear yellow LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);		
 	// clear red LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+        
+        
+        //Enable PWM
+        SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
+        
+        //Enable PWM and GPIO pins to carry signal
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+        
+        //Set GPIO pins F0 and G1 as output PWM
+        GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_0);
 }
+
+
+
 
 void enableADC() 
 {

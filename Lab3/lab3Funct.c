@@ -140,8 +140,40 @@ void powerSub(void* taskDataPtr){
 }
 
 void solarPanelControl(void* taskDataPtr) {
+//        // Compute the PWM period based on the system clock.
+//        // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
+        unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 100kHz
+        static unsigned long dutyCycle = 50;
+        
+        // Read keypad input and adjust duty cycle based on keypress
+        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_0)){
+          dutyCycle += 5;
+        }
+        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_1)){
+          dutyCycle -= 5;
+        }
+        dutyCycle = dutyCycle % 100;
+        
+        //Set the PWM period to 2 Hz.
+        PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod);
+        
+        PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
+                    PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
+        PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
+        
+        PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod * dutyCycle / 100);
+        
+        //Enable the PWM0 and PWM1 output signals.
 
+        PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT | PWM_OUT_1_BIT, true);
+
+       
+        //Enable the PWM generator.
+        
+        PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        return;
 }
+
 
 // Communication only store the command without decoding it
 // Require : satellite communication data struct,
@@ -231,9 +263,6 @@ void thrusterSub(void* taskDataPtr){
         
     // Convert inner counter to 100 scale for OLED display
     fuelLevellll = ((*fuelPtr) * 100) / MAX_FUEL_LEVEL;
-    // Memory protection, since we detect memory corruption at fuelLevellll
-    int *temp = (int *)malloc(10*sizeof(int));
-    free(temp);
 }
 
 //TODO
