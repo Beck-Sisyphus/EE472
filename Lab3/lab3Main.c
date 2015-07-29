@@ -8,6 +8,7 @@
 #include "driverlib/adc.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
 #include "drivers/rit128x96x4.h"
 
 // Define some Constants
@@ -52,6 +53,7 @@ int main(){
 	enableOLED();
 	enableGPIO();
 	enableADC();
+	enableUART();
 	initializeGlobalVariables();
 
 	// Define Data Structs
@@ -212,6 +214,29 @@ void enableADC()
 	// Enable sequence 0
 	ADCSequenceEnable(ADC0_BASE, 0);
 
+}
+
+void enableUART() {
+	// Enable peripheral used for UART
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+
+	// Enable processor interrupt
+	IntMasterEnable();
+
+	// Set GPIO A0 and A1 as UART pins Rx and Tx
+	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+
+	// Configure the UART with BAUT rate of 115200, 8-N-1 operation.
+	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200, 
+						(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | 
+							UART_CONFIG_PAR_NONE));
+
+	// Enable the UART interrupt.
+	IntEnable(INT_UART0);
+	UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
+
+	// Remind the user to send data
+	UARTSend((unsigned char *)"Enter text: ", 12);
 }
 
 void initializeGlobalVariables() {

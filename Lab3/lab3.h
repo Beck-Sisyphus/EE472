@@ -12,7 +12,10 @@
 	void enableOLED();
 	void enableGPIO();
 	void enableADC();
+	void enableUART();
 	void initializeGlobalVariables();
+	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
+	
 	void schedule();
 	void powerSub(void* taskDataPtr);
 	void solarPanelControl(void* taskDataPtr);
