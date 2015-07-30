@@ -260,7 +260,8 @@ void vehicleComms(void* taskDataPtr)
     vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
     char* vehicleCommandLocal = (char*) dataPtr->vehicleCommandPtr;
     char* vehicleResponseLocal = (char*) dataPtr->vehicleResponsePtr;
-    *vehicleResponseLocal = 'A<sp Command sent>'
+    vehicleResponseLocal[0] = 'A';
+    vehicleResponseLocal[1] = ' ';
 
     // Receive command
     while(UARTCharsAvail(UART0_BASE))
@@ -268,6 +269,7 @@ void vehicleComms(void* taskDataPtr)
         *vehicleCommandLocal = UARTCharGetNonBlocking(UART0_BASE);
         RIT128x96x4StringDraw(vehicleCommandLocal, 5, 90, 15);
 
+        vehicleResponseLocal[2] = *vehicleCommandLocal;
         // write the response back
         UARTCharPutNonBlocking(UART0_BASE, *vehicleResponseLocal);
     }
