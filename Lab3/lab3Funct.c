@@ -9,6 +9,7 @@
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
+#include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "drivers/rit128x96x4.h"
@@ -176,7 +177,6 @@ void solarPanelControl(void* taskDataPtr) {
         }
         dutyCycle = dutyCycle % 100;
         
-        /*
         //Set the PWM period to 2 Hz.
         PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod);
         
@@ -193,7 +193,7 @@ void solarPanelControl(void* taskDataPtr) {
        
         //Enable the PWM generator.
         
-        PWMGenEnable(PWM0_BASE, PWM_GEN_0);/**/
+        PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         return;
 }
 

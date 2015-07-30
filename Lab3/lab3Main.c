@@ -7,7 +7,6 @@
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "driverlib/adc.h"
-#include "driverlib/pwm.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
@@ -228,7 +227,7 @@ void enableUART() {
 	// Set GPIO A0 and A1 as UART pins Rx and Tx
 	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
-	// Configure the UART with BAUT rate of 115200, 8-N-1 operation.
+	// Configure the UART with BAUD rate of 115200, 8-N-1 operation.
 	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200, 
 						(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | 
 							UART_CONFIG_PAR_NONE));
@@ -238,7 +237,7 @@ void enableUART() {
 	UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
 
 	// Remind the user to send data
-	UARTSend((unsigned char *)"Enter text: ", 12);
+	UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
 }
 
 void initializeGlobalVariables() {
