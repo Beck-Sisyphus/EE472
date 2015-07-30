@@ -102,8 +102,8 @@
 	void enableUART();
 	void initializeGlobalVariables();
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
-	void insertTask(TCB* node, TCB* head, TCB* tail);
-	void deleteTask(TCB* node, TCB* head, TCB* tail);
+	void insertTask(TCB* node, TCB** head, TCB** tail);
+	void deleteTask(TCB* node, TCB** head, TCB** tail);
 	
 	void schedule();
 	void powerSub(void* taskDataPtr);
