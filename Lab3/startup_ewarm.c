@@ -3,7 +3,7 @@
 // startup_ewarm.c - Startup code for use with IAR's Embedded Workbench,
 //                   version 5.
 //
-// Copyright (c) 2006-2013 Texas Instruments Incorporated.  All rights reserved.
+// Copyright (c) 2005-2013 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
 // 
 // Texas Instruments (TI) is supplying this software for use solely and
@@ -23,7 +23,6 @@
 //
 //*****************************************************************************
 
-#include "inc/lm3s8962.h"
 //*****************************************************************************
 //
 // Enable the IAR extensions for this source file.
@@ -40,21 +39,6 @@ void ResetISR(void);
 static void NmiSR(void);
 static void FaultISR(void);
 static void IntDefaultHandler(void);
-extern void Timer0IntHandler();
-extern void ISR();
-extern int voltage;
-extern int count;
-void LED_toggle();
-extern int flag;
-void delay(unsigned long);
-
-//*****************************************************************************
-//
-// The entry point for the application startup code.
-//
-//*****************************************************************************
-extern void __iar_program_start(void);
-extern int ISR_TRIGGERED;
 
 //*****************************************************************************
 //
@@ -65,10 +49,17 @@ extern void UARTIntHandler(void);
 
 //*****************************************************************************
 //
+// The entry point for the application startup code.
+//
+//*****************************************************************************
+extern void __iar_program_start(void);
+
+//*****************************************************************************
+//
 // Reserve space for the system stack.
 //
 //*****************************************************************************
-static unsigned long pulStack[256] @ ".noinit";
+static unsigned long pulStack[64] @ ".noinit";
 
 //*****************************************************************************
 //
@@ -113,8 +104,8 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
-    ISR,                                    // GPIO Port E
-    IntDefaultHandler,                      // UART0 Rx and Tx
+    IntDefaultHandler,                      // GPIO Port E
+    UARTIntHandler,                         // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI0 Rx and Tx
     IntDefaultHandler,                      // I2C0 Master and Slave
@@ -128,7 +119,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // ADC Sequence 2
     IntDefaultHandler,                      // ADC Sequence 3
     IntDefaultHandler,                      // Watchdog timer
-    Timer0IntHandler,  //IntDefaultHandler, // Timer 0 subtimer A
+    IntDefaultHandler,                      // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
     IntDefaultHandler,                      // Timer 1 subtimer B
@@ -139,7 +130,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // Analog Comparator 2
     IntDefaultHandler,                      // System Control (PLL, OSC, BO)
     IntDefaultHandler,                      // FLASH Control
-    ISR,                                    // GPIO Port F
+    IntDefaultHandler,                      // GPIO Port F
     IntDefaultHandler,                      // GPIO Port G
     IntDefaultHandler,                      // GPIO Port H
     IntDefaultHandler,                      // UART2 Rx and Tx
@@ -226,23 +217,4 @@ IntDefaultHandler(void)
     while(1)
     {
     }
-}
-
-//*****************************************************************************
-//
-//  Push-button Interrupt Service Routine (ISR) for keypad and select key 
-//  Clears interrupt for keypad and select key
-//
-//*****************************************************************************
-
-extern void
-ISR()
-{
-
-  //ISR_TRIGGERED = 1;
-  
-//  GPIO_PORTF_ICR_R |= (0x02); // Reset Select Key Interrupt
-//  GPIO_PORTE_ICR_R |= (0x0F); // Reset Keypad Interrupt
-  
-  
 }
