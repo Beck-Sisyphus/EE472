@@ -27,7 +27,7 @@ extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
-extern Bool panelAndKeyboardTask;
+extern Bool panelAndKeypadTask;
 
 // local variable used in functions
 const int fuelBuringRatio = 20000; // Set as a large number in demo
@@ -37,7 +37,15 @@ void schedule(scheduleDataStruct scheduleData)
 {
     Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
 
-    if (0  == globalCount) {*isMajorCycle = TRUE;} else {*isMajorCycle = FALSE;}			//Execute a Major Cycle when the count is zero.
+    //Execute a Major Cycle when the count is zero.
+    if (0  == globalCount) 
+    {
+        *isMajorCycle = TRUE;
+    } 
+    else 
+    {
+        *isMajorCycle = FALSE; 
+    }
 
     delay_ms(7500);
     globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
@@ -54,34 +62,35 @@ void powerSub(void* taskDataPtr)
 
 	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
-	// unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-	// Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
 	unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
 	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
 	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-    Bool* panelDeploy = (Bool*) dataPtr->panelDeploy;
-    Bool* panelRetract = (Bool*) dataPtr->panelRetract;
+    Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
+    Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
 
 	//powerConsumption
 	static unsigned short runCount = 1;         //tracks even/odd calls of this function
 	static Bool consumpUpDown = TRUE;
 
-    // solarPanel and keyboard tasks defaults to FALSE; only active when panel deploying/retracting
-    panelAndKeyboardTask = FALSE;
+    // solarPanel and keyboard tasks only active when solar panel is deploying/retracting
+    if (!(*panelDeploy) && !(*panelRetract))
+    {
+        panelAndKeypadTask = FALSE;
+    }
         
     //powerGeneration
     if (!(*panelState)) {                       //else solar panel not deployed...
         if ((*battLevel)<=30){                  //if battery less than/equal to 10%
             (*panelDeploy) = TRUE;              //deploy solar panel
-            panelAndKeyboardTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
+            panelAndKeypadTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
     } 
     if (*panelState) {                          //if solar panel is deployed...
         if ((*battLevel)>95){		            //if battery greater than 75%
             (*powerGeneration) = 0;             //SPEC CHANGE
             (*panelRetract)=TRUE;		        //retract solar panel
-            panelAndKeyboardTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
+            panelAndKeypadTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
         else{					                //else battery less than/equal to 95%
             if (0==runCount){			        //on even calls...

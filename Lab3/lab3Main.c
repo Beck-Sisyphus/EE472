@@ -87,39 +87,55 @@ int main()
 	// Populate TCBs
 	powerSubTCB.taskDataPtr = (void*)&powerSubData;
 	powerSubTCB.taskPtr = powerSub;
+	powerSubTCB.next = NULL;
+	powerSubTCB.prev = NULL;
 
 	solarPanelTCB.taskDataPtr = (void*)&solarPanelData;
 	solarPanelTCB.taskPtr = solarPanelControl;
+	solarPanelTCB.next = NULL;
+	solarPanelTCB.prev = NULL;
 
 	satelliteCommsTCB.taskDataPtr = (void*)&satelliteCommsData;
 	satelliteCommsTCB.taskPtr = satelliteComms;
+	satelliteCommsTCB.next = NULL;
+	satelliteCommsTCB.prev = NULL;
 
 	thrusterSubTCB.taskDataPtr = (void*)&thrusterSubData;
 	thrusterSubTCB.taskPtr = thrusterSub;
+	thrusterSubTCB.next = NULL;
+	thrusterSubTCB.prev = NULL;
 
 	vehicleCommsTCB.taskDataPtr = (void*)&vehicleCommsData;
 	vehicleCommsTCB.taskPtr = vehicleComms;
+	vehicleCommsTCB.next = NULL;
+	vehicleCommsTCB.prev = NULL;
 
 	oledDisplayTCB.taskDataPtr = (void*)&oledDisplayData;
 	oledDisplayTCB.taskPtr = oledDisplay;
+	oledDisplayTCB.next = NULL;
+	oledDisplayTCB.prev = NULL;
 
 	keyboardDataTCB.taskDataPtr = (void*)&keyboardData;
 	keyboardDataTCB.taskPtr = consoleKeyboard;
+	keyboardDataTCB.next = NULL;
+	keyboardDataTCB.prev = NULL;
 
 	warningAlarmTCB.taskDataPtr = (void*)&warningAlarmData;
 	warningAlarmTCB.taskPtr = warningAlarm;
+	warningAlarmTCB.next = NULL;
+	warningAlarmTCB.prev = NULL;
 
 
 	// Task Queue head and tail pointers
 	TCB* taskQueueHead = NULL;
 	TCB* taskQueueTail = NULL;
 
-	insertTask(&powerSubTCB, taskQueueHead, taskQueueTail);
-	insertTask(&satelliteCommsTCB, taskQueueHead, taskQueueTail);
-	insertTask(&thrusterSubTCB, taskQueueHead, taskQueueTail);
-	insertTask(&vehicleCommsTCB, taskQueueHead, taskQueueTail);
-	insertTask(&oledDisplayTCB, taskQueueHead, taskQueueTail);
-	insertTask(&warningAlarmTCB, taskQueueHead, taskQueueTail);
+	insertTask(&powerSubTCB, &taskQueueHead, &taskQueueTail);
+	insertTask(&satelliteCommsTCB, &taskQueueHead, &taskQueueTail);
+	insertTask(&thrusterSubTCB, &taskQueueHead, &taskQueueTail);
+	insertTask(&vehicleCommsTCB, &taskQueueHead, &taskQueueTail);
+	insertTask(&oledDisplayTCB, &taskQueueHead, &taskQueueTail);
+	insertTask(&warningAlarmTCB, &taskQueueHead, &taskQueueTail);
 
 	/*
 	taskQueue[0] = &powerSubTCB;
@@ -137,8 +153,8 @@ int main()
     {
     	// Get pointer to first task
     	TCBPtr = taskQueueHead;
-    	// Loop through task queue
-    	while (TCBPtr->next != taskQueueHead)
+    	// Loop through task queue & perform each task
+    	while (TCBPtr->next != NULL && TCBPtr->next != taskQueueHead)
     	{
 	        TCBPtr->taskPtr( (TCBPtr->taskDataPtr) );
 	        TCBPtr = TCBPtr->next;
@@ -147,13 +163,13 @@ int main()
     	// Adds/deletes solarPanel and keypad task as necessary
     	if (panelAndKeypadTask)
     	{
-    		insertTask(&solarPanelTCB, taskQueueHead, taskQueueTail);
-    		insertTask(&keyboardDataTCB; taskQueueHead, taskQueueTail);
+    		insertTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
+    		insertTask(&keyboardDataTCB, &taskQueueHead, &taskQueueTail);
     	}
     	else 
     	{
-    		deleteTask(&solarPanelTCB, taskQueueHead, taskQueueTail);
-    		deleteTask(&keyboardDataTCB, taskQueueHead, taskQueueTail);
+    		deleteTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
+    		deleteTask(&keyboardDataTCB, &taskQueueHead, &taskQueueTail);
     	}
 
     	schedule(scheduleData);
@@ -255,11 +271,11 @@ void enableUART()
 							UART_CONFIG_PAR_NONE));
 
 	// Enable the UART interrupt.
-	IntEnable(INT_UART0);
+	//IntEnable(INT_UART0);
 	UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
 
 	// Remind the user to send data
-	UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
+	//UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
 }
 
 void initializeGlobalVariables()
@@ -292,55 +308,70 @@ void initializeGlobalVariables()
 	blinkTimer = 0;
 }
 
-void deleteTask(TCB* node, TCB* head, TCB* tail) 
+void deleteTask(TCB* node, TCB** head, TCB** tail) 
 {
-	if (NULL == head)
+	// Node is not in list
+	if (NULL == node->next && NULL == node->prev)
+	{
+		return;
+	}
+	// List is empty
+	else if (NULL == head)
 	{
 		return;
 	} 
-	else if (head == tail)
+	// List has 1 node
+	else if (*head == *tail)
 	{
-		if (head == node) // Delete node
+		// If node is this node, delete it
+		if (*head == node)
 		{
-			head = NULL;
-			tail = NULL;
+			*head = NULL;
+			*tail = NULL;
 		}
 	}
-	else if (head == node) 
+	// Head node is node to delete
+	else if (*head == node) 
 	{
-		head = node->next;
+		*head = node->next;
 		node->next = node->prev;
 		node->prev = NULL;
 		node->next = NULL;
 	}
-	else if (tail == node)
+	// If tail node is node to delete
+	else if (*tail == node)
 	{
-		tail = node->prev;
+		*tail = node->prev;
 		node->prev->next = NULL;
 		node->prev = NULL;
 	}
-	else 
+	// Node is in the middle, just need to update prevs and nexts of it
+	//  and neighbor node(s)
+	else
 	{
 		node->next->prev = node->prev;
 		node->prev->next = node->next;
 		node->next = NULL;
 		node->prev = NULL;
 	}
+	return;
 }
 
-void insertTask(TCB* node, TCB* head, TCB* tail)
+void insertTask(TCB* node, TCB** head, TCB** tail)
 	{
-	if(NULL == head) // If the head pointer is pointing to nothing
+	if(NULL == (*head)) // If the head pointer is pointing to nothing
 	{
-		head = node; // set the head and tail pointers to point to this node
-		tail = node;
+		*head = node; // set the head and tail pointers to point to this node
+		*tail = node;
 	}
 	else // otherwise, head is not NULL, add the node to the end of the list
 	{
-		tail->next = node;
-		node->prev = tail; // note that the tail pointer is still pointing
+		(*tail)->next = node;
+		node->prev = *tail; // note that the tail pointer is still pointing
 		// to the prior last node at this point
-		tail = node; // update the tail pointer
+		*tail = node; // update the tail pointer
 	}
+	// Always set node next pointer to null for end of list
+	node->next = NULL;
 	return;
 }
