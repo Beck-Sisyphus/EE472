@@ -248,6 +248,21 @@ void satelliteComms(void* taskDataPtr)
 
 void vehicleComms(void* taskDataPtr)
 {
+    vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
+    char* vehicleCommandLocal = (char*) dataPtr->vehicleCommandPtr;
+    char* vehicleResponseLocal = (char*) dataPtr->vehicleResponsePtr;
+    *vehicleResponseLocal = 'A<sp Command sent>'
+
+    // Receive command
+    while(UARTCharsAvail(UART0_BASE))
+    {
+        *vehicleCommandLocal = UARTCharGetNonBlocking(UART0_BASE);
+        RIT128x96x4StringDraw(vehicleCommandLocal, 5, 90, 15);
+
+        // write the response back
+        UARTCharPutNonBlocking(UART0_BASE, *vehicleResponseLocal);
+    }
+
 
 }
 
