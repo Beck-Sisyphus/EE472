@@ -44,13 +44,18 @@ Bool isMajorCycle;
 // Added for lab 3
 char vehicleCommand;
 char vehicleResponse;
+// If true, task should be inserted into task queue if not already present
+// If false, task should be removed from task queue if present
+// Keypad task is also tied
+Bool panelAndKeypadTask;
 
 // Global variable created for passing data through different function safer
 unsigned short globalCount;
 unsigned short blinkTimer;
 uint32_t fuelLevellll;
 
-int main(){
+int main()
+{
 	enableOLED();
 	enableGPIO();
 	enableADC();
@@ -58,15 +63,15 @@ int main(){
 	initializeGlobalVariables();
 
 	// Define Data Structs
-	powerSubDataStruct powerSubData           = {&panelState, &panelDeploy, &panelRetract, &battLevelPtr, &powerConsumption, &powerGeneration};
-	solarPanelStruct solarPanelData           = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
-	satelliteCommsDataStruct satelliteCommsData     = {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
-	thrusterSubDataStruct thrusterSubData     = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
-	vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData     = {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
-	keyboardDataStruct keyboardData           = {&panelMotorSpeedUp, &panelMotorSpeedDown};
-	warningAlarmDataStruct warningAlarmData   = {&fuelLow, &battLow, &battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
-	scheduleDataStruct scheduleData           = {&globalCount, &isMajorCycle};
+	powerSubDataStruct powerSubData           	= {&panelState, &panelDeploy, &panelRetract, &battLevelPtr, &powerConsumption, &powerGeneration};
+	solarPanelStruct solarPanelData           	= {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
+	satelliteCommsDataStruct satelliteCommsData	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+	thrusterSubDataStruct thrusterSubData     	= {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
+	vehicleCommsStruct vehicleCommsData       	= {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	keyboardDataStruct keyboardData           	= {&panelMotorSpeedUp, &panelMotorSpeedDown};
+	warningAlarmDataStruct warningAlarmData   	= {&fuelLow, &battLow, &battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
+	scheduleDataStruct scheduleData           	= {&globalCount, &isMajorCycle};
 
 	// Define TCBs
 	TCB powerSubTCB;
@@ -77,7 +82,7 @@ int main(){
 	TCB oledDisplayTCB;
 	TCB keyboardDataTCB;
 	TCB warningAlarmTCB;
-	TCB* TCBptr; //ptr to active TCB
+	TCB* TCBPtr; //ptr to active TCB
 
 	// Populate TCBs
 	powerSubTCB.taskDataPtr = (void*)&powerSubData;
@@ -105,44 +110,59 @@ int main(){
 	warningAlarmTCB.taskPtr = warningAlarm;
 
 
-	// Task Queue 
-	TCB* taskQueue[8];
+	// Task Queue head and tail pointers
+	TCB* taskQueueHead = NULL;
+	TCB* taskQueueTail = NULL;
 
+	insertTask(&powerSubTCB, taskQueueHead, taskQueueTail);
+	insertTask(&satelliteCommsTCB, taskQueueHead, taskQueueTail);
+	insertTask(&thrusterSubTCB, taskQueueHead, taskQueueTail);
+	insertTask(&vehicleCommsTCB, taskQueueHead, taskQueueTail);
+	insertTask(&oledDisplayTCB, taskQueueHead, taskQueueTail);
+	insertTask(&warningAlarmTCB, taskQueueHead, taskQueueTail);
+
+	/*
 	taskQueue[0] = &powerSubTCB;
-	taskQueue[1] = &solarPanelTCB;
+	//taskQueue[1] = &solarPanelTCB; // Scheduled on demand
 	taskQueue[2] = &satelliteCommsTCB;
 	taskQueue[3] = &thrusterSubTCB;
 	taskQueue[4] = &vehicleCommsTCB;
 	taskQueue[5] = &oledDisplayTCB;
-	taskQueue[6] = &keyboardDataTCB;
+	//taskQueue[6] = &keyboardDataTCB; // Scheduled during panel deployment/retraction
 	taskQueue[7] = &warningAlarmTCB;
+	*/
 
     // Run... forever!!!
-    while(1){
-    	// dispatch each task in turn
-    	// can not use a for loop nested in while loop for cross compile
-        TCBptr = taskQueue[0];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[1];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[2];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[3];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[4];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[5];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[6];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
-        TCBptr = taskQueue[7];
-        TCBptr->taskPtr( (TCBptr->taskDataPtr) );
+    while(1)
+    {
+    	// Get pointer to first task
+    	TCBPtr = taskQueueHead;
+    	// Loop through task queue
+    	while (TCBPtr->next != taskQueueHead)
+    	{
+	        TCBPtr->taskPtr( (TCBPtr->taskDataPtr) );
+	        TCBPtr = TCBPtr->next;
+    	}
+
+    	// Adds/deletes solarPanel and keypad task as necessary
+    	if (panelAndKeypadTask)
+    	{
+    		insertTask(&solarPanelTCB, taskQueueHead, taskQueueTail);
+    		insertTask(&keyboardDataTCB; taskQueueHead, taskQueueTail);
+    	}
+    	else 
+    	{
+    		deleteTask(&solarPanelTCB, taskQueueHead, taskQueueTail);
+    		deleteTask(&keyboardDataTCB, taskQueueHead, taskQueueTail);
+    	}
+
     	schedule(scheduleData);
     }
     return EXIT_SUCCESS;
 }
 
-void enableOLED() {
+void enableOLED()
+{
 	// Initialize SysClk.
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
 		SYSCTL_XTAL_8MHZ);
@@ -151,7 +171,8 @@ void enableOLED() {
 	RIT128x96x4Init(1000000);
 }
 
-void enableGPIO() {
+void enableGPIO()
+{
 	// Enable GPIO C
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
 	// Set pins C4, C5, C6, C7 as an output
@@ -217,7 +238,8 @@ void enableADC()
 
 }
 
-void enableUART() {
+void enableUART()
+{
 	// Enable peripheral used for UART
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
 
@@ -240,7 +262,8 @@ void enableUART() {
 	UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
 }
 
-void initializeGlobalVariables() {
+void initializeGlobalVariables()
+{
 	// Initialization 
     unsigned int batteryLevelArray[16] = {100, 0, 0, 0,
                                 			0, 0, 0, 0, 
@@ -267,4 +290,57 @@ void initializeGlobalVariables() {
 	isMajorCycle = TRUE;
 	globalCount = 0;
 	blinkTimer = 0;
+}
+
+void deleteTask(TCB* node, TCB* head, TCB* tail) 
+{
+	if (NULL == head)
+	{
+		return;
+	} 
+	else if (head == tail)
+	{
+		if (head == node) // Delete node
+		{
+			head = NULL;
+			tail = NULL;
+		}
+	}
+	else if (head == node) 
+	{
+		head = node->next;
+		node->next = node->prev;
+		node->prev = NULL;
+		node->next = NULL;
+	}
+	else if (tail == node)
+	{
+		tail = node->prev;
+		node->prev->next = NULL;
+		node->prev = NULL;
+	}
+	else 
+	{
+		node->next->prev = node->prev;
+		node->prev->next = node->next;
+		node->next = NULL;
+		node->prev = NULL;
+	}
+}
+
+void insertTask(TCB* node, TCB* head, TCB* tail)
+	{
+	if(NULL == head) // If the head pointer is pointing to nothing
+	{
+		head = node; // set the head and tail pointers to point to this node
+		tail = node;
+	}
+	else // otherwise, head is not NULL, add the node to the end of the list
+	{
+		tail->next = node;
+		node->prev = tail; // note that the tail pointer is still pointing
+		// to the prior last node at this point
+		tail = node; // update the tail pointer
+	}
+	return;
 }

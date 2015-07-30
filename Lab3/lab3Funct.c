@@ -27,12 +27,14 @@ extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
+extern Bool panelAndKeyboardTask;
 
 // local variable used in functions
 const int fuelBuringRatio = 20000; // Set as a large number in demo
 
 // Control the major or minor cycle in main function
-void schedule(scheduleDataStruct scheduleData){
+void schedule(scheduleDataStruct scheduleData)
+{
     Bool* isMajorCycle = (Bool*) scheduleData.isMajorCyclePtr;
 
     if (0  == globalCount) {*isMajorCycle = TRUE;} else {*isMajorCycle = FALSE;}			//Execute a Major Cycle when the count is zero.
@@ -45,7 +47,8 @@ void schedule(scheduleDataStruct scheduleData){
 
 // Requires: power sub data struct
 // Modifies: powerConsumption, powerGeneration, battLevel, panelState
-void powerSub(void* taskDataPtr){
+void powerSub(void* taskDataPtr)
+{
     // // Start oscillascope measurement
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 
@@ -57,21 +60,28 @@ void powerSub(void* taskDataPtr){
 	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
 	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
 	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    Bool* panelDeploy = (Bool*) dataPtr->panelDeploy;
+    Bool* panelRetract = (Bool*) dataPtr->panelRetract;
 
 	//powerConsumption
 	static unsigned short runCount = 1;         //tracks even/odd calls of this function
 	static Bool consumpUpDown = TRUE;
+
+    // solarPanel and keyboard tasks defaults to FALSE; only active when panel deploying/retracting
+    panelAndKeyboardTask = FALSE;
         
     //powerGeneration
     if (!(*panelState)) {                       //else solar panel not deployed...
         if ((*battLevel)<=30){                  //if battery less than/equal to 10%
-            (*panelState) = TRUE;               //deploy solar panel
+            (*panelDeploy) = TRUE;              //deploy solar panel
+            panelAndKeyboardTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
     } 
     if (*panelState) {                          //if solar panel is deployed...
         if ((*battLevel)>95){		            //if battery greater than 75%
             (*powerGeneration) = 0;             //SPEC CHANGE
-            (*panelState)=FALSE;		        //retract solar panel
+            (*panelRetract)=TRUE;		        //retract solar panel
+            panelAndKeyboardTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
         else{					                //else battery less than/equal to 95%
             if (0==runCount){			        //on even calls...
@@ -162,7 +172,8 @@ void powerSub(void* taskDataPtr){
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
 }
 
-void solarPanelControl(void* taskDataPtr) {
+void solarPanelControl(void* taskDataPtr)
+{
 //        // Compute the PWM period based on the system clock.
 //        // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
         unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 100kHz
@@ -202,7 +213,8 @@ void solarPanelControl(void* taskDataPtr) {
 // Require : satellite communication data struct,
 //           randomInteger function;
 // Modifies: thrust command.
-void satelliteComms(void* taskDataPtr){
+void satelliteComms(void* taskDataPtr)
+{
         
     satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
@@ -234,14 +246,16 @@ void satelliteComms(void* taskDataPtr){
     return;
 }
 
-void vehicleComms(void* taskDataPtr){
+void vehicleComms(void* taskDataPtr)
+{
 
 }
 
 // Require : the minor clock running at 1 second per cycle, 
 //			and thruster sub data struct; 
 // Modifies: global constant fuelLevel, taking in count of duration.
-void thrusterSub(void* taskDataPtr){
+void thrusterSub(void* taskDataPtr)
+{
 
 	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
         
@@ -289,7 +303,8 @@ void thrusterSub(void* taskDataPtr){
 }
 
 //TODO
-void oledDisplay(void* taskDataPtr){
+void oledDisplay(void* taskDataPtr)
+{
     
   
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
@@ -353,13 +368,15 @@ void oledDisplay(void* taskDataPtr){
     return;
 }
 
-void consoleKeyboard(void* taskDataPtr){
+void consoleKeyboard(void* taskDataPtr)
+{
 
 }
 
 // Require : warning alarm data struct;
 // Modifies: fuelLow pointer, battLow pointer.
-void warningAlarm(void* taskDataPtr){
+void warningAlarm(void* taskDataPtr)
+{
 	
     warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
     Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
@@ -419,7 +436,8 @@ void warningAlarm(void* taskDataPtr){
      return;
 }
 
-void delay_ms(int time_in_ms){
+void delay_ms(int time_in_ms)
+{
 	volatile unsigned long i = 0;
     volatile unsigned int j = 0;
     

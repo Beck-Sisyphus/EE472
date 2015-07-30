@@ -8,27 +8,7 @@
 	enum myBool { FALSE = 0, TRUE = 1 };
 	typedef enum myBool Bool;
 
-	//Function Prototypes
-	void enableOLED();
-	void enableGPIO();
-	void enableADC();
-	void enableUART();
-	void initializeGlobalVariables();
-	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
-	
-	void schedule();
-	void powerSub(void* taskDataPtr);
-	void solarPanelControl(void* taskDataPtr);
-	void satelliteComms(void* taskDataPtr);
-	void vehicleComms(void* taskDataPtr);
-	void thrusterSub(void* taskDataPtr);
-	void oledDisplay(void* taskDataPtr);
-	void consoleKeyboard(void* taskDataPtr);
-	void warningAlarm(void* taskDataPtr);
-	void delay_ms(int time_in_ms);
-	// uint16_t randomInteger(const unsigned short* globalCount);
-        
-	//Declare TCB Struct
+	//Declare data structure structs
 
 	typedef struct TCB {
 		void* taskDataPtr; 		  //ptr to generic data
@@ -37,7 +17,6 @@
 		struct TCB* prev;
 	} TCB;
 
-	//Declare DataStruct Structs
 	typedef struct scheduleDataStruct {
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
@@ -50,8 +29,6 @@
 		void* battLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
-		// void* globalCountPtr;
-		// void* isMajorCyclePtr;
 	} powerSubDataStruct;
 
 	typedef struct solarPanelStruct {
@@ -116,5 +93,27 @@
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
 	} warningAlarmDataStruct;
+        
+        
+	//Function Prototypes
+	void enableOLED();
+	void enableGPIO();
+	void enableADC();
+	void enableUART();
+	void initializeGlobalVariables();
+	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
+	void insertTask(TCB* node, TCB* head, TCB* tail);
+	void deleteTask(TCB* node, TCB* head, TCB* tail);
+	
+	void schedule();
+	void powerSub(void* taskDataPtr);
+	void solarPanelControl(void* taskDataPtr);
+	void satelliteComms(void* taskDataPtr);
+	void vehicleComms(void* taskDataPtr);
+	void thrusterSub(void* taskDataPtr);
+	void oledDisplay(void* taskDataPtr);
+	void consoleKeyboard(void* taskDataPtr);
+	void warningAlarm(void* taskDataPtr);
+	void delay_ms(int time_in_ms);
 
 #endif
