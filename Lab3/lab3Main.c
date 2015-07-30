@@ -137,17 +137,6 @@ int main()
 	insertTask(&oledDisplayTCB, &taskQueueHead, &taskQueueTail);
 	insertTask(&warningAlarmTCB, &taskQueueHead, &taskQueueTail);
 
-	/*
-	taskQueue[0] = &powerSubTCB;
-	//taskQueue[1] = &solarPanelTCB; // Scheduled on demand
-	taskQueue[2] = &satelliteCommsTCB;
-	taskQueue[3] = &thrusterSubTCB;
-	taskQueue[4] = &vehicleCommsTCB;
-	taskQueue[5] = &oledDisplayTCB;
-	//taskQueue[6] = &keyboardDataTCB; // Scheduled during panel deployment/retraction
-	taskQueue[7] = &warningAlarmTCB;
-	*/
-
     // Run... forever!!!
     while(1)
     {
@@ -229,12 +218,6 @@ void enableGPIO()
     //Set GPIO pins F0 and G1 as output PWM
     GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_0);
 
-    // Enable GPIO E for ADC
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-    // Select analog ADC function
-    GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_7);
-
-
 }
 
 void enableADC() 
@@ -243,14 +226,14 @@ void enableADC()
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
 	// Set sampling rate to lowest rate, 125K/s
 	SysCtlADCSpeedSet(SYSCTL_ADCSPEED_125KSPS);
-	// Enable sample sequence 0 to be triggered on external
+	// Enable sample sequence 3 to be triggered on external
 	// TODO configure proper trigger for battery
-	ADCSequenceConfigure(ADC0_BASE, 0, ADC_TRIGGER_EXTERNAL, 0);
-	// Configure step 0 on sequence 0
-	ADCSequenceStepConfigure(ADC0_BASE, 0, 0, ADC_CTL_CH0 | ADC_CTL_IE |
+	ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
+	// Configure step 0 on sequence 3
+	ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_IE |
                              ADC_CTL_END);
 	// Enable sequence 0
-	ADCSequenceEnable(ADC0_BASE, 0);
+	ADCSequenceEnable(ADC0_BASE, 3);
 
 }
 
@@ -373,5 +356,46 @@ void insertTask(TCB* node, TCB** head, TCB** tail)
 	}
 	// Always set node next pointer to null for end of list
 	node->next = NULL;
+	return;
+}
+
+void ADCIntHandler(void) 
+{
+	unsigned int* battLevel = (unsigned int*) battLevelPtr; // Points to address of battLevelPtr[0]
+
+	// Battery measurement
+    // following interrupt:
+    // delay 600us
+    delay_ms(100); // TODO determine correct value for 600us
+    // Below code for ADC measurement adapted from single_ended.c
+    //  in IAR example file
+    // Clear interrupt status flag before sampling
+    ADCIntClear(ADC0_BASE, 3);
+    // Trigger the ADC conversion
+    ADCProcessorTrigger(ADC0_BASE, 3);
+
+    // Wait for conversion to be completed
+    //while(!ADCIntStatus(ADC0_BASE, 3, false))
+    {
+    }
+
+    // Clear the ADC interrupt flag
+    ADCIntClear(ADC0_BASE, 3);
+    // Create array to hold ADC value
+    unsigned int adcReading[1] = {0}; // TODO ADC returns long or int?
+    // Read ADC Value
+    ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
+
+    // convert adcReading from 4.25V to 36V scale
+    // If ADC returns 10bit int (0-1023), each digit ~= 0.00415V
+    // Then, multiply by 8.4706 to get to 36V range
+    unsigned int adcReadingConverted = adcReading[0] * 0.00415 * 8.4706;
+    // move previous readings to next array slot
+    for (int i = sizeof(battLevel) - 2; i > 0; --i)
+    {
+        battLevel[i+1] = battLevel[i];
+    }
+    // Add new reading to front of circular buffer
+    battLevel[0] = adcReadingConverted;
 	return;
 }

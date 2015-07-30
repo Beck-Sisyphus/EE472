@@ -143,26 +143,27 @@ void powerSub(void* taskDataPtr)
 		(*battLevel)=0;
 	}/**/
 
-    // Battery measurement
+/*    // Battery measurement
     // following interrupt:
     // delay 600us
     delay_ms(100); // TODO determine correct value for 600us
     // Below code for ADC measurement adapted from single_ended.c
     //  in IAR example file
-    // Clear interrupt status flag
+    // Clear interrupt status flag before sampling
     ADCIntClear(ADC0_BASE, 3);
+    // Trigger the ADC conversion
     ADCProcessorTrigger(ADC0_BASE, 3);
 
-    // Wait for conversion to be completed.
+    // Wait for conversion to be completed
     //while(!ADCIntStatus(ADC0_BASE, 3, false))
     {
     }
 
-    // Clear the ADC interrupt flag.
+    // Clear the ADC interrupt flag
     ADCIntClear(ADC0_BASE, 3);
     // Create array to hold ADC value
     unsigned int adcReading[1] = {0}; // TODO ADC returns long or int?
-    // Read ADC Value.
+    // Read ADC Value
     ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
 
     // convert adcReading from 4.25V to 36V scale
@@ -175,7 +176,7 @@ void powerSub(void* taskDataPtr)
         battLevel[i+1] = battLevel[i];
     }
     // Add new reading to front of circular buffer
-    battLevel[0] = adcReadingConverted;
+    battLevel[0] = adcReadingConverted;*/
 
     // // End oscillascope measurement
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
@@ -260,7 +261,7 @@ void vehicleComms(void* taskDataPtr)
     vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
     char* vehicleCommandLocal = (char*) dataPtr->vehicleCommandPtr;
     char* vehicleResponseLocal = (char*) dataPtr->vehicleResponsePtr;
-    *vehicleResponseLocal = 'A<sp Command sent>'
+    //*vehicleResponseLocal = "A<sp Command sent>";
 
     // Receive command
     while(UARTCharsAvail(UART0_BASE))
