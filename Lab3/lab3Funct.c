@@ -134,14 +134,14 @@ void powerSub(void* taskDataPtr){
     ADCProcessorTrigger(ADC0_BASE, 3);
 
     // Wait for conversion to be completed.
-    while(!ADCIntStatus(ADC0_BASE, 3, false))
+    //while(!ADCIntStatus(ADC0_BASE, 3, false))
     {
     }
 
     // Clear the ADC interrupt flag.
     ADCIntClear(ADC0_BASE, 3);
     // Create array to hold ADC value
-    unsigned int adcReading[1]; // TODO ADC returns long or int?
+    unsigned int adcReading[1] = {0}; // TODO ADC returns long or int?
     // Read ADC Value.
     ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
 
@@ -176,6 +176,7 @@ void solarPanelControl(void* taskDataPtr) {
         }
         dutyCycle = dutyCycle % 100;
         
+        /*
         //Set the PWM period to 2 Hz.
         PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod);
         
@@ -192,7 +193,7 @@ void solarPanelControl(void* taskDataPtr) {
        
         //Enable the PWM generator.
         
-        PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        PWMGenEnable(PWM0_BASE, PWM_GEN_0);/**/
         return;
 }
 
