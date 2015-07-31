@@ -348,7 +348,8 @@ void deleteTask(TCB* node, TCB** head, TCB** tail)
 	else if (*head == node) 
 	{
 		*head = node->next;
-		node->next = node->prev;
+		// node->next = node->prev;
+		(*head)->prev = NULL;
 		node->prev = NULL;
 		node->next = NULL;
 	}
@@ -356,8 +357,9 @@ void deleteTask(TCB* node, TCB** head, TCB** tail)
 	else if (*tail == node)
 	{
 		*tail = node->prev;
-		node->prev->next = NULL;
+		(*tail)->next = NULL;
 		node->prev = NULL;
+		node->next = NULL;
 	}
 	// Node is in the middle, just need to update prevs and nexts of it
 	//  and neighbor node(s)
@@ -377,16 +379,27 @@ void insertTask(TCB* node, TCB** head, TCB** tail)
 	{
 		*head = node; // set the head and tail pointers to point to this node
 		*tail = node;
+		(*head)->next = NULL;
+		(*head)->prev = NULL;
 	}
 	else // otherwise, head is not NULL, add the node to the end of the list
 	{
+		TCB* temp = *tail;
+		while (temp->prev != NULL) {
+			if (temp == node)
+			{
+				return;
+			}
+			temp = temp->prev;
+		}
+
 		(*tail)->next = node;
 		node->prev = *tail; // note that the tail pointer is still pointing
 		// to the prior last node at this point
 		*tail = node; // update the tail pointer
 	}
 	// Always set node next pointer to null for end of list
-	node->next = NULL;
+	(*tail)->next = NULL;
 	return;
 }
 
