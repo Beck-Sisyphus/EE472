@@ -204,12 +204,17 @@ void enableGPIO()
 	                     GPIO_PIN_TYPE_STD_WPU);
         
     
-    // Set GPIO Pins A0 and A1 for input from keypad
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1);
-	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA,
-	                     GPIO_PIN_TYPE_STD_WPU);
-        
+    // Set GPIO Pins A0 and A1 for input from keypad for PWM control
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+	GPIOPinTypeGPIOInput(GPIO_PORTD_BASE, GPIO_PIN_6|GPIO_PIN_7);
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_4);
+    
+    // Enable keypad pannel done button
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+	GPIODirModeSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_DIR_MODE_IN);
+	GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU); 
+	GPIOPinIntEnable(GPIO_PORTA_BASE, GPIO_PIN_4);
+	IntEnable(INT_GPIOA);
         
 	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
