@@ -30,6 +30,7 @@ extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 extern Bool panelAndKeypadTask;
+extern Bool panelDone;
 extern unsigned char vehicleCommand;
 extern unsigned char vehicleResponse[3];
 extern Bool hasNewKeyboardInput;

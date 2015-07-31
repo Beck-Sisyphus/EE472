@@ -1,6 +1,7 @@
 // EE 472, University of Washington, Seattle
 // Summer 2015, Beck Pang, Grant Taylor, Sean Happenny
 // Public header for lab 3
+#include <stdint.h>
 #ifndef HEADER_FILE //prevents header file from being included twice
 #define HEADER_FILE
 	
