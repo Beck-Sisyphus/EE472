@@ -36,12 +36,12 @@ Bool panelDeploy;
 Bool panelRetract;
 Bool panelMotorSpeedUp;
 Bool panelMotorSpeedDown;
+Bool panelDone;
 // 16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 uint16_t thrust; 
 Bool fuelLow;
 Bool battLow;
 Bool isMajorCycle;
-
 
 // Added for lab 3
 char vehicleCommand;
@@ -70,7 +70,7 @@ int main()
 	satelliteCommsDataStruct satelliteCommsData	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     	= {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	vehicleCommsStruct vehicleCommsData       	= {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData     	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     	= {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	keyboardDataStruct keyboardData           	= {&panelMotorSpeedUp, &panelMotorSpeedDown};
 	warningAlarmDataStruct warningAlarmData   	= {&fuelLow, &battLow, &battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
 	scheduleDataStruct scheduleData           	= {&globalCount, &isMajorCycle};
@@ -145,22 +145,28 @@ int main()
     	// Get pointer to first task
     	TCBPtr = taskQueueHead;
     	// Loop through task queue & perform each task
-    	while (TCBPtr->next != NULL && TCBPtr->next != taskQueueHead)
+    	while (TCBPtr != NULL)
     	{
 	        TCBPtr->taskPtr( (TCBPtr->taskDataPtr) );
 	        TCBPtr = TCBPtr->next;
     	}
 
+    	// solarPanel and keyboard tasks only active when solar panel is deploying/retracting
+	    if ((panelDone && panelState) || (panelDone && !panelState))
+	    {
+	        panelAndKeypadTask = FALSE;
+	    }
+
     	// Adds/deletes solarPanel and keypad task as necessary
     	if (panelAndKeypadTask)
     	{
-    		insertTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
     		insertTask(&keyboardDataTCB, &taskQueueHead, &taskQueueTail);
+    		insertTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
     	}
     	else 
     	{
-    		deleteTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
     		deleteTask(&keyboardDataTCB, &taskQueueHead, &taskQueueTail);
+    		deleteTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
     	}
 
     	schedule(scheduleData);
@@ -197,10 +203,11 @@ void enableGPIO()
     
     // Set GPIO Pins A0 and A1 for input from keypad
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1);
-	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA,
-	                     GPIO_PIN_TYPE_STD_WPU);
-        
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4);
+	GPIODirModeSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_DIR_MODE_IN);
+	GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU); 
+	GPIOPinIntEnable(GPIO_PORTA_BASE, GPIO_PIN_4);
+	IntEnable(INT_GPIOA);
         
 	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
@@ -246,8 +253,8 @@ void enableUART()
 	// Enable processor interrupt
 	IntMasterEnable();
 
-	// Set GPIO A0 and A1 as UART pins Rx and Tx
-	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+	// Set GPIO D2 and D3 as UART pins Rx and Tx
+	//GPIOPinTypeUART(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
 
 	// Configure the UART with BAUD rate of 115200, 8-N-1 operation.
 	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200, 

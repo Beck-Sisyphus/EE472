@@ -77,6 +77,8 @@
 		void* fuelLowPtr;
 		void* battLowPtr;
 		void* panelStatePtr;
+		void* panelDeployPtr;
+		void* panelRetractPtr;
 		void* battLevelPtr;
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;

@@ -29,6 +29,7 @@ extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 extern Bool panelAndKeypadTask;
+extern Bool panelDone;
 
 // local variable used in functions
 const int fuelBuringRatio = 20000; // Set as a large number in demo
@@ -74,22 +75,29 @@ void powerSub(void* taskDataPtr)
 	static unsigned short runCount = 1;         //tracks even/odd calls of this function
 	static Bool consumpUpDown = TRUE;
 
-    // solarPanel and keyboard tasks only active when solar panel is deploying/retracting
-    if (!(*panelDeploy) && !(*panelRetract))
+    if (!(*panelState) && panelDone)
     {
-        panelAndKeypadTask = FALSE;
+        *panelState = TRUE;
+        //panelDone = FALSE;
+    }
+    else if ((*panelState) && panelDone)
+    {
+        *panelState = FALSE;
+        //panelDone = FALSE;
     }
         
     //powerGeneration
     if (!(*panelState)) {                       //else solar panel not deployed...
-        if ((*battLevel)<=30){                  //if battery less than/equal to 10%
+        if ((*battLevel)<=20){                  //if battery less than/equal to 20%
             (*panelDeploy) = TRUE;              //deploy solar panel
+            (*panelRetract) = FALSE;
             panelAndKeypadTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
     } 
     if (*panelState) {                          //if solar panel is deployed...
-        if ((*battLevel)>95){		            //if battery greater than 75%
+        if ((*battLevel)>95){		            //if battery greater than 95%
             (*powerGeneration) = 0;             //SPEC CHANGE
+            (*panelDeploy) = FALSE;
             (*panelRetract)=TRUE;		        //retract solar panel
             panelAndKeypadTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
@@ -148,14 +156,14 @@ void powerSub(void* taskDataPtr)
     // Read ADC Value.
     ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
 
-    // convert adcReading from 3.60V to 36V scale
-    // If ADC returns 10bit int (0-1023), each digit ~= 0.003516V
-    // Then, multiply by 10 to get to 36V range
-    unsigned int adcReadingConverted = (int) (adcReading[0] * 0.036);
+    // convert adcReading from 3.0V to 36V scale
+    // If ADC returns 10bit int (0-1023), each digit ~= 0.00293V
+    // Then, multiply by 0.098 to convert to percentage of 36V
+    unsigned int adcReadingConverted = (int) (adcReading[0] * 0.098);
     // move previous readings to next array slot
     for (int i = 0; i < 15; ++i)
     {
-        battLevel[i+1] = battLevel[i]; // BREAKS OLED AND PWM
+        battLevel[i+1] = battLevel[i];
     }
     // Add new reading to front of circular buffer
     battLevel[0] = adcReadingConverted;
@@ -166,6 +174,15 @@ void powerSub(void* taskDataPtr)
 
 void solarPanelControl(void* taskDataPtr)
 {
+
+    solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
+    Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
+    Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
+    Bool* panelDeploy = (Bool*) solarPanelPtr->panelDeployPtr;
+    Bool* panelRetract = (Bool*) solarPanelPtr->panelRetractPtr;
+    Bool* panelMotorSpeedUp = (Bool*) solarPanelPtr->panelMotorSpeedUpPtr;
+    Bool* panelMotorSpeedDown = (Bool*) solarPanelPtr->panelMotorSpeedDownPtr;
+    unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
 //        // Compute the PWM period based on the system clock.
 //        // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
         unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 100kHz
@@ -195,9 +212,36 @@ void solarPanelControl(void* taskDataPtr)
 
        
         //Enable the PWM generator.
-        
-        PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        if(panelDeploy||panelRetract){
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        }
+        else{
+            PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        }
         return;
+}
+
+void consoleKeyboard(void* taskDataPtr)
+{
+    keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;
+    Bool* panelMotorSpeedUp = (Bool*) keyboardData->panelMotorSpeedUpPtr;
+    Bool* panelMotorSpeedDown = (Bool*) keyboardData->panelMotorSpeedDownPtr;
+    // Read keypad input and adjust duty cycle based on keypress
+        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_0)){
+            *panelMotorSpeedUp = TRUE;
+        }
+        else {
+            *panelMotorSpeedUp = FALSE;
+        }
+        
+        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_1)){
+            *panelMotorSpeedDown = TRUE;
+        }
+        else {
+            *panelMotorSpeedDown = FALSE;
+        }
+    return;
 }
 
 
@@ -312,6 +356,8 @@ void oledDisplay(void* taskDataPtr)
     uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
     unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
+    Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
@@ -333,21 +379,40 @@ void oledDisplay(void* taskDataPtr)
         char panelDepl = (1 == *panelState) ? 'Y' : 'N';
         RIT128x96x4StringDraw( "Panel Deployed: ", 5, 10, 15);
         RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
+
+        if (*panelDeploy)
+        {
+            snprintf(buffer, 20, "%s", "Deploying");
+        }
+        else if (*panelRetract) 
+        {
+            snprintf(buffer, 20, "%s", "Retracting");
+        }
+        else if (*panelState) 
+        {
+            snprintf(buffer, 20, "%s", "Deployed");
+        }
+        else if (!(*panelState)) 
+        {
+            snprintf(buffer, 20, "%s", "Retracted");
+        }
+        RIT128x96x4StringDraw( "Panel State: ", 5, 30, 15);
+        RIT128x96x4StringDraw( buffer, 5, 40, 15);
         
         // Display battery level. Cast integer to char array using snprintf
         snprintf(buffer, 20, "%d", *battLevel);
-        RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
-        RIT128x96x4StringDraw( buffer, 5, 40, 15);
+        RIT128x96x4StringDraw( "Battery Level: ", 5, 50, 15);
+        RIT128x96x4StringDraw( buffer, 5, 60, 15);
 
         // Display fuel level.
         snprintf(buffer, 20, "%d", fuelLevellll);
-        RIT128x96x4StringDraw( "Fuel Level: ", 5, 50, 15);
-        RIT128x96x4StringDraw( buffer, 5, 60, 15);
+        RIT128x96x4StringDraw( "Fuel Level: ", 5, 70, 15);
+        RIT128x96x4StringDraw( buffer, 5, 80, 15);
 
-        // Display power consumption.
+/*        // Display power consumption.
         snprintf(buffer, 20, "%d", *powerConsumption);
         RIT128x96x4StringDraw( "Power Consumption: ", 5, 70, 15);
-        RIT128x96x4StringDraw( buffer, 5, 80, 15);
+        RIT128x96x4StringDraw( buffer, 5, 80, 15);*/
       
     } else if (0 == buttonRead) // Annunciation mode
     {
@@ -365,11 +430,6 @@ void oledDisplay(void* taskDataPtr)
     }
 
     return;
-}
-
-void consoleKeyboard(void* taskDataPtr)
-{
-
 }
 
 // Require : warning alarm data struct;
@@ -499,4 +559,11 @@ UARTIntHandler(void)
         //
         UARTCharPutNonBlocking(UART0_BASE, UARTCharGetNonBlocking(UART0_BASE));
     }
+}
+
+void IntGPIOa(void)
+{
+    GPIOPinIntClear(GPIO_PORTA_BASE, GPIO_PIN_4);
+
+    panelDone = TRUE;
 }
