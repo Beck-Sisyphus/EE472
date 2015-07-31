@@ -34,9 +34,10 @@ extern Bool panelDone;
 extern unsigned char vehicleCommand;
 extern unsigned char vehicleResponse[3];
 extern Bool hasNewKeyboardInput;
+extern unsigned int* battLevelPtr;
 
 // local variable used in functions
-const int fuelBuringRatio = 20000; // Set as a large number in demo
+const int fuelBuringRatio = 2000; // Set as a large number in demo
 
 // Control the major or minor cycle in main function
 void schedule(scheduleDataStruct scheduleData)
@@ -192,10 +193,10 @@ void solarPanelControl(void* taskDataPtr)
         static unsigned long dutyCycle = 50;
         
         // Read keypad input and adjust duty cycle based on keypress
-        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_0)){
+        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_4)){
           dutyCycle += 5;
         }
-        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_1)){
+        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_5)){
           dutyCycle -= 5;
         }
         dutyCycle = dutyCycle % 100;
@@ -218,10 +219,12 @@ void solarPanelControl(void* taskDataPtr)
         if(panelDeploy||panelRetract){
             PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         }
-        else{
+        
+        else if(panelDone){
             PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
             PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         }
+        
         return;
 }
 
@@ -231,14 +234,14 @@ void consoleKeyboard(void* taskDataPtr)
     Bool* panelMotorSpeedUp = (Bool*) keyboardData->panelMotorSpeedUpPtr;
     Bool* panelMotorSpeedDown = (Bool*) keyboardData->panelMotorSpeedDownPtr;
     // Read keypad input and adjust duty cycle based on keypress
-        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_0)){
+        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_4)){
             *panelMotorSpeedUp = TRUE;
         }
         else {
             *panelMotorSpeedUp = FALSE;
         }
         
-        if (GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_1)){
+        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_5)){
             *panelMotorSpeedDown = TRUE;
         }
         else {
@@ -390,7 +393,7 @@ void oledDisplay(void* taskDataPtr)
         RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
         
         // Display battery level. Cast integer to char array using snprintf
-        snprintf(buffer, 20, "%d", *battLevel);
+        snprintf(buffer, 20, "%d", *battLevelPtr);
         RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
         RIT128x96x4StringDraw( buffer, 5, 40, 15);
 

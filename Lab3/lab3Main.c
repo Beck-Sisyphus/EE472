@@ -204,13 +204,16 @@ void enableGPIO()
 	                     GPIO_PIN_TYPE_STD_WPU);
         
     
-    // Set GPIO Pins A0 and A1 for input from keypad for PWM control
+    // Set GPIO Pins D4 and D5 for input from keypad for PWM control
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
-	GPIOPinTypeGPIOInput(GPIO_PORTD_BASE, GPIO_PIN_6|GPIO_PIN_7);
-	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_4);
+	GPIOPinTypeGPIOInput(GPIO_PORTD_BASE, GPIO_PIN_4|GPIO_PIN_5);
+        GPIODirModeSet(GPIO_PORTD_BASE, GPIO_PIN_4|GPIO_PIN_5, GPIO_DIR_MODE_IN);
+        //GPIOPadConfigSet(GPIO_PORTD_BASE, GPIO_PIN_6|GPIO_PIN_7, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU); 
+	
     
     // Enable keypad pannel done button
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_4);
 	GPIODirModeSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_DIR_MODE_IN);
 	GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU); 
 	GPIOPinIntEnable(GPIO_PORTA_BASE, GPIO_PIN_4);
@@ -225,7 +228,7 @@ void enableGPIO()
         
     
     //Enable PWM
-    SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
+    SysCtlPWMClockSet(SYSCTL_PWMDIV_64); //SYSCTL_PWMDIV_32
     
     //Enable PWM and GPIO pins to carry signal
     SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
@@ -242,7 +245,7 @@ void enableADC()
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
 	// Enable sample sequence 0 to be triggered on external
 	// TODO configure proper trigger for battery
-	ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
+	ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0); //
 	// Configure step 0 on sequence 3
 	ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_IE |
                              ADC_CTL_END);
@@ -300,7 +303,7 @@ void initializeGlobalVariables()
 	// Initialization 
 	battLevelPtr = &batteryLevelArray[0]; // equivalent to = &battLevel[0]
 
-	fuelLevel = 0;
+	fuelLevel = MAX_FUEL_LEVEL;
 	powerConsumption = 0;
 	powerGeneration = 0;
 	panelState = FALSE;
@@ -313,7 +316,7 @@ void initializeGlobalVariables()
 	fuelLow = FALSE;
 	battLow = FALSE;
 
-	// vehicleCommand ＝ NULL; Can't initialize as NULL, just left it as its default
+	// vehicleCommand = NULL; Can't initialize as NULL, just left it as its default
 	// vehicleResponse = NULL;
 	hasNewKeyboardInput = FALSE;
 
@@ -349,7 +352,7 @@ void deleteTask(TCB* node, TCB** head, TCB** tail)
 	{
 		*head = node->next;
 		// node->next = node->prev;
-		(*head)->prev = NULL;
+                (*head)->prev = NULL;
 		node->prev = NULL;
 		node->next = NULL;
 	}
@@ -359,7 +362,7 @@ void deleteTask(TCB* node, TCB** head, TCB** tail)
 		*tail = node->prev;
 		(*tail)->next = NULL;
 		node->prev = NULL;
-		node->next = NULL;
+                node->next = NULL;
 	}
 	// Node is in the middle, just need to update prevs and nexts of it
 	//  and neighbor node(s)
@@ -379,27 +382,27 @@ void insertTask(TCB* node, TCB** head, TCB** tail)
 	{
 		*head = node; // set the head and tail pointers to point to this node
 		*tail = node;
-		(*head)->next = NULL;
-		(*head)->prev = NULL;
+                (*head)->next = NULL;
+                (*head)->prev = NULL;
 	}
 	else // otherwise, head is not NULL, add the node to the end of the list
 	{
-		TCB* temp = *tail;
-		while (temp->prev != NULL) {
-			if (temp == node)
-			{
-				return;
-			}
-			temp = temp->prev;
-		}
-
-		(*tail)->next = node;
+                // Check if the node is in the list already	
+                TCB* temp = *tail;
+                while (temp->prev != NULL) {
+                  if (temp == node) {
+                     return;
+                  }
+                  temp = temp->prev;
+                }
+                
+                (*tail)->next = node;
 		node->prev = *tail; // note that the tail pointer is still pointing
 		// to the prior last node at this point
 		*tail = node; // update the tail pointer
 	}
 	// Always set node next pointer to null for end of list
-	(*tail)->next = NULL;
+	node->next = NULL;
 	return;
 }
 
