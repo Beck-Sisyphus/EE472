@@ -1,4 +1,5 @@
 // Include Statements
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "lab3.h"
@@ -7,8 +8,12 @@
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "driverlib/adc.h"
+#include "driverlib/debug.h"
 #include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 #include "driverlib/uart.h"
 #include "drivers/rit128x96x4.h"
 
@@ -23,7 +28,7 @@ const unsigned short BATT_WARN_LEVEL = 10;
 const uint32_t MAX_FUEL_LEVEL = 11664000;
 const uint32_t HALF_FUEL_LEVEL = 5832000; // at 50% level
 const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
-const unsigned short TASK_QUEUE_LENGTH = 6;
+const int SLOW_CLOCK_RATE = 10000;
 
 // Define Global Variables storing status data
 unsigned int* battLevelPtr;
@@ -43,9 +48,10 @@ Bool fuelLow;
 Bool battLow;
 Bool isMajorCycle;
 
-// Added for lab 3
-char vehicleCommand;
-char vehicleResponse;
+// Added for lab 3 communication
+unsigned char vehicleCommand;
+unsigned char vehicleResponse[3];
+Bool hasNewKeyboardInput;
 // If true, task should be inserted into task queue if not already present
 // If false, task should be removed from task queue if present
 // Keypad task is also tied
@@ -62,7 +68,9 @@ int main()
 	enableGPIO();
 	enableADC();
 	enableUART();
+	enableTimer();
 	initializeGlobalVariables();
+
 
 	// Define Data Structs
 	powerSubDataStruct powerSubData           	= {&panelState, &panelDeploy, &panelRetract, &battLevelPtr, &powerConsumption, &powerGeneration};
@@ -70,7 +78,7 @@ int main()
 	satelliteCommsDataStruct satelliteCommsData	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
 	thrusterSubDataStruct thrusterSubData     	= {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
 	vehicleCommsStruct vehicleCommsData       	= {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-	oledDisplayDataStruct oledDisplayData     	= {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
+	oledDisplayDataStruct oledDisplayData     	= {&fuelLow, &battLow, &panelState, &battLevelPtr, &fuelLevel, &powerConsumption, &powerGeneration, &globalCount, &isMajorCycle};
 	keyboardDataStruct keyboardData           	= {&panelMotorSpeedUp, &panelMotorSpeedDown};
 	warningAlarmDataStruct warningAlarmData   	= {&fuelLow, &battLow, &battLevelPtr, &fuelLevel, &globalCount, &isMajorCycle};
 	scheduleDataStruct scheduleData           	= {&globalCount, &isMajorCycle};
@@ -198,11 +206,10 @@ void enableGPIO()
     
     // Set GPIO Pins A0 and A1 for input from keypad
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4);
-	GPIODirModeSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_DIR_MODE_IN);
-	GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU); 
-	GPIOPinIntEnable(GPIO_PORTA_BASE, GPIO_PIN_4);
-	IntEnable(INT_GPIOA);
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, GPIO_PIN_0|GPIO_PIN_1);
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0|GPIO_PIN_1, GPIO_STRENGTH_2MA,
+	                     GPIO_PIN_TYPE_STD_WPU);
+        
         
 	// clear green LED		
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, 0x00);		
@@ -248,8 +255,8 @@ void enableUART()
 	// Enable processor interrupt
 	IntMasterEnable();
 
-	// Set GPIO D2 and D3 as UART pins Rx and Tx
-	//GPIOPinTypeUART(GPIO_PORTD_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+	// Set GPIO A0 and A1 as UART pins Rx and Tx
+	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
 	// Configure the UART with BAUD rate of 115200, 8-N-1 operation.
 	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200, 
@@ -257,11 +264,30 @@ void enableUART()
 							UART_CONFIG_PAR_NONE));
 
 	// Enable the UART interrupt.
-	//IntEnable(INT_UART0);
+	IntEnable(INT_UART0);
 	UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
 
 	// Remind the user to send data
-	//UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
+	UARTSend((unsigned char *)"Enter text: ", 12); // TODO DEBUG enters fault ISR here
+}
+
+void enableTimer() {
+
+	// Enable HW Timer
+	//
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
+	    
+	// Configure the 32-bit periodic timer.
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet()/SLOW_CLOCK_RATE);
+
+	IntEnable(INT_TIMER0A);
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+	//
+	// Enable the timers.
+	//
+	TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
 void initializeGlobalVariables()
@@ -284,6 +310,7 @@ void initializeGlobalVariables()
 
 	// vehicleCommand ＝ NULL; Can't initialize as NULL, just left it as its default
 	// vehicleResponse = NULL;
+	hasNewKeyboardInput = FALSE;
 
 	isMajorCycle = TRUE;
 	globalCount = 0;

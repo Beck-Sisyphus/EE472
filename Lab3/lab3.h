@@ -102,10 +102,12 @@
 	void enableGPIO();
 	void enableADC();
 	void enableUART();
+	void enableTimer();
 	void initializeGlobalVariables();
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
 	void insertTask(TCB* node, TCB** head, TCB** tail);
 	void deleteTask(TCB* node, TCB** head, TCB** tail);
+	uint16_t randomInteger(const unsigned short* globalCount);
 	
 	void schedule();
 	void powerSub(void* taskDataPtr);
@@ -116,6 +118,7 @@
 	void oledDisplay(void* taskDataPtr);
 	void consoleKeyboard(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
-	void delay_ms(int time_in_ms);
+	// void delay_ms(int time_in_ms);
+	void Timer0IntHandler(void);
 
 #endif

@@ -6,15 +6,16 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "inc/lm3s8962.h"
 #include "driverlib/adc.h"
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 #include "driverlib/uart.h"
 #include "drivers/rit128x96x4.h"
-#include "inc/lm3s8962.h"
 #include "utils/ustdlib.h"
 
 // Constants defined in main
@@ -29,7 +30,9 @@ extern unsigned short globalCount;
 extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 extern Bool panelAndKeypadTask;
-extern Bool panelDone;
+extern unsigned char vehicleCommand;
+extern unsigned char vehicleResponse[3];
+extern Bool hasNewKeyboardInput;
 
 // local variable used in functions
 const int fuelBuringRatio = 20000; // Set as a large number in demo
@@ -48,11 +51,9 @@ void schedule(scheduleDataStruct scheduleData)
     {
         *isMajorCycle = FALSE; 
     }
+    SysCtlDelay(500000);
 
-    delay_ms(7500);
-    globalCount = (globalCount + 1) % (TASK_QUEUE_LENGTH - 1); //count to 5, then start over again
     blinkTimer = (blinkTimer + 1) % 8;
-
 }
 
 // Requires: power sub data struct
@@ -62,18 +63,18 @@ void powerSub(void* taskDataPtr)
     // // Start oscillascope measurement
     // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 
-	powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
+    powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
 
-	unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
-	unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-	unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
-	Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
+    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+    unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
+    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
     Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
     Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
 
-	//powerConsumption
-	static unsigned short runCount = 1;         //tracks even/odd calls of this function
-	static Bool consumpUpDown = TRUE;
+    //powerConsumption
+    static unsigned short runCount = 1;         //tracks even/odd calls of this function
+    static Bool consumpUpDown = TRUE;
 
     if (!(*panelState) && panelDone)
     {
@@ -97,43 +98,43 @@ void powerSub(void* taskDataPtr)
         }
     } 
     if (*panelState) {                          //if solar panel is deployed...
-        if ((*battLevel)>95){		            //if battery greater than 95%
+        if ((*battLevel)>95){                   //if battery greater than 95%
             (*powerGeneration) = 0;             //SPEC CHANGE
             (*panelDeploy) = FALSE;
-            (*panelRetract)=TRUE;		        //retract solar panel
+            (*panelRetract)=TRUE;               //retract solar panel
             panelAndKeypadTask = TRUE;        // Set flag to add solarPanel and keyboard tasks to task queue
         }
-        else{					                //else battery less than/equal to 95%
-            if (0==runCount){			        //on even calls...
-                (*powerGeneration) += 2;		//increment by 2
+        else{                                   //else battery less than/equal to 95%
+            if (0==runCount){                   //on even calls...
+                (*powerGeneration) += 2;        //increment by 2
             }
-            else if((*battLevel)<=50){	        //on odd calls... while battery less than/equal to 50%
-                (*powerGeneration) += 1;		//increment by 1
+            else if((*battLevel)<=50){          //on odd calls... while battery less than/equal to 50%
+                (*powerGeneration) += 1;        //increment by 1
             }
         }
     } 
 
-    runCount = !runCount;			            //alternates between zero and non zero for odd/een calls respectively
+    runCount = !runCount;                       //alternates between zero and non zero for odd/een calls respectively
     if (consumpUpDown) {
-        if (0==runCount){				        //on even calls...
-            (*powerConsumption) += 2;		    //increment by 2
+        if (0==runCount){                       //on even calls...
+            (*powerConsumption) += 2;           //increment by 2
             if ((*powerConsumption)>=10) {
                 consumpUpDown = FALSE;
             }
         } 
-        else{						            //on odd calls...
-            (*powerConsumption) -= 1;		    //decrement by 1
+        else{                                   //on odd calls...
+            (*powerConsumption) -= 1;           //decrement by 1
         }
     }
     else {
-        if (0==runCount){		                //on even calls...
-            (*powerConsumption) -= 2;	        //decrement by 2
+        if (0==runCount){                       //on even calls...
+            (*powerConsumption) -= 2;           //decrement by 2
             if ((*powerConsumption)<=5) {
                 consumpUpDown = TRUE;
             }
         }
-        else{						            //on odd calls...
-            (*powerConsumption) += 1;		    //increment by 1
+        else{                                   //on odd calls...
+            (*powerConsumption) += 1;           //increment by 1
         }
     }
 
@@ -176,7 +177,6 @@ void powerSub(void* taskDataPtr)
 
 void solarPanelControl(void* taskDataPtr)
 {
-
     solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
     Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
     Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
@@ -185,8 +185,8 @@ void solarPanelControl(void* taskDataPtr)
     Bool* panelMotorSpeedUp = (Bool*) solarPanelPtr->panelMotorSpeedUpPtr;
     Bool* panelMotorSpeedDown = (Bool*) solarPanelPtr->panelMotorSpeedDownPtr;
     unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
-//        // Compute the PWM period based on the system clock.
-//        // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
+       // Compute the PWM period based on the system clock.
+       // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
         unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 100kHz
         static unsigned long dutyCycle = 50;
         
@@ -246,7 +246,6 @@ void consoleKeyboard(void* taskDataPtr)
     return;
 }
 
-
 // Communication only store the command without decoding it
 // Require : satellite communication data struct,
 //           randomInteger function;
@@ -270,33 +269,42 @@ void satelliteComms(void* taskDataPtr)
         Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr; 
 
         // receive (rando) thrust commands, generate from 0 to 2^16 -1
-        // uint16_t thrustCommand = randomInteger(globalCount);
-        uint16_t thrustCommand = 0x0FF1;
+        uint16_t thrustCommand = randomInteger(globalCount);
+        // uint16_t thrustCommand = 0x0FF1;
         *(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
     }
     return;
 }
 
+
 void vehicleComms(void* taskDataPtr)
 {
+    // Clean up the screen
+    UARTSend((unsigned char *)"\033[2J", 6);
+
     vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
-    char* vehicleCommandLocal = (char*) dataPtr->vehicleCommandPtr;
-    char* vehicleResponseLocal = (char*) dataPtr->vehicleResponsePtr;
+    unsigned char* vehicleCommandLocal = (unsigned char*) dataPtr->vehicleCommandPtr;
+    unsigned char* vehicleResponseLocal = (unsigned char*) dataPtr->vehicleResponsePtr;
     vehicleResponseLocal[0] = 'A';
     vehicleResponseLocal[1] = ' ';
 
     // Receive command
-    while(UARTCharsAvail(UART0_BASE))
+    if(hasNewKeyboardInput)
     {
-        *vehicleCommandLocal = UARTCharGetNonBlocking(UART0_BASE);
-        RIT128x96x4StringDraw(vehicleCommandLocal, 5, 90, 15);
-
-        vehicleResponseLocal[2] = *vehicleCommandLocal;
-        // write the response back
-        UARTCharPutNonBlocking(UART0_BASE, *vehicleResponseLocal);
+        if ('F' == *vehicleCommandLocal || 'B' == *vehicleCommandLocal ||
+            'L' == *vehicleCommandLocal || 'R' == *vehicleCommandLocal ||
+            'D' == *vehicleCommandLocal || 'H' == *vehicleCommandLocal) {
+            vehicleResponseLocal[0] = 'A';
+            UARTSend((unsigned char *)"Valid Command:", 14);
+        } else {
+            vehicleResponseLocal[0] = '-';
+            UARTSend((unsigned char *)"Invalid Command:", 16);
+        }
+        hasNewKeyboardInput = FALSE;
+        UARTSend((unsigned char*)&vehicleResponse, 3);
+    }   else {
+        UARTSend((unsigned char *)"Enter Command:", 14);
     }
-
-
 }
 
 // Require : the minor clock running at 1 second per cycle, 
@@ -358,8 +366,6 @@ void oledDisplay(void* taskDataPtr)
     uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
     unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-    Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
-    Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
 
@@ -381,40 +387,21 @@ void oledDisplay(void* taskDataPtr)
         char panelDepl = (1 == *panelState) ? 'Y' : 'N';
         RIT128x96x4StringDraw( "Panel Deployed: ", 5, 10, 15);
         RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
-
-        if (*panelDeploy)
-        {
-            snprintf(buffer, 20, "%s", "Deploying");
-        }
-        else if (*panelRetract) 
-        {
-            snprintf(buffer, 20, "%s", "Retracting");
-        }
-        else if (*panelState) 
-        {
-            snprintf(buffer, 20, "%s", "Deployed");
-        }
-        else if (!(*panelState)) 
-        {
-            snprintf(buffer, 20, "%s", "Retracted");
-        }
-        RIT128x96x4StringDraw( "Panel State: ", 5, 30, 15);
-        RIT128x96x4StringDraw( buffer, 5, 40, 15);
         
         // Display battery level. Cast integer to char array using snprintf
         snprintf(buffer, 20, "%d", *battLevel);
-        RIT128x96x4StringDraw( "Battery Level: ", 5, 50, 15);
-        RIT128x96x4StringDraw( buffer, 5, 60, 15);
+        RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
+        RIT128x96x4StringDraw( buffer, 5, 40, 15);
 
         // Display fuel level.
         snprintf(buffer, 20, "%d", fuelLevellll);
-        RIT128x96x4StringDraw( "Fuel Level: ", 5, 70, 15);
-        RIT128x96x4StringDraw( buffer, 5, 80, 15);
+        RIT128x96x4StringDraw( "Fuel Level: ", 5, 50, 15);
+        RIT128x96x4StringDraw( buffer, 5, 60, 15);
 
-/*        // Display power consumption.
+        // Display power consumption.
         snprintf(buffer, 20, "%d", *powerConsumption);
         RIT128x96x4StringDraw( "Power Consumption: ", 5, 70, 15);
-        RIT128x96x4StringDraw( buffer, 5, 80, 15);*/
+        RIT128x96x4StringDraw( buffer, 5, 80, 15);
       
     } else if (0 == buttonRead) // Annunciation mode
     {
@@ -497,17 +484,17 @@ void warningAlarm(void* taskDataPtr)
      return;
 }
 
-void delay_ms(int time_in_ms)
-{
-	volatile unsigned long i = 0;
-    volatile unsigned int j = 0;
+// void delay_ms(int time_in_ms)
+// {
+// 	volatile unsigned long i = 0;
+//     volatile unsigned int j = 0;
     
-    for (i = time_in_ms; i > 0; i--)
-    {
-        for (j = 0; j < 100; j++);
-    }
-    return;
-}
+//     for (i = time_in_ms; i > 0; i--)
+//     {
+//         for (j = 0; j < 100; j++);
+//     }
+//     return;
+// }
 
 //*****************************************************************************
 //
@@ -527,7 +514,7 @@ UARTSend(const unsigned char *pucBuffer, unsigned long ulCount)
         //
         // Write the next character to the UART.
         //
-        UARTCharPutNonBlocking(UART0_BASE, *pucBuffer++);
+        UARTCharPut(UART0_BASE, *pucBuffer++);
     }
 }
 
@@ -540,26 +527,28 @@ void
 UARTIntHandler(void)
 {
     unsigned long ulStatus;
-
+    
     //
     // Get the interrrupt status.
     //
     ulStatus = UARTIntStatus(UART0_BASE, true);
-
+    
     //
     // Clear the asserted interrupts.
     //
     UARTIntClear(UART0_BASE, ulStatus);
 
-    //
-    // Loop while there are characters in the receive FIFO.
-    //
-    while(UARTCharsAvail(UART0_BASE))
+    // Receive command
+    if (!hasNewKeyboardInput) 
     {
-        //
-        // Read the next character from the UART and write it back to the UART.
-        //
-        UARTCharPutNonBlocking(UART0_BASE, UARTCharGetNonBlocking(UART0_BASE));
+        if (UARTCharsAvail(UART0_BASE))
+        {
+            vehicleCommand = UARTCharGetNonBlocking(UART0_BASE);
+            
+            vehicleResponse[2] = vehicleCommand;
+            
+            hasNewKeyboardInput = TRUE;
+        }
     }
 }
 
@@ -568,5 +557,27 @@ void IntGPIOa(void)
     GPIOPinIntClear(GPIO_PORTA_BASE, GPIO_PIN_4);
 
     panelDone = TRUE;
-    panelAndKeypadTask = FALSE;
+}
+
+//*****************************************************************************
+//
+// The UART interrupt handler.
+//
+//*****************************************************************************
+void
+Timer0IntHandler(void)
+{
+    //
+    // Clear the timer interrupt.
+    //
+    TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+    //
+    // Update the interrupt status on the display.
+    //
+    IntMasterDisable();
+
+    IntMasterEnable();
+    globalCount++; 
+    globalCount = globalCount % 100;
 }
