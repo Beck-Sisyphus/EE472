@@ -6,6 +6,7 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "driverlib/adc.h"
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
@@ -125,54 +126,36 @@ void powerSub(void* taskDataPtr)
             (*powerConsumption) += 1;		    //increment by 1
         }
     }
-    
-    // TODO remove this before final version; included for testing
-    /*/ // DEPRECATED    
-	//batteryLevel
-	if (!(*panelState)){
-		(*battLevel) = (*battLevel) - 3*(*powerConsumption);
-	}
-	else{
-		(*battLevel) = (*battLevel) - (*powerConsumption) + (*powerGeneration);
-	}
-	
-        if(((*battLevel)>100)&&((*battLevel)<300)){ //"OVERLOAD PROTECTION"
-		(*battLevel)=100;
-	}
-	if((*battLevel)>65000){                        //"NEGATIVE PROTECTION"
-		(*battLevel)=0;
-	}/**/
 
-    // Battery measurement
-    // following interrupt:
-    // delay 600us
-    delay_ms(100); // TODO determine correct value for 600us
-    // Below code for ADC measurement adapted from single_ended.c
-    //  in IAR example file
-    // Clear interrupt status flag
+    unsigned long adcReading[1] = {0};
+
+    // Below code adapted from temperature_sensor.c in IAR examples/peripherals
+    // Clear the interrupt status flag.  This is done to make sure the
+    // interrupt flag is cleared before we sample.
     ADCIntClear(ADC0_BASE, 3);
+
+    // Trigger the ADC conversion.
     ADCProcessorTrigger(ADC0_BASE, 3);
 
     // Wait for conversion to be completed.
-    //while(!ADCIntStatus(ADC0_BASE, 3, false))
+    while(!ADCIntStatus(ADC0_BASE, 3, false))
     {
     }
 
     // Clear the ADC interrupt flag.
     ADCIntClear(ADC0_BASE, 3);
-    // Create array to hold ADC value
-    unsigned int adcReading[1] = {0}; // TODO ADC returns long or int?
+
     // Read ADC Value.
     ADCSequenceDataGet(ADC0_BASE, 3, adcReading);
 
-    // convert adcReading from 4.25V to 36V scale
-    // If ADC returns 10bit int (0-1023), each digit ~= 0.00415V
-    // Then, multiply by 8.4706 to get to 36V range
-    unsigned int adcReadingConverted = adcReading[0] * 0.00415 * 8.4706;
+    // convert adcReading from 3.60V to 36V scale
+    // If ADC returns 10bit int (0-1023), each digit ~= 0.003516V
+    // Then, multiply by 10 to get to 36V range
+    unsigned int adcReadingConverted = (int) (adcReading[0] * 0.036);
     // move previous readings to next array slot
-    for (int i = sizeof(battLevel) - 2; i > 0; --i)
+    for (int i = 0; i < 15; ++i)
     {
-        battLevel[i+1] = battLevel[i];
+        battLevel[i+1] = battLevel[i]; // BREAKS OLED AND PWM
     }
     // Add new reading to front of circular buffer
     battLevel[0] = adcReadingConverted;
@@ -239,13 +222,6 @@ void satelliteComms(void* taskDataPtr)
         unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
         unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
         Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr; 
-        //printf("fuel low is : %u\n", *fuelLowSignal);
-        //printf("battery low is : %u\n", *battLowSignal);
-        //printf("battery level : %hu\n", *battLevelSignal);
-        //printf("fuel level : %u\n", *fuelLevelSignal);
-        //printf("power consumption is: %hu\n", *powerConsumptionSignal);
-        //printf("power generation is : %hu\n", *powerGenerationSignal);
-        //printf("panel state is : %u\n", *panelStateSignal);
 
         // receive (rando) thrust commands, generate from 0 to 2^16 -1
         // uint16_t thrustCommand = randomInteger(globalCount);
@@ -328,11 +304,8 @@ void thrusterSub(void* taskDataPtr)
     fuelLevellll = ((*fuelPtr) * 100) / MAX_FUEL_LEVEL;
 }
 
-//TODO
 void oledDisplay(void* taskDataPtr)
 {
-    
-  
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
     
     unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
@@ -347,7 +320,7 @@ void oledDisplay(void* taskDataPtr)
 
     // Push select button to change to annunciation mode on OLED
     long buttonRead = 2;
-    char* bufferPtr;
+    char buffer [100];
 
     // Pushed = 0, released = 2 from our measurement
     buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
@@ -362,19 +335,19 @@ void oledDisplay(void* taskDataPtr)
         RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
         
         // Display battery level. Cast integer to char array using snprintf
-        snprintf(bufferPtr, 20, "%d", *battLevel);
+        snprintf(buffer, 20, "%d", *battLevel);
         RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
-        RIT128x96x4StringDraw( bufferPtr, 5, 40, 15);
+        RIT128x96x4StringDraw( buffer, 5, 40, 15);
 
         // Display fuel level.
-        snprintf(bufferPtr, 20, "%d", fuelLevellll);
+        snprintf(buffer, 20, "%d", fuelLevellll);
         RIT128x96x4StringDraw( "Fuel Level: ", 5, 50, 15);
-        RIT128x96x4StringDraw( bufferPtr, 5, 60, 15);
+        RIT128x96x4StringDraw( buffer, 5, 60, 15);
 
         // Display power consumption.
-        snprintf(bufferPtr, 20, "%d", *powerConsumption);
+        snprintf(buffer, 20, "%d", *powerConsumption);
         RIT128x96x4StringDraw( "Power Consumption: ", 5, 70, 15);
-        RIT128x96x4StringDraw( bufferPtr, 5, 80, 15);
+        RIT128x96x4StringDraw( buffer, 5, 80, 15);
       
     } else if (0 == buttonRead) // Annunciation mode
     {

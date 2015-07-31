@@ -27,6 +27,7 @@ const unsigned short TASK_QUEUE_LENGTH = 6;
 
 // Define Global Variables storing status data
 unsigned int* battLevelPtr;
+unsigned int batteryLevelArray[16] = {100};
 uint32_t fuelLevel;
 unsigned short powerConsumption;
 unsigned short powerGeneration;
@@ -40,6 +41,7 @@ uint16_t thrust;
 Bool fuelLow;
 Bool battLow;
 Bool isMajorCycle;
+
 
 // Added for lab 3
 char vehicleCommand;
@@ -224,16 +226,15 @@ void enableADC()
 {
 	// Enable ADC0
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
-	// Set sampling rate to lowest rate, 125K/s
-	SysCtlADCSpeedSet(SYSCTL_ADCSPEED_125KSPS);
-	// Enable sample sequence 3 to be triggered on external
+	// Enable sample sequence 0 to be triggered on external
 	// TODO configure proper trigger for battery
 	ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
 	// Configure step 0 on sequence 3
 	ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_IE |
                              ADC_CTL_END);
-	// Enable sequence 0
+	// Enable sequence 3
 	ADCSequenceEnable(ADC0_BASE, 3);
+        ADCIntEnable(ADC0_BASE, 3);
 
 }
 
@@ -264,11 +265,7 @@ void enableUART()
 void initializeGlobalVariables()
 {
 	// Initialization 
-    unsigned int batteryLevelArray[16] = {100, 0, 0, 0,
-                                			0, 0, 0, 0, 
-                               				0, 0, 0, 0, 
-                               				0, 0, 0, 0};
-	battLevelPtr = batteryLevelArray; // equivalent to = &battLevel[0]
+	battLevelPtr = &batteryLevelArray[0]; // equivalent to = &battLevel[0]
 
 	fuelLevel = 0;
 	powerConsumption = 0;
@@ -361,7 +358,7 @@ void insertTask(TCB* node, TCB** head, TCB** tail)
 
 void ADCIntHandler(void) 
 {
-	unsigned int* battLevel = (unsigned int*) battLevelPtr; // Points to address of battLevelPtr[0]
+/*	unsigned int* battLevel = (unsigned int*) battLevelPtr; // Points to address of battLevelPtr[0]
 
 	// Battery measurement
     // following interrupt:
@@ -375,7 +372,7 @@ void ADCIntHandler(void)
     ADCProcessorTrigger(ADC0_BASE, 3);
 
     // Wait for conversion to be completed
-    //while(!ADCIntStatus(ADC0_BASE, 3, false))
+    while(!ADCIntStatus(ADC0_BASE, 3, false))
     {
     }
 
@@ -396,6 +393,6 @@ void ADCIntHandler(void)
         battLevel[i+1] = battLevel[i];
     }
     // Add new reading to front of circular buffer
-    battLevel[0] = adcReadingConverted;
+    battLevel[0] = adcReadingConverted;*/
 	return;
 }
