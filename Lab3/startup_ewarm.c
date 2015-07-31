@@ -48,6 +48,8 @@ static void IntDefaultHandler(void);
 //*****************************************************************************
 extern void UARTIntHandler(void);
 extern void Timer0IntHandler(void);
+extern void ADCIntHandler(void);
+extern void IntGPIOa(void);
 
 //*****************************************************************************
 //
@@ -102,7 +104,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     0,                                      // Reserved
     IntDefaultHandler,                      // The PendSV handler
     IntDefaultHandler,                      // The SysTick handler
-    IntDefaultHandler,                      // GPIO Port A
+    IntGPIOa,                      // GPIO Port A
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
@@ -116,7 +118,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // PWM Generator 1
     IntDefaultHandler,                      // PWM Generator 2
     IntDefaultHandler,                      // Quadrature Encoder 0
-    IntDefaultHandler,                      // ADC Sequence 0
+    ADCIntHandler,                          // ADC Sequence 0
     IntDefaultHandler,                      // ADC Sequence 1
     IntDefaultHandler,                      // ADC Sequence 2
     IntDefaultHandler,                      // ADC Sequence 3
