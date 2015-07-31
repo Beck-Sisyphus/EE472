@@ -78,12 +78,14 @@ void powerSub(void* taskDataPtr)
     if (!(*panelState) && panelDone)
     {
         *panelState = TRUE;
-        //panelDone = FALSE;
+        panelDone = FALSE;
+        panelAndKeypadTask = FALSE;
     }
     else if ((*panelState) && panelDone)
     {
         *panelState = FALSE;
-        //panelDone = FALSE;
+        panelDone = FALSE;
+        panelAndKeypadTask = FALSE;
     }
         
     //powerGeneration
@@ -566,4 +568,5 @@ void IntGPIOa(void)
     GPIOPinIntClear(GPIO_PORTA_BASE, GPIO_PIN_4);
 
     panelDone = TRUE;
+    panelAndKeypadTask = FALSE;
 }

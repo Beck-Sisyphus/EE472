@@ -144,18 +144,6 @@ int main()
     {
     	// Get pointer to first task
     	TCBPtr = taskQueueHead;
-    	// Loop through task queue & perform each task
-    	while (TCBPtr != NULL)
-    	{
-	        TCBPtr->taskPtr( (TCBPtr->taskDataPtr) );
-	        TCBPtr = TCBPtr->next;
-    	}
-
-    	// solarPanel and keyboard tasks only active when solar panel is deploying/retracting
-	    if ((panelDone && panelState) || (panelDone && !panelState))
-	    {
-	        panelAndKeypadTask = FALSE;
-	    }
 
     	// Adds/deletes solarPanel and keypad task as necessary
     	if (panelAndKeypadTask)
@@ -167,6 +155,13 @@ int main()
     	{
     		deleteTask(&keyboardDataTCB, &taskQueueHead, &taskQueueTail);
     		deleteTask(&solarPanelTCB, &taskQueueHead, &taskQueueTail);
+    	}
+        
+        // Loop through task queue & perform each task
+    	while (TCBPtr != NULL)
+    	{
+	        TCBPtr->taskPtr( (TCBPtr->taskDataPtr) );
+	        TCBPtr = TCBPtr->next;
     	}
 
     	schedule(scheduleData);
