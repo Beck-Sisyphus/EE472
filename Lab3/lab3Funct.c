@@ -1,22 +1,14 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include "lab3.h"
-#include "inc/hw_gpio.h"
-#include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/lm3s8962.h"
 #include "driverlib/adc.h"
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
-#include "driverlib/interrupt.h"
 #include "driverlib/pwm.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "driverlib/uart.h"
 #include "drivers/rit128x96x4.h"
-#include "utils/ustdlib.h"
 
 // Constants defined in main
 extern const unsigned short MAX_BATT_LEVEL;
@@ -31,8 +23,6 @@ extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 extern Bool panelAndKeypadTask;
 extern Bool panelDone;
-// extern unsigned char vehicleCommand;
-// extern unsigned char vehicleResponse[3];
 extern Bool hasNewKeyboardInput;
 extern unsigned int* battLevelPtr;
 
@@ -305,7 +295,7 @@ void vehicleComms(void* taskDataPtr)
             UARTSend((unsigned char *)"Invalid Command:", 16);
         }
         hasNewKeyboardInput = FALSE;
-        UARTSend((unsigned char*)&vehicleResponse, 3);
+        UARTSend((unsigned char*)vehicleResponseLocal, 3);
     }   else {
         UARTSend((unsigned char *)"Enter Command:", 14);
     }

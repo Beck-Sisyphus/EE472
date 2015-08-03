@@ -1,21 +1,9 @@
 // Include Statements
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include "lab3.h"
-#include "inc/hw_gpio.h"
-#include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
-#include "inc/hw_ints.h"
-#include "driverlib/adc.h"
 #include "driverlib/debug.h"
-#include "driverlib/gpio.h"
-#include "driverlib/interrupt.h"
-#include "driverlib/pwm.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "driverlib/uart.h"
-#include "drivers/rit128x96x4.h"
 
 // Define some Constants
 const unsigned short MAX_BATT_LEVEL = 100;
@@ -28,7 +16,6 @@ const unsigned short BATT_WARN_LEVEL = 10;
 const uint32_t MAX_FUEL_LEVEL = 11664000;
 const uint32_t HALF_FUEL_LEVEL = 5832000; // at 50% level
 const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
-const int SLOW_CLOCK_RATE = 10000;
 
 // Define Global Variables storing status data
 unsigned int* battLevelPtr;

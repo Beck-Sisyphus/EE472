@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 #include "lab3.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -18,9 +17,14 @@
 #include "drivers/rit128x96x4.h"
 #include "utils/ustdlib.h"
 
+const int SLOW_CLOCK_RATE = 10000;
+
 extern unsigned char vehicleCommand;
 extern unsigned char vehicleResponse[3];
 extern Bool hasNewKeyboardInput;
+extern Bool panelDone;
+extern unsigned short globalCount;
+extern unsigned int* battLevelPtr;
 
 void enableOLED()
 {
