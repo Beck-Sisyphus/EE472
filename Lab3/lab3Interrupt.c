@@ -18,6 +18,7 @@
 #include "utils/ustdlib.h"
 
 const int SLOW_CLOCK_RATE = 10000;
+const int MINOR_CYCLE_NUM = 100; // Change the ratio of major / minor cycle
 
 extern unsigned char vehicleCommand;
 extern unsigned char vehicleResponse[3];
@@ -230,7 +231,7 @@ Timer0IntHandler(void)
 
     IntMasterEnable();
     globalCount++; 
-    globalCount = globalCount % 100;
+    globalCount = globalCount % MINOR_CYCLE_NUM;
 }
 
 

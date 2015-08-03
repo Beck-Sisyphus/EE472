@@ -181,7 +181,7 @@ void solarPanelControl(void* taskDataPtr)
     unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
        // Compute the PWM period based on the system clock.
        // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
-        unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 100kHz
+        unsigned long ulPeriod = SysCtlClockGet() / 4000000; //run at 2Hz
         static unsigned long dutyCycle = 50;
         
         // Read keypad input and adjust duty cycle based on keypress
