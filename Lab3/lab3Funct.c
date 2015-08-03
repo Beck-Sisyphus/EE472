@@ -8,6 +8,7 @@
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
+#include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
 
 // Constants defined in main
@@ -28,6 +29,7 @@ extern unsigned int* battLevelPtr;
 
 // local variable used in functions
 const int fuelBuringRatio = 2000; // Set as a large number in demo
+const int sysDelayLength = 1000000;
 
 // Control the major or minor cycle in main function
 void schedule(scheduleDataStruct scheduleData)
@@ -43,7 +45,7 @@ void schedule(scheduleDataStruct scheduleData)
     {
         *isMajorCycle = FALSE; 
     }
-    SysCtlDelay(500000);
+    SysCtlDelay(sysDelayLength);
 
     blinkTimer = (blinkTimer + 1) % 8;
 }
