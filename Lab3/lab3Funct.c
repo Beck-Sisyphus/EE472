@@ -31,8 +31,8 @@ extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
 extern Bool panelAndKeypadTask;
 extern Bool panelDone;
-extern unsigned char vehicleCommand;
-extern unsigned char vehicleResponse[3];
+// extern unsigned char vehicleCommand;
+// extern unsigned char vehicleResponse[3];
 extern Bool hasNewKeyboardInput;
 extern unsigned int* battLevelPtr;
 
@@ -486,102 +486,4 @@ void warningAlarm(void* taskDataPtr)
      }
      
      return;
-}
-
-// void delay_ms(int time_in_ms)
-// {
-// 	volatile unsigned long i = 0;
-//     volatile unsigned int j = 0;
-    
-//     for (i = time_in_ms; i > 0; i--)
-//     {
-//         for (j = 0; j < 100; j++);
-//     }
-//     return;
-// }
-
-//*****************************************************************************
-//
-// Source from uart_echo.c
-// 
-// Send a string to the UART.
-//
-//*****************************************************************************
-void
-UARTSend(const unsigned char *pucBuffer, unsigned long ulCount)
-{
-    //
-    // Loop while there are more characters to send.
-    //
-    while(ulCount--)
-    {
-        //
-        // Write the next character to the UART.
-        //
-        UARTCharPut(UART0_BASE, *pucBuffer++);
-    }
-}
-
-//*****************************************************************************
-//
-// The UART interrupt handler.
-//
-//*****************************************************************************
-void
-UARTIntHandler(void)
-{
-    unsigned long ulStatus;
-    
-    //
-    // Get the interrrupt status.
-    //
-    ulStatus = UARTIntStatus(UART0_BASE, true);
-    
-    //
-    // Clear the asserted interrupts.
-    //
-    UARTIntClear(UART0_BASE, ulStatus);
-
-    // Receive command
-    if (!hasNewKeyboardInput) 
-    {
-        if (UARTCharsAvail(UART0_BASE))
-        {
-            vehicleCommand = UARTCharGetNonBlocking(UART0_BASE);
-            
-            vehicleResponse[2] = vehicleCommand;
-            
-            hasNewKeyboardInput = TRUE;
-        }
-    }
-}
-
-void IntGPIOa(void)
-{
-    GPIOPinIntClear(GPIO_PORTA_BASE, GPIO_PIN_4);
-
-    panelDone = TRUE;
-}
-
-//*****************************************************************************
-//
-// The UART interrupt handler.
-//
-//*****************************************************************************
-void
-Timer0IntHandler(void)
-{
-    //
-    // Clear the timer interrupt.
-    //
-    TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-
-    //
-    // Update the interrupt status on the display.
-    //
-    IntMasterDisable();
-
-    IntMasterEnable();
-    globalCount++; 
-    globalCount = globalCount % 100;
 }

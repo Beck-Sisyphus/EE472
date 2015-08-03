@@ -119,7 +119,6 @@
 	void oledDisplay(void* taskDataPtr);
 	void consoleKeyboard(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
-	// void delay_ms(int time_in_ms);
 	void Timer0IntHandler(void);
 
 #endif
