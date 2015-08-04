@@ -1,6 +1,6 @@
 // #include <stdio.h>
 // #include <stdlib.h>
-#include "lab3.h"
+#include "lab4.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
