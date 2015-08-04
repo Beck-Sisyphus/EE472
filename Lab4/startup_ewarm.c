@@ -28,7 +28,7 @@
 // Enable the IAR extensions for this source file.
 //
 //*****************************************************************************
-#include "lab3.h"
+#include "lab4.h"
 #pragma language=extended
 
 //*****************************************************************************

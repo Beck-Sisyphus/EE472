@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "lab3.h"
+#include "lab4.h"
 
 // Implement a new pseudo random number generator
 uint16_t randomInteger(const unsigned short* globalCount){
