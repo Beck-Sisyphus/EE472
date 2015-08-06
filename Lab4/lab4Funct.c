@@ -11,6 +11,7 @@
 #include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
 
+
 // Constants defined in main
 extern const unsigned short MAX_BATT_LEVEL;
 extern const unsigned short HALF_BATT_LEVEL;
@@ -26,6 +27,12 @@ extern Bool panelAndKeypadTask;
 extern Bool panelDone;
 extern Bool hasNewKeyboardInput;
 extern unsigned int* battLevelPtr;
+
+/* 
+  The queue used to send messages to the OLED task.
+  Defined and initialized in main.c 
+*/
+extern xQueueHandle xOLEDQueue;
 
 // local variable used in functions
 const int fuelBuringRatio = 2000; // Set as a large number in demo
@@ -54,7 +61,8 @@ void schedule(scheduleDataStruct scheduleData)
 // Modifies: powerConsumption, powerGeneration, battLevel, panelState
 void powerSub(void* taskDataPtr)
 {
-    while(1) {
+    while(1)
+    {
         // // Start oscillascope measurement
         // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 
@@ -168,12 +176,15 @@ void powerSub(void* taskDataPtr)
 
         // // End oscillascope measurement
         // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
+
+        vTaskDelay(100);
     }
 }
 
 void solarPanelControl(void* taskDataPtr)
 {
-    while(1) {
+    while(1)
+    {
         solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
         Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
         Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
@@ -219,12 +230,15 @@ void solarPanelControl(void* taskDataPtr)
             PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
             PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         }
+
+        vTaskDelay(100);
     }
 }
 
 void consoleKeyboard(void* taskDataPtr)
 {
-    while(1) {
+    while(1)
+    {
         keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;
         Bool* panelMotorSpeedUp = (Bool*) keyboardData->panelMotorSpeedUpPtr;
         Bool* panelMotorSpeedDown = (Bool*) keyboardData->panelMotorSpeedDownPtr;
@@ -242,6 +256,8 @@ void consoleKeyboard(void* taskDataPtr)
         else {
             *panelMotorSpeedDown = FALSE;
         }
+
+        vTaskDelay(100);
     }
     return;
 }
@@ -252,7 +268,8 @@ void consoleKeyboard(void* taskDataPtr)
 // Modifies: thrust command.
 void satelliteComms(void* taskDataPtr)
 {
-    while(1) {    
+    while(1)
+    {    
         satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
 
         unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
@@ -272,7 +289,9 @@ void satelliteComms(void* taskDataPtr)
             uint16_t thrustCommand = randomInteger(globalCount);
             // uint16_t thrustCommand = 0x0FF1;
             *(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
-        }        
+        }    
+
+        vTaskDelay(100);    
     }
     return;
 }
@@ -280,7 +299,8 @@ void satelliteComms(void* taskDataPtr)
 
 void vehicleComms(void* taskDataPtr)
 {
-    while(1) {
+    while(1)
+    {
         // Clean up the screen
         UARTSend((unsigned char *)"\033[2J", 6);
 
@@ -309,64 +329,83 @@ void vehicleComms(void* taskDataPtr)
         }   else {
             UARTSend((unsigned char *)"Enter Command:", 14);
         }      
+
+        vTaskDelay(100);
     }
 }
 
 // Require : the minor clock running at 1 second per cycle, 
-//			and thruster sub data struct; 
+//          and thruster sub data struct; 
 // Modifies: global constant fuelLevel, taking in count of duration.
 void thrusterSub(void* taskDataPtr)
 {
-    while(1) {
-    	thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
+    while(1) 
+    {
+        thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
             
-    	// unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
-    	Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
-    	uint32_t* fuelPtr = (uint32_t*) thrustCommandPtr->fuelLevelPtr;
+        // unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
+        Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
+        uint32_t* fuelPtr = (uint32_t*) thrustCommandPtr->fuelLevelPtr;
 
-    	unsigned short left = 0;
-    	unsigned short right = 0;
-    	unsigned short up = 0;
-    	unsigned short down = 0;
-    	static unsigned short magnitude = 0;
-    	static unsigned short duration = 0;
+        unsigned short left = 0;
+        unsigned short right = 0;
+        unsigned short up = 0;
+        unsigned short down = 0;
+        static unsigned short magnitude = 0;
+        static unsigned short duration = 0;
 
-    	// Only updates the magnitude when the duration is positive, otherwise no change on magnitude
-    	if (*isMajorCycle)
-    	{
-    		uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
+        // Only updates the magnitude when the duration is positive, otherwise no change on magnitude
+        if (*isMajorCycle)
+        {
+            uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
 
-    		if (command & 0x0001) { left  = 1; } else { left  = 0;}
-    		if (command & 0x0002) { right = 1; } else { right = 0;}
-    		if (command & 0x0004) { up    = 1; } else { up    = 0;}
-    		if (command & 0x0008) { down  = 1; } else { down  = 0;}
-    		// get duration, unsigned char pointer moves every 8 bits
-    		// so it can separate first 8 bits and last 8 bits
-    		duration = *((unsigned char*)&command + 1);
-    		if (duration) { magnitude = (command >> 4) & 0x000F; }
-    	}
+            if (command & 0x0001) { left  = 1; } else { left  = 0;}
+            if (command & 0x0002) { right = 1; } else { right = 0;}
+            if (command & 0x0004) { up    = 1; } else { up    = 0;}
+            if (command & 0x0008) { down  = 1; } else { down  = 0;}
+            // get duration, unsigned char pointer moves every 8 bits
+            // so it can separate first 8 bits and last 8 bits
+            duration = *((unsigned char*)&command + 1);
+            if (duration) { magnitude = (command >> 4) & 0x000F; }
+        }
 
-    	// If the new command ask use a 
-    	if (duration)
-    	{
-    		*fuelPtr -= magnitude * fuelBuringRatio;
-    		duration -= 1;
-    	}
+        // If the new command ask use a 
+        if (duration)
+        {
+            *fuelPtr -= magnitude * fuelBuringRatio;
+            duration -= 1;
+        }
 
-    	// When the fuel level goes below 0, the unsigned int when to really big
-    	if (*fuelPtr > MAX_FUEL_LEVEL)
-    	{
-    		*fuelPtr = 0;
-    	}
+        // When the fuel level goes below 0, the unsigned int when to really big
+        if (*fuelPtr > MAX_FUEL_LEVEL)
+        {
+            *fuelPtr = 0;
+        }
             
         // Convert inner counter to 100 scale for OLED display
-        fuelLevellll = ((*fuelPtr) * 100) / MAX_FUEL_LEVEL;        
+        fuelLevellll = ((*fuelPtr) * 100) / MAX_FUEL_LEVEL;  
+
+        vTaskDelay(100);      
     }
 }
 
 void oledDisplay(void* taskDataPtr)
 {
-    while(1) {
+    xOLEDMessage xMsgTest;
+    xOLEDMessage xMsgPanelState;
+    xOLEDMessage xMsgBattLev;
+    xOLEDMessage xMsgBattTemp;
+    xOLEDMessage xMsgFuelLev;
+    xOLEDMessage xMsgDist;
+    xOLEDMessage xMsgFuelLow;
+    xOLEDMessage xMsgBattLow;
+    
+    while(1) 
+    {
+        xMsgTest.pcMessage = "Hello, World!";
+        //Send the message to the OLED gatekeeper for display.
+        xQueueSend( xOLEDQueue, &xMsgTest, 0 );
+
         oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
         
         unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
@@ -375,9 +414,8 @@ void oledDisplay(void* taskDataPtr)
         Bool* panelState = (Bool*) dataPtr->panelStatePtr;
         Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
         Bool* battLow = (Bool*) dataPtr->battLowPtr;
-
-        unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-        Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
+        // uint32_t* battTemp = (uint32_t*) dataPtr->battTempPtr;
+        // unsigned long* distance = (unsigned long*) dataPtr->transportDistancePtr;
 
         // Push select button to change to annunciation mode on OLED
         long buttonRead = 2;
@@ -390,40 +428,67 @@ void oledDisplay(void* taskDataPtr)
         {
             RIT128x96x4Clear();
 
-            // Display panel state.
-            char panelDepl = (1 == *panelState) ? 'Y' : 'N';
-            RIT128x96x4StringDraw( "Panel Deployed: ", 5, 10, 15);
-            RIT128x96x4StringDraw( &panelDepl, 5, 20, 15);
-            
-            // Display battery level. Cast integer to char array using snprintf
-            snprintf(buffer, 20, "%d", *battLevelPtr);
-            RIT128x96x4StringDraw( "Battery Level: ", 5, 30, 15); // battLevel points to 0x200001EA, globalCount
-            RIT128x96x4StringDraw( buffer, 5, 40, 15);
+        // Display panel state.
+        if (1== *panelState)
+        {
+            xMsgPanelState.pcMessage = "Panel State: Deployed";
+        }
+        else
+        {
+            xMsgPanelState.pcMessage = "Panel State: Retracted";
+        }
+        xQueueSend( xOLEDQueue, &xMsgPanelState, 0 );
+        
+        // Display battery level
+        snprintf(buffer, 20, "Battery Level: %d", *battLevel);
+        xMsgBattLev.pcMessage = buffer;
+        xQueueSend( xOLEDQueue, &xMsgBattLev, 0 );
 
-            // Display fuel level.
-            snprintf(buffer, 20, "%d", fuelLevellll);
-            RIT128x96x4StringDraw( "Fuel Level: ", 5, 50, 15);
-            RIT128x96x4StringDraw( buffer, 5, 60, 15);
+        // Display battery temperature
+        //snprintf(buffer, 20, "Battery Temp: %d", *battTemp);
+        //xMsgBattTemp.pcMessage = buffer;
+        xQueueSend( xOLEDQueue, &xMsgBattTemp, 0 );
 
-            // Display power consumption.
-            snprintf(buffer, 20, "%d", *powerConsumption);
-            RIT128x96x4StringDraw( "Power Consumption: ", 5, 70, 15);
-            RIT128x96x4StringDraw( buffer, 5, 80, 15);
+        // Display fuel level
+        snprintf(buffer, 20, "Fuel Level: %d", fuelLevellll);
+        xMsgFuelLev.pcMessage = buffer;
+        xQueueSend( xOLEDQueue, &xMsgFuelLev, 0 );
+
+        // Display transport distance ptr
+        //snprintf(buffer, 20, "Transport Distance: %d", *distance);
+        //xMsgDist.pcMessage = buffer;
+        xQueueSend( xOLEDQueue, &xMsgDist, 0 );
+
           
         } else if (0 == buttonRead) // Annunciation mode
         {
             RIT128x96x4Clear();
             
             // Display fuel low flag.
-            char fuelLowStr = (1 == *fuelLow) ? 'Y' : 'N';
-            RIT128x96x4StringDraw( "Fuel Low: ", 5, 10, 15);
-            RIT128x96x4StringDraw( &fuelLowStr, 5, 20, 15);
+            if (1 == *fuelLow)
+            {
+                xMsgFuelLow.pcMessage = "FUEL LOW!";
+            }
+            else
+            {
+                xMsgFuelLow.pcMessage = "Fuel Good :)";
+            }
+            xQueueSend( xOLEDQueue, &xMsgFuelLow, 0 );
+
 
             // Display battery low flag.
-            char battLowStr = (1 == *battLow) ? 'Y' : 'N';
-            RIT128x96x4StringDraw( "Battery Low: ", 5, 30, 15);
-            RIT128x96x4StringDraw( &battLowStr, 5, 40, 15);
+            if (1 == *battLow)
+            {
+                xMsgBattLow.pcMessage = "BATTERY LOW!";
+            }
+            else
+            {
+                xMsgBattLow.pcMessage = "Battery Good :)";
+            }
+            xQueueSend( xOLEDQueue, &xMsgBattLow, 0 );
         }        
+        
+        vTaskDelay(100);
     }
 }
 
@@ -431,7 +496,8 @@ void oledDisplay(void* taskDataPtr)
 // Modifies: fuelLow pointer, battLow pointer.
 void warningAlarm(void* taskDataPtr)
 {
-    while(1) {	
+    while(1) 
+    {  
         warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
         Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
         Bool* battLow = (Bool*)dataPtr->battLowPtr;
@@ -485,6 +551,7 @@ void warningAlarm(void* taskDataPtr)
                     if ((2==blinkTimer)||(3==blinkTimer)||(6==blinkTimer)||(7==blinkTimer))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
                 }
-        }   
+        }
+        vTaskDelay(100);
     } 
 }

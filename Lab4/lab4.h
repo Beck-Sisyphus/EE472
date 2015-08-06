@@ -28,6 +28,8 @@
 		void* panelDeployPtr;
 		void* panelRetractPtr;
 		void* battLevelPtr;
+		void* battTempPtr;
+		void* battOverTempPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
 	} powerSubDataStruct;
@@ -81,11 +83,13 @@
 		void* panelDeployPtr;
 		void* panelRetractPtr;
 		void* battLevelPtr;
+		void* battTempPtr;
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
+		void* transportDistancePtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct {
@@ -95,6 +99,7 @@
 		void* fuelLevelPtr;
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
+		void* battOverTempPtr;
 	} warningAlarmDataStruct;
         
         
