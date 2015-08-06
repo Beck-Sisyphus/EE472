@@ -139,7 +139,7 @@ void enableTimer() {
     TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
     TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet()/SLOW_CLOCK_RATE);
 
-    IntEnable(INT_TIMER0A);
+    //IntEnable(INT_TIMER0A);
     TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
     //
@@ -211,27 +211,27 @@ void IntGPIOa(void)
     panelDone = TRUE;
 }
 
-//*****************************************************************************
-//
-// The UART interrupt handler.
-//
-//*****************************************************************************
-void
-Timer0IntHandler(void)
-{
-    //
-    // Clear the timer interrupt.
-    //
-    TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+// //*****************************************************************************
+// //
+// // The UART interrupt handler.
+// //
+// //*****************************************************************************
+// void
+// Timer0IntHandler(void)
+// {
+//     //
+//     // Clear the timer interrupt.
+//     //
+//     TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-    //
-    // Update the interrupt status on the display.
-    //
-    IntMasterDisable();
-    globalCount++; 
-    globalCount = globalCount % MINOR_CYCLE_NUM;
-    IntMasterEnable();
-}
+//     //
+//     // Update the interrupt status on the display.
+//     //
+//     IntMasterDisable();
+//     globalCount++; 
+//     globalCount = globalCount % MINOR_CYCLE_NUM;
+//     IntMasterEnable();
+// }
 
 
 void 
