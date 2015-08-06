@@ -237,7 +237,7 @@ int main( void )
         are received via this queue. 
     */
     
-   xOLEDQueue = xQueueCreate( mainOLED_QUEUE_SIZE, sizeof( xOLEDMessage ) );
+    xOLEDQueue = xQueueCreate( mainOLED_QUEUE_SIZE, sizeof( xOLEDMessage ) );
 
 
 
@@ -266,7 +266,7 @@ int main( void )
     // xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);
     // xTaskCreate(vehicleComms,      "vehicleComms",      100, (void*)&vehicleCommsData,   2, NULL);
     // xTaskCreate(thrusterSub,       "thrusterSub",       100, (void*)&thrusterSubData,    2, NULL);
-    xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
+    // xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
     // xTaskCreate(consoleKeyboard,   "consoleKeyboard",   100, (void*)&keyboardData,       2, NULL);
     // xTaskCreate(warningAlarm,      "warningAlarm",      100, (void*)&warningAlarmData,   2, NULL);
     

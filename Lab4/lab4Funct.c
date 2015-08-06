@@ -9,7 +9,10 @@
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
-#include "drivers/rit128x96x4.h"
+#include "lcd_message.h" // OLED
+#include "rit128x96x4.h" // OLED
+#include "FreeRTOS.h"
+#include "queue.h"
 
 
 // Constants defined in main
@@ -61,13 +64,20 @@ void schedule(scheduleDataStruct scheduleData)
 // Modifies: powerConsumption, powerGeneration, battLevel, panelState
 void powerSub(void* taskDataPtr)
 {
+    powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
+    unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
+    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+    unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
+    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
+    Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
+    
     while(1)
     {
         // // Start oscillascope measurement
         // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
 
         powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
-
         unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
         unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
         unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
@@ -183,16 +193,18 @@ void powerSub(void* taskDataPtr)
 
 void solarPanelControl(void* taskDataPtr)
 {
+    solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
+    Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
+    Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
+    Bool* panelDeploy = (Bool*) solarPanelPtr->panelDeployPtr;
+    Bool* panelRetract = (Bool*) solarPanelPtr->panelRetractPtr;
+    Bool* panelMotorSpeedUp = (Bool*) solarPanelPtr->panelMotorSpeedUpPtr;
+    Bool* panelMotorSpeedDown = (Bool*) solarPanelPtr->panelMotorSpeedDownPtr;
+    unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
+    
     while(1)
     {
-        solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
-        Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
-        Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
-        Bool* panelDeploy = (Bool*) solarPanelPtr->panelDeployPtr;
-        Bool* panelRetract = (Bool*) solarPanelPtr->panelRetractPtr;
-        Bool* panelMotorSpeedUp = (Bool*) solarPanelPtr->panelMotorSpeedUpPtr;
-        Bool* panelMotorSpeedDown = (Bool*) solarPanelPtr->panelMotorSpeedDownPtr;
-        unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
+        
         // Compute the PWM period based on the system clock.
         // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
         unsigned long ulPeriod = SysCtlClockGet() / 4000000; //run at 2Hz
@@ -237,6 +249,10 @@ void solarPanelControl(void* taskDataPtr)
 
 void consoleKeyboard(void* taskDataPtr)
 {
+    keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;
+    Bool* panelMotorSpeedUp = (Bool*) keyboardData->panelMotorSpeedUpPtr;
+    Bool* panelMotorSpeedDown = (Bool*) keyboardData->panelMotorSpeedDownPtr;
+  
     while(1)
     {
         keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;
@@ -268,29 +284,27 @@ void consoleKeyboard(void* taskDataPtr)
 // Modifies: thrust command.
 void satelliteComms(void* taskDataPtr)
 {
+    satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
+    unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
+    Bool* isMajorCycle = (Bool*) commPtr->isMajorCyclePtr;
+    Bool* fuelLowSignal = (Bool*)commPtr->fuelLowPtr;
+    Bool* battLowSignal = (Bool*)commPtr->battLowPtr;
+    unsigned short* battLevelSignal = (unsigned short*)commPtr->battLevelPtr;
+    uint32_t* fuelLevelSignal = (uint32_t*)commPtr->fuelLevelPtr;
+    unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
+    unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
+    Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr; 
+    
     while(1)
     {    
-        satelliteCommsDataStruct* commPtr = (satelliteCommsDataStruct*) taskDataPtr;
-
-        unsigned short* globalCount = (unsigned short*) commPtr->globalCountPtr;
-        Bool* isMajorCycle = (Bool*) commPtr->isMajorCyclePtr;
+        
         if (isMajorCycle)
         {
-            // send info, use print as a method to send
-            Bool* fuelLowSignal = (Bool*)commPtr->fuelLowPtr;
-            Bool* battLowSignal = (Bool*)commPtr->battLowPtr;
-            unsigned short* battLevelSignal = (unsigned short*)commPtr->battLevelPtr;
-            uint32_t* fuelLevelSignal = (uint32_t*)commPtr->fuelLevelPtr;
-            unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
-            unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
-            Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr; 
-
             // receive (rando) thrust commands, generate from 0 to 2^16 -1
             uint16_t thrustCommand = randomInteger(globalCount);
             // uint16_t thrustCommand = 0x0FF1;
             *(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
         }    
-
         vTaskDelay(100);    
     }
     return;
@@ -299,14 +313,15 @@ void satelliteComms(void* taskDataPtr)
 
 void vehicleComms(void* taskDataPtr)
 {
+    vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
+    unsigned char* vehicleCommandLocal = (unsigned char*) dataPtr->vehicleCommandPtr;
+    unsigned char* vehicleResponseLocal = (unsigned char*) dataPtr->vehicleResponsePtr;
+    
     while(1)
     {
         // Clean up the screen
         UARTSend((unsigned char *)"\033[2J", 6);
-
-        vehicleCommsStruct* dataPtr = (vehicleCommsStruct*) taskDataPtr;
-        unsigned char* vehicleCommandLocal = (unsigned char*) dataPtr->vehicleCommandPtr;
-        unsigned char* vehicleResponseLocal = (unsigned char*) dataPtr->vehicleResponsePtr;
+        
         vehicleResponseLocal[0] = 'A';
         vehicleResponseLocal[1] = ' ';
 
@@ -339,14 +354,13 @@ void vehicleComms(void* taskDataPtr)
 // Modifies: global constant fuelLevel, taking in count of duration.
 void thrusterSub(void* taskDataPtr)
 {
+    thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr; 
+    // unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
+    Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
+    uint32_t* fuelPtr = (uint32_t*) thrustCommandPtr->fuelLevelPtr;
+    
     while(1) 
     {
-        thrusterSubDataStruct* thrustCommandPtr = (thrusterSubDataStruct*) taskDataPtr;
-            
-        // unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
-        Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
-        uint32_t* fuelPtr = (uint32_t*) thrustCommandPtr->fuelLevelPtr;
-
         unsigned short left = 0;
         unsigned short right = 0;
         unsigned short up = 0;
@@ -391,6 +405,17 @@ void thrusterSub(void* taskDataPtr)
 
 void oledDisplay(void* taskDataPtr)
 {
+    oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
+        
+    unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
+    uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
+    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
+    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
+    Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
+    Bool* battLow = (Bool*) dataPtr->battLowPtr;
+    // uint32_t* battTemp = (uint32_t*) dataPtr->battTempPtr;
+    // unsigned long* distance = (unsigned long*) dataPtr->transportDistancePtr;
+  
     xOLEDMessage xMsgTest;
     xOLEDMessage xMsgPanelState;
     xOLEDMessage xMsgBattLev;
@@ -405,18 +430,6 @@ void oledDisplay(void* taskDataPtr)
         xMsgTest.pcMessage = "Hello, World!";
         //Send the message to the OLED gatekeeper for display.
         xQueueSend( xOLEDQueue, &xMsgTest, 0 );
-
-        oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
-        
-        unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
-        uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
-        unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-        Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-        Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
-        Bool* battLow = (Bool*) dataPtr->battLowPtr;
-        // uint32_t* battTemp = (uint32_t*) dataPtr->battTempPtr;
-        // unsigned long* distance = (unsigned long*) dataPtr->transportDistancePtr;
-
         // Push select button to change to annunciation mode on OLED
         long buttonRead = 2;
         char buffer [100];
@@ -496,16 +509,16 @@ void oledDisplay(void* taskDataPtr)
 // Modifies: fuelLow pointer, battLow pointer.
 void warningAlarm(void* taskDataPtr)
 {
+    warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
+    Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
+    Bool* battLow = (Bool*)dataPtr->battLowPtr;
+    unsigned int* battLevel = (unsigned int*)dataPtr->battLevelPtr;
+    uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
+    unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
+    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
+        
     while(1) 
     {  
-        warningAlarmDataStruct* dataPtr = (warningAlarmDataStruct*) taskDataPtr;
-        Bool* fuelLow = (Bool*)dataPtr->fuelLowPtr;
-        Bool* battLow = (Bool*)dataPtr->battLowPtr;
-        unsigned int* battLevel = (unsigned int*)dataPtr->battLevelPtr;
-        uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
-        unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
-        Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
-
         if (*fuelLevel < FUEL_WARN_LEVEL) { *fuelLow = TRUE; } else { *fuelLow = FALSE; }
         if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
         
