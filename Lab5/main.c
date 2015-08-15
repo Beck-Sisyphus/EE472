@@ -91,7 +91,8 @@ const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 
 // Define Global Variables storing status data
 unsigned int batteryLevelArray[16] = {100};
-unsigned int battTemp;
+unsigned int battTempArray0[16] = {0};
+unsigned int battTempArray1[16] = {0};
 unsigned int transportDistance;
 uint32_t fuelLevel;
 unsigned short powerConsumption;
@@ -121,7 +122,9 @@ Bool panelAndKeypadTask;
 // Global variable created for passing data through different function safer
 unsigned short globalCount;
 unsigned long pulsecount;
-unsigned short blinkTimer;
+unsigned short blinkTimer8;
+unsigned short blinkTimer10;
+unsigned short tempAlarm;
 uint32_t fuelLevellll;
 
 /*--------------------------------------------------------*/
@@ -235,7 +238,7 @@ int main( void )
     
     powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTemp, &battOverTemp, &powerConsumption, &powerGeneration};
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
-    satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+    satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
     thrusterSubDataStruct thrusterSubData       = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
     vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
     oledDisplayDataStruct oledDisplayData       = {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTemp, &fuelLevel, &powerConsumption, &powerGeneration, &transportDistance, &globalCount, &isMajorCycle};
@@ -285,7 +288,6 @@ int main( void )
 void initializeGlobalVariables()
 {
   // Initialization
-  battTemp = 0;
   battOverTemp = FALSE;
 
   transportDistance = 0;
@@ -309,7 +311,9 @@ void initializeGlobalVariables()
 
   isMajorCycle = TRUE;
   globalCount = 0;
-  blinkTimer = 0;
+  blinkTimer8 = 0;
+  blinkTimer10 = 0;
+  tempAlarm = 0;
   pulsecount = 0;
 }
 

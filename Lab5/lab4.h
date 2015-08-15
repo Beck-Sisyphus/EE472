@@ -32,7 +32,8 @@
 		void* panelDeployPtr;
 		void* panelRetractPtr;
 		void* battLevelPtr;
-		void* battTempPtr;
+		void* battTempPtr0;
+		void* battTempPtr1;
 		void* battOverTempPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
@@ -118,7 +119,7 @@
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
 	void insertTask(TCB* node, TCB** head, TCB** tail);
 	void deleteTask(TCB* node, TCB** head, TCB** tail);
-	uint16_t randomInteger(const unsigned short* globalCount);
+	short randomInteger(int low, int high);
 	
 	void schedule();
 	void powerSub(void* taskDataPtr);

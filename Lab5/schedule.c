@@ -29,7 +29,9 @@ extern const uint32_t HALF_FUEL_LEVEL;
 extern const uint32_t FUEL_WARN_LEVEL;
 extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
-extern unsigned short blinkTimer;
+extern unsigned short blinkTimer8;
+extern unsigned short blinkTimer10;
+extern unsigned short tempAlarm;
 extern uint32_t fuelLevellll;
 extern Bool panelDone;
 extern Bool hasNewKeyboardInput;
@@ -62,7 +64,9 @@ void schedule(scheduleDataStruct scheduleData)
         }
         SysCtlDelay(sysDelayLength);
 
-        blinkTimer = (blinkTimer + 1) % 8;
+        blinkTimer8 = (blinkTimer8 + 1) % 8;
+        blinkTimer10 = (blinkTimer10 + 1) % 10;
+        tempAlarm = (tempAlarm + 1);
     }
     vTaskDelay(100);
 }
