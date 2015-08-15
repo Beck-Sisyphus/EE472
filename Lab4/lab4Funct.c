@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "lab4.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
@@ -11,8 +12,12 @@
 #include "driverlib/sysctl.h"
 #include "lcd_message.h" // OLED
 #include "rit128x96x4.h" // OLED
+
+/* Scheduler includes. */
 #include "FreeRTOS.h"
+#include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 
 // Constants defined in main
@@ -74,17 +79,6 @@ void powerSub(void* taskDataPtr)
     
     while(1)
     {
-        // // Start oscillascope measurement
-        // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0xFF);
-
-        powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
-        unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
-        unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-        unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
-        Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-        Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
-        Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
-
         //powerConsumption
         static unsigned short runCount = 1;         //tracks even/odd calls of this function
         static Bool consumpUpDown = TRUE;
@@ -184,9 +178,6 @@ void powerSub(void* taskDataPtr)
         // Add new reading to front of circular buffer
         battLevel[0] = adcReadingConverted;
 
-        // // End oscillascope measurement
-        // GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0x00);
-
         vTaskDelay(100);
     }
 }
@@ -207,14 +198,14 @@ void solarPanelControl(void* taskDataPtr)
         
         // Compute the PWM period based on the system clock.
         // Base clock 8MHz, want 2Hz for panel motor ( / 4000000)
-        unsigned long ulPeriod = SysCtlClockGet() / 4000000; //run at 2Hz
-        static unsigned long dutyCycle = 50;
+        unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 2Hz
+        static unsigned long dutyCycle = 5;                                                                             //changed because it's annoying
         
         // Read keypad input and adjust duty cycle based on keypress
-        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_4)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2)){
             dutyCycle += 5;
         }
-        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_5)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_3)){
             dutyCycle -= 5;
         }
         dutyCycle = dutyCycle % 100;
@@ -242,7 +233,7 @@ void solarPanelControl(void* taskDataPtr)
             PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
             PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         }
-
+        PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         vTaskDelay(100);
     }
 }
@@ -255,27 +246,22 @@ void consoleKeyboard(void* taskDataPtr)
   
     while(1)
     {
-        keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;
-        Bool* panelMotorSpeedUp = (Bool*) keyboardData->panelMotorSpeedUpPtr;
-        Bool* panelMotorSpeedDown = (Bool*) keyboardData->panelMotorSpeedDownPtr;
         // Read keypad input and adjust duty cycle based on keypress
-        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_4)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2)){
             *panelMotorSpeedUp = TRUE;
         }
         else {
             *panelMotorSpeedUp = FALSE;
         }
         
-        if (GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_5)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_3)){
             *panelMotorSpeedDown = TRUE;
         }
         else {
             *panelMotorSpeedDown = FALSE;
         }
-
         vTaskDelay(100);
     }
-    return;
 }
 
 // Communication only store the command without decoding it
@@ -297,7 +283,6 @@ void satelliteComms(void* taskDataPtr)
     
     while(1)
     {    
-        
         if (isMajorCycle)
         {
             // receive (rando) thrust commands, generate from 0 to 2^16 -1
@@ -307,7 +292,6 @@ void satelliteComms(void* taskDataPtr)
         }    
         vTaskDelay(100);    
     }
-    return;
 }
 
 
@@ -358,29 +342,35 @@ void thrusterSub(void* taskDataPtr)
     // unsigned short* globalCount = (unsigned short*) thrustCommandPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) thrustCommandPtr->isMajorCyclePtr;
     uint32_t* fuelPtr = (uint32_t*) thrustCommandPtr->fuelLevelPtr;
+    uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
+    static unsigned short left = 0;
+    static unsigned short right = 0;
+    static unsigned short up = 0;
+    static unsigned short down = 0;
+    static unsigned short magnitude = 0;
+    static unsigned short duration = 0;
     
     while(1) 
     {
-        unsigned short left = 0;
-        unsigned short right = 0;
-        unsigned short up = 0;
-        unsigned short down = 0;
-        static unsigned short magnitude = 0;
-        static unsigned short duration = 0;
-
         // Only updates the magnitude when the duration is positive, otherwise no change on magnitude
         if (*isMajorCycle)
         {
-            uint16_t command = *(uint16_t*)(thrustCommandPtr->thrustPtr);
-
-            if (command & 0x0001) { left  = 1; } else { left  = 0;}
-            if (command & 0x0002) { right = 1; } else { right = 0;}
-            if (command & 0x0004) { up    = 1; } else { up    = 0;}
-            if (command & 0x0008) { down  = 1; } else { down  = 0;}
+            
             // get duration, unsigned char pointer moves every 8 bits
             // so it can separate first 8 bits and last 8 bits
             duration = *((unsigned char*)&command + 1);
             if (duration) { magnitude = (command >> 4) & 0x000F; }
+            if (command & 0x0001) 
+            { 
+              left  = 1; 
+            } 
+            else 
+            { 
+              left  = 0;
+            }
+            if (command & 0x0002) { right = 1; } else { right = 0;}
+            if (command & 0x0004) { up    = 1; } else { up    = 0;}
+            if (command & 0x0008) { down  = 1; } else { down  = 0;}
         }
 
         // If the new command ask use a 

@@ -239,8 +239,6 @@ int main( void )
     
     xOLEDQueue = xQueueCreate( mainOLED_QUEUE_SIZE, sizeof( xOLEDMessage ) );
 
-
-
     initializeGlobalVariables();
     
     powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &battLevelPtr, &powerConsumption, &powerGeneration};
@@ -258,17 +256,14 @@ int main( void )
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
-    xTaskCreate(vTask1, "Task 1", 100,NULL, 4,NULL);
-    xTaskCreate(vTask2, "Task 2", 100,NULL, 2,NULL);
-    xTaskCreate(vTask3, "Task 3", 100,NULL, 3,NULL);
-    // xTaskCreate(powerSub,          "powerSub",          100, (void*)&powerSubData,       1, NULL);
-    // xTaskCreate(solarPanelControl, "solarPanelControl", 100, (void*)&solarPanelData,     2, NULL);
-    // xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);
-    // xTaskCreate(vehicleComms,      "vehicleComms",      100, (void*)&vehicleCommsData,   2, NULL);
-    // xTaskCreate(thrusterSub,       "thrusterSub",       100, (void*)&thrusterSubData,    2, NULL);
-    // xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
-    // xTaskCreate(consoleKeyboard,   "consoleKeyboard",   100, (void*)&keyboardData,       2, NULL);
-    // xTaskCreate(warningAlarm,      "warningAlarm",      100, (void*)&warningAlarmData,   2, NULL);
+    //xTaskCreate(powerSub,          "powerSub",          100, (void*)&powerSubData,       1, NULL);
+    xTaskCreate(solarPanelControl, "solarPanelControl", 100, (void*)&solarPanelData,     2, NULL);
+    xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);
+    //xTaskCreate(vehicleComms,      "vehicleComms",      100, (void*)&vehicleCommsData,   2, NULL);
+    xTaskCreate(thrusterSub,       "thrusterSub",       100, (void*)&thrusterSubData,    2, NULL);
+    xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
+    xTaskCreate(consoleKeyboard,   "consoleKeyboard",   100, (void*)&keyboardData,       2, NULL);
+    xTaskCreate(warningAlarm,      "warningAlarm",      100, (void*)&warningAlarmData,   2, NULL);
     
     /* 
       Configure the high frequency interrupt used to measure the interrupt
@@ -313,64 +308,6 @@ void initializeGlobalVariables()
   isMajorCycle = TRUE;
   globalCount = 0;
   blinkTimer = 0;
-}
-
-/*
-  three dummy tasks
-*/
-
-void vTask1(void *vParameters)
-{
-  xOLEDMessage xMessage;
-   
-  volatile unsigned long ul;  
-  const char *T1Text = "Task 1 is running\n\r";
-
-  xMessage.pcMessage = "Bon Jour, Task 1";
-  
-  while(1)
-  {
-      //Send the message to the OLED gatekeeper for display.
-      xQueueSend( xOLEDQueue, &xMessage, 0 );
-    
-      vTaskDelay(1000);
-  }
-}
-
-void vTask2(void *vParameters)
-{
-  xOLEDMessage xMessage;
-   
-  volatile unsigned long ul;  
-  const char *T1Text = "Task 2 is running\n\r";
-  
-  xMessage.pcMessage = "Bon Jour, Task 2";
-  
-  while(1)
-  {
-     // Send the message to the OLED gatekeeper for display. 
-     xQueueSend( xOLEDQueue, &xMessage, 0 );
-    
-     vTaskDelay(3000);
-  }
-}
-
-void vTask3(void *vParameters)
-{
-  xOLEDMessage xMessage;
-   
-  volatile unsigned long ul;  
-  const char *T1Text = "Task 3 is running\n\r";
-  
-  xMessage.pcMessage = "Bon Jour, Task 3";
-  
-  while(1)
-  {
-      // Send the message to the OLED gatekeeper for display. 
-      xQueueSend( xOLEDQueue, &xMessage, 0 );
-    
-      vTaskDelay(2000);
-  }
 }
 
 /*
@@ -470,11 +407,10 @@ void prvSetupHardware( void )
     // GPIODirModeSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3), GPIO_DIR_MODE_HW );
     // GPIOPadConfigSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3 ), GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD ); 
   
-    //enableOLED();
+    enableSysClock();
     enableGPIO();
     enableADC();
     enableUART();
-    //enableTimer();
 }
 
 
