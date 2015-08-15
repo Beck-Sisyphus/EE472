@@ -40,19 +40,18 @@ extern unsigned int* battLevelPtr;
   Defined and initialized in main.c 
 */
 extern xQueueHandle xOLEDQueue;
-
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
+extern unsigned long pulsecount;
 
 // Control the major or minor cycle in main function
-void transport(transportDataStruct transportData)
+void transport(void* taskDataPtr)
 {
-    transportDataStruct* dataPtr = (transportDataStruct*) transportData;
-
+    transportDataStruct* dataPtr = (transportDataStruct*) taskDataPtr;
+    unsigned long freq;
     while (1){
+      /*
         freq = (pulsecount-1) * 100 ;
-        pulsecount = 0; 
+        pulsecount = 0;
+      */
+        vTaskDelay(100);
     }
-    vTaskDelay(100);
 }

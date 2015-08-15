@@ -104,6 +104,8 @@ Bool panelRetract;
 Bool panelMotorSpeedUp;
 Bool panelMotorSpeedDown;
 Bool panelDone;
+xTaskHandle solarPanelHandle;
+xTaskHandle consoleKeyboardHandle;
 // 16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 uint16_t thrust; 
 Bool fuelLow;
@@ -236,20 +238,20 @@ int main( void )
 
     initializeGlobalVariables();
     
-    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTemp, &battOverTemp, &powerConsumption, &powerGeneration};
+    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
     satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
     thrusterSubDataStruct thrusterSubData       = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
     vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-    oledDisplayDataStruct oledDisplayData       = {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTemp, &fuelLevel, &powerConsumption, &powerGeneration, &transportDistance, &globalCount, &isMajorCycle};
+    oledDisplayDataStruct oledDisplayData       = {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &transportDistance, &globalCount, &isMajorCycle};
     keyboardDataStruct keyboardData             = {&panelMotorSpeedUp, &panelMotorSpeedDown};
     warningAlarmDataStruct warningAlarmData     = {&fuelLow, &battLow, &batteryLevelArray, &battOverTemp, &fuelLevel, &globalCount, &isMajorCycle};
     scheduleDataStruct scheduleData             = {&globalCount, &isMajorCycle};
     transportDataStruct transportData           = {&globalCount};
 
     // Create Handles for temp tasks
-    xTaskHandle solarPanelHandle = NULL;
-    xTaskHandle consoleKeyboardHandle = NULL;
+    solarPanelHandle = NULL;
+    consoleKeyboardHandle = NULL;
 
     /* Start the tasks */
     
@@ -257,15 +259,15 @@ int main( void )
     xTaskCreate(schedule,          "schedule",          100, (void*)&scheduleData,       1, NULL);
     xTaskCreate(powerSub,          "powerSub",          100, (void*)&powerSubData,       2, NULL);
     xTaskCreate(solarPanelControl, "solarPanelControl", 100, (void*)&solarPanelData,     2, &solarPanelHandle);
-    xTaskSuspend(solarPanelHandle);
+    vTaskSuspend(solarPanelHandle);
     xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);
     xTaskCreate(vehicleComms,      "vehicleComms",      100, (void*)&vehicleCommsData,   2, NULL);
     xTaskCreate(thrusterSub,       "thrusterSub",       100, (void*)&thrusterSubData,    2, NULL);
     xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
     xTaskCreate(consoleKeyboard,   "consoleKeyboard",   100, (void*)&keyboardData,       2, &consoleKeyboardHandle);
-    xTaskSuspend(consoleKeyboardHandle);
+    vTaskSuspend(consoleKeyboardHandle);
     xTaskCreate(warningAlarm,      "warningAlarm",      100, (void*)&warningAlarmData,   2, NULL);
-    xTaskCreate(transport,         "transport",         100, (void*)&transportData,      2, NULL);
+    //xTaskCreate(transport,         "transport",         100, (void*)&transportData,      2, NULL);
     
     /* 
       Configure the high frequency interrupt used to measure the interrupt

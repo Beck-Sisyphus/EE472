@@ -59,6 +59,8 @@
 		void* battLowPtr;
 		void* panelStatePtr;
 		void* battLevelPtr;
+		void* battTempPtr0;
+		void* battTempPtr1;
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
@@ -88,7 +90,8 @@
 		void* panelDeployPtr;
 		void* panelRetractPtr;
 		void* battLevelPtr;
-		void* battTempPtr;
+		void* battTempPtr0;
+		void* battTempPtr1;
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
@@ -109,7 +112,7 @@
         
         
 	//Function Prototypes
-        void enableSysClock();
+    void enableSysClock();
 	void enableOLED();
 	void enableGPIO();
 	void enableADC();
@@ -119,9 +122,10 @@
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
 	void insertTask(TCB* node, TCB** head, TCB** tail);
 	void deleteTask(TCB* node, TCB** head, TCB** tail);
-	short randomInteger(int low, int high);
+	unsigned short randomInteger(int, int);
 	
-	void schedule();
+	void schedule(void* taskDataPtr);
+    void transport(void* taskDataPtr);
 	void powerSub(void* taskDataPtr);
 	void solarPanelControl(void* taskDataPtr);
 	void satelliteComms(void* taskDataPtr);

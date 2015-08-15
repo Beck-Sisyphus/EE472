@@ -29,7 +29,9 @@ extern const uint32_t HALF_FUEL_LEVEL;
 extern const uint32_t FUEL_WARN_LEVEL;
 extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
-extern unsigned short blinkTimer;
+extern unsigned short blinkTimer8;
+extern unsigned short blinkTimer10;
+extern unsigned short tempAlarm;
 extern uint32_t fuelLevellll;
 extern Bool panelDone;
 extern Bool hasNewKeyboardInput;
@@ -40,11 +42,6 @@ extern unsigned int* battLevelPtr;
   Defined and initialized in main.c 
 */
 extern xQueueHandle xOLEDQueue;
-
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
-
 
 // Require : warning alarm data struct;
 // Modifies: fuelLow pointer, battLow pointer.
@@ -57,6 +54,7 @@ void warningAlarm(void* taskDataPtr)
     uint32_t* fuelLevel = (uint32_t*)dataPtr->fuelLevelPtr;
     unsigned short* globalCount = (unsigned short*) dataPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
+    Bool* battOverTemp = (Bool*) dataPtr->battOverTempPtr;
         
     while(1) 
     {  
@@ -83,34 +81,74 @@ void warningAlarm(void* taskDataPtr)
             //SPEC CHANGE!!! YELLOW is BATT, RED is FUEL
                 if ((*battLevel<BATT_WARN_LEVEL)&&(*battLevel<HALF_BATT_LEVEL)){
                     //TODO flash yellow 1 sec
-                    if ((0==blinkTimer)||(2==blinkTimer)||(4==blinkTimer)||
-                        (6==blinkTimer))
+                    if ((0==blinkTimer8)||(2==blinkTimer8)||(4==blinkTimer8)||
+                        (6==blinkTimer8))
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-                    if ((1==blinkTimer)||(3==blinkTimer)||(5==blinkTimer)||
-                        (7==blinkTimer))
+                    if ((1==blinkTimer8)||(3==blinkTimer8)||(5==blinkTimer8)||
+                        (7==blinkTimer8))
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
                 }
                 else if (*battLevel<HALF_BATT_LEVEL){
                     //TODO flash yellow 2 sec
-                    if ((0==blinkTimer)||(1==blinkTimer)||(4==blinkTimer)||(5==blinkTimer))  
+                    if ((0==blinkTimer8)||(1==blinkTimer8)||(4==blinkTimer8)||(5==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-                    if ((2==blinkTimer)||(3==blinkTimer)||(6==blinkTimer)||(7==blinkTimer))  
+                    if ((2==blinkTimer8)||(3==blinkTimer8)||(6==blinkTimer8)||(7==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
                 }
                 if ((*fuelLevel<FUEL_WARN_LEVEL)&(*fuelLevel<HALF_FUEL_LEVEL)){
                     //TODO flash red 1 sec
-                    if ((0==blinkTimer)||(2==blinkTimer)||(4==blinkTimer)||(6==blinkTimer))  
+                    if ((0==blinkTimer8)||(2==blinkTimer8)||(4==blinkTimer8)||(6==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-                    if ((1==blinkTimer)||(3==blinkTimer)||(5==blinkTimer)||(7==blinkTimer))  
+                    if ((1==blinkTimer8)||(3==blinkTimer8)||(5==blinkTimer8)||(7==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
                 }
                 else if (*fuelLevel<HALF_FUEL_LEVEL){
                     //TODO flash red 2 sec
-                    if ((0==blinkTimer)||(1==blinkTimer)||(4==blinkTimer)||(5==blinkTimer))  
+                    if ((0==blinkTimer8)||(1==blinkTimer8)||(4==blinkTimer8)||(5==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-                    if ((2==blinkTimer)||(3==blinkTimer)||(6==blinkTimer)||(7==blinkTimer))  
+                    if ((2==blinkTimer8)||(3==blinkTimer8)||(6==blinkTimer8)||(7==blinkTimer8))  
                         GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
                 }
+        }
+
+        // Part 4 audible alarm if battery is over temperature
+        if ((*battOverTemp))
+        {
+            // TODO set audible alarm
+
+
+            // TODO button to acknowledge alarm & reset tempAlarm to 0
+
+
+            // tempAlarm has been unacknowledged for >15s
+            if (tempAlarm >= 15) 
+            {
+                // Prevent tempAlarm from overflowing
+                tempAlarm = 15;
+
+                // Flash red and yellow LEDs for 5s at 10Hz
+                if (6 > blinkTimer10)
+                {
+                    // Red
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+                    vTaskDelay(50); // Delay 50ms
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
+
+                    // Yellow
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+                    vTaskDelay(50); // Delay 50ms
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+                }
+
+                // Hold red and yellow LEDs solid for 5s
+                if (6==blinkTimer10)  
+                {
+                    // Red
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+                    // Yellow
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+                }
+            }
         }
         vTaskDelay(100);
     } 

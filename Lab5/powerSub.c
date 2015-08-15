@@ -40,10 +40,8 @@ extern Bool hasNewKeyboardInput;
   Defined and initialized in main.c 
 */
 extern xQueueHandle xOLEDQueue;
-
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
+extern xTaskHandle solarPanelHandle;
+extern xTaskHandle consoleKeyboardHandle;
 
 void powerSub(void* taskDataPtr)
 {
@@ -60,8 +58,6 @@ void powerSub(void* taskDataPtr)
     
     while(1)
     {
-      /*
-        //TODO FIX ME!!!
         if (!(*panelState) && panelDone)
         {
             *panelState = TRUE;
@@ -76,19 +72,19 @@ void powerSub(void* taskDataPtr)
         //powerGeneration
         if (!(panelState)&&((*battLevel)<=20)) {                       //else solar panel not deployed...
               //if battery less than/equal to 20%
-              xTaskResume(solarPanelHandle);
-              xTaskResume(consoleKeyboardHandle);
+              vTaskResume(solarPanelHandle);
+              vTaskResume(consoleKeyboardHandle);
               (*panelDeploy) = TRUE;              //deploy solar panel
               (*panelRetract) = FALSE;
         } 
         if (panelState&&((*battLevel)>95)) {                          //if solar panel is deployed...
               //if battery greater than 95%
-              xTaskResume(solarPanelHandle);
-              xTaskResume(consoleKeyboardHandle);
+              vTaskResume(solarPanelHandle);
+              vTaskResume(consoleKeyboardHandle);
               (*panelDeploy) = FALSE;
               (*panelRetract)=TRUE;               //retract solar panel
         }
-        */
+        
         static unsigned long adc0Reading[8] = {0};
 
         // Below code adapted from temperature_sensor.c in IAR examples/peripherals

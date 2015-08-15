@@ -2,15 +2,19 @@
 #include <stdint.h>
 #include "lab4.h"
 
+extern unsigned short globalCount;
+
 // Implement a new pseudo random number generator
-short randomInteger(int low, int high)
+unsigned short randomInteger(int low, int high)
 {
   double randNum = 1.0;
   int multiplier = 2743;
   int addOn = 5923;
+  short seed;
   double max = 65535 + 1.0;
+  seed = globalCount;
 
-  uint16_t retVal = 0;
+  unsigned short retVal = 0;
 
   if (low > high)
     retVal = randomInteger(high, low);

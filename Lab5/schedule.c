@@ -43,15 +43,13 @@ extern unsigned int* battLevelPtr;
 */
 extern xQueueHandle xOLEDQueue;
 
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
 const int sysDelayLength = 1000000;
 
 // Control the major or minor cycle in main function
-void schedule(scheduleDataStruct scheduleData)
+void schedule(void* taskDataPtr)
 {
-    scheduleDataStruct* dataPtr = (scheduleDataStruct*) scheduleData;
-    Bool* isMajorCycle = (Bool*) dataPtr.isMajorCyclePtr;
+    scheduleDataStruct* dataPtr = (scheduleDataStruct*) taskDataPtr;
+    Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
     while(1){
         //Execute a Major Cycle when the count is zero.
         if (0  == globalCount) 
@@ -67,6 +65,6 @@ void schedule(scheduleDataStruct scheduleData)
         blinkTimer8 = (blinkTimer8 + 1) % 8;
         blinkTimer10 = (blinkTimer10 + 1) % 10;
         tempAlarm = (tempAlarm + 1);
+        vTaskDelay(100);
     }
-    vTaskDelay(100);
 }

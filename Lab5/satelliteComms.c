@@ -41,11 +41,6 @@ extern unsigned int* battLevelPtr;
 */
 extern xQueueHandle xOLEDQueue;
 
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
-
-
 // Communication only store the command without decoding it
 // Require : satellite communication data struct,
 //           randomInteger function;
@@ -59,22 +54,19 @@ void satelliteComms(void* taskDataPtr)
     Bool* battLowSignal = (Bool*)commPtr->battLowPtr;
     unsigned short* battLevelSignal = (unsigned short*)commPtr->battLevelPtr;
     uint32_t* fuelLevelSignal = (uint32_t*)commPtr->fuelLevelPtr;
+    unsigned short* command = (unsigned short*)(commPtr->thrustPtr);
     unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
     unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
-    Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr; 
-    
+    Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;    
     while(1)
     {    
-        
         if (isMajorCycle)
         {
             // receive (rando) thrust commands, generate from 0 to 2^16 -1
-            uint16_t thrustCommand = randomInteger(0,65535);
+            unsigned short thrustCommand = randomInteger(0,65535);
             thrustCommand = thrustCommand % 65535;
-            // uint16_t thrustCommand = 0x0FF1;
-            *(uint16_t*)(commPtr->thrustPtr) = thrustCommand;
+            *command = thrustCommand;
         }    
         vTaskDelay(100);    
     }
-    return;
 }

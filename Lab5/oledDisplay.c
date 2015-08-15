@@ -41,11 +41,6 @@ extern unsigned int* battLevelPtr;
 */
 extern xQueueHandle xOLEDQueue;
 
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
-
-
 void oledDisplay(void* taskDataPtr)
 {
     oledDisplayDataStruct* dataPtr = (oledDisplayDataStruct*) taskDataPtr;
@@ -56,7 +51,8 @@ void oledDisplay(void* taskDataPtr)
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
-    unsigned int* battTemp = (unsigned int*) dataPtr->battTempPtr;
+    unsigned int* battTemp0 = (unsigned int*) dataPtr->battTempPtr0;
+    unsigned int* battTemp1 = (unsigned int*) dataPtr->battTempPtr1;
     unsigned int* distance = (unsigned int*) dataPtr->transportDistancePtr;
   
     xOLEDMessage xMsgBlank;
@@ -99,7 +95,7 @@ void oledDisplay(void* taskDataPtr)
 
           // Display battery temperature
           char tempBuffer [20];
-          snprintf(tempBuffer, 20, "Battery Temp: %d  ", *battTemp);
+          snprintf(tempBuffer, 20, "Battery Temp: %d  ", *battTemp0);
           xMsgBattTemp.pcMessage = tempBuffer;
           xQueueSend( xOLEDQueue, &xMsgBattTemp, 0 );
 

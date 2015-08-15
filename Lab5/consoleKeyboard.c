@@ -41,11 +41,6 @@ extern unsigned int* battLevelPtr;
 */
 extern xQueueHandle xOLEDQueue;
 
-// local variable used in functions
-const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
-
-
 void consoleKeyboard(void* taskDataPtr)
 {
     keyboardDataStruct* keyboardData = (keyboardDataStruct*) taskDataPtr;

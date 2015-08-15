@@ -43,8 +43,6 @@ extern xQueueHandle xOLEDQueue;
 
 // local variable used in functions
 const int fuelBuringRatio = 2000; // Set as a large number in demo
-const int sysDelayLength = 1000000;
-
 
 // Require : the minor clock running at 1 second per cycle, 
 //          and thruster sub data struct; 
