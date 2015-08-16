@@ -107,11 +107,11 @@ void powerSub(void* taskDataPtr)
         // Then, multiply by 0.098 to convert to percentage of 36V
         unsigned int adcReadingConverted = (int) (adc0Reading[0] * 0.098);
         // move previous readings to next array slot
-        for (int i = 0; i < 15; ++i)
+        for (int i = 15; i > 0; i--)
         {
-            battLevel[i+1] = battLevel[i];
-            battTempArr0[i+1] = battTempArr0[i];
-            battTempArr1[i+1] = battTempArr1[i];
+            battLevel[i] = battLevel[i-1];
+            battTempArr0[i] = battTempArr0[i-1];
+            battTempArr1[i] = battTempArr1[i-1];
         }
         // Add new reading to front of circular buffer
         battLevel[0] = adcReadingConverted;
