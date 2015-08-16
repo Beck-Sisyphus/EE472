@@ -34,14 +34,14 @@ void consoleKeyboard(void* taskDataPtr)
     while(1)
     {
         // Read keypad input and adjust duty cycle based on keypress
-        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_3)){
             *panelMotorSpeedUp = TRUE;
         }
         else {
             *panelMotorSpeedUp = FALSE;
         }
         
-        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_3)){
+        if (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2)){
             *panelMotorSpeedDown = TRUE;
         }
         else {

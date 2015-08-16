@@ -238,8 +238,7 @@ int main( void )
 
     initializeGlobalVariables();
     
-    transportDataStruct transportData           = {&globalCount};
-    solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
+    DebugWorkGodDamnit DebugWork                = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
     satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
     thrusterSubDataStruct thrusterSubData       = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
     vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
@@ -247,9 +246,11 @@ int main( void )
     keyboardDataStruct keyboardData             = {&panelMotorSpeedUp, &panelMotorSpeedDown};
     warningAlarmDataStruct warningAlarmData     = {&fuelLow, &battLow, &batteryLevelArray, &battOverTemp, &fuelLevel, &globalCount, &isMajorCycle};
     scheduleDataStruct scheduleData             = {&globalCount, &isMajorCycle};
-    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
+    transportDataStruct transportData           = {&globalCount};
+    whatsWrongWithThisPOS whatsWrong            = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
+    solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
 
-
+    
     // Create Handles for temp tasks
     solarPanelHandle = NULL;
     consoleKeyboardHandle = NULL;
@@ -257,18 +258,19 @@ int main( void )
     /* Start the tasks */
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-    xTaskCreate(schedule,          "schedule",          100, (void*)&scheduleData,       1, NULL);
-    xTaskCreate(powerSub,          "powerSub",          200, (void*)&satelliteCommsData,       2, NULL);
-    xTaskCreate(solarPanelControl, "solarPanelControl", 100, (void*)&solarPanelData,     2, &solarPanelHandle);
+    xTaskCreate(debugDataCorruptionSponge, "debugDataCorruptionSponge", 100, (void*)&DebugWork,     2, NULL);   //stack size questionable
+    xTaskCreate(schedule,          "schedule",          40, (void*)&scheduleData,       1, NULL);
+    xTaskCreate(powerSub,          "powerSub",          100, (void*)&whatsWrong,       2, NULL);
+    xTaskCreate(solarPanelControl, "solarPanelControl", 60, (void*)&solarPanelData,     2, &solarPanelHandle);   //stack size questionable
     vTaskSuspend(solarPanelHandle);
-    xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);
-    xTaskCreate(vehicleComms,      "vehicleComms",      100, (void*)&vehicleCommsData,   2, NULL);
-    xTaskCreate(thrusterSub,       "thrusterSub",       100, (void*)&thrusterSubData,    2, NULL);
+    xTaskCreate(satelliteComms,    "satelliteComms",    60, (void*)&satelliteCommsData, 3, NULL);
+    xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   2, NULL);
+    xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    2, NULL);
     xTaskCreate(oledDisplay,       "oledDisplay",       100, (void*)&oledDisplayData,    2, NULL);
-    xTaskCreate(consoleKeyboard,   "consoleKeyboard",   100, (void*)&keyboardData,       2, &consoleKeyboardHandle);
+    xTaskCreate(consoleKeyboard,   "consoleKeyboard",   60, (void*)&keyboardData,       2, &consoleKeyboardHandle);     //stack size questionable
     vTaskSuspend(consoleKeyboardHandle);
     xTaskCreate(warningAlarm,      "warningAlarm",      100, (void*)&warningAlarmData,   2, NULL);
-    //xTaskCreate(transport,         "transport",         100, (void*)&transportData,      2, NULL);
+    xTaskCreate(transport,         "transport",         100, (void*)&transportData,      2, NULL);
     
     /* 
       Configure the high frequency interrupt used to measure the interrupt
@@ -443,4 +445,17 @@ void vApplicationTickHook( void )
        ulTicksSinceLastDisplay = 0;
             
     }
+}
+
+// Function to return max int of a or b
+// Used to compute battery overtemp condition
+int max(int a, int b)
+{
+  int result = a;
+  if (a > b)
+    result = a;
+  else if (b < a)
+    result = b;
+  // If a == b, return a
+  return result;
 }

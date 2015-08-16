@@ -39,6 +39,7 @@ void schedule(void* taskDataPtr)
 {
     scheduleDataStruct* dataPtr = (scheduleDataStruct*) taskDataPtr;
     Bool* isMajorCycle = (Bool*) dataPtr->isMajorCyclePtr;
+    Bool* battOverTemp = (Bool*) dataPtr->battOverTempPtr;
     while(1){
         //Execute a Major Cycle when the count is zero.
         if (0  == globalCount) 
@@ -50,10 +51,13 @@ void schedule(void* taskDataPtr)
             *isMajorCycle = FALSE; 
         }
         SysCtlDelay(sysDelayLength);
-
+        globalCount = (globalCount + 1)%10;                         //still necessary???
         blinkTimer8 = (blinkTimer8 + 1) % 8;
         blinkTimer10 = (blinkTimer10 + 1) % 10;
-        tempAlarm = (tempAlarm + 1);
+        if (*battOverTemp)
+            tempAlarm = (tempAlarm + 1);
+        else
+            tempAlarm = 0;
         vTaskDelay(100);
     }
 }

@@ -19,10 +19,6 @@
 #include "queue.h"
 #include "semphr.h"
 
-
-// Constants defined in main
-extern unsigned short globalCount;
-
 /* 
   The queue used to send messages to the OLED task.
   Defined and initialized in main.c 

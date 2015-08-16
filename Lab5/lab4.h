@@ -10,97 +10,109 @@
 	typedef enum myBool Bool;
 
 	//Declare data structure structs
-
 	typedef struct transportDataStruct {
-		void* globalCountPtr;
+		unsigned short* globalCountPtr;
 	}	transportDataStruct;
 
 	typedef struct scheduleDataStruct {
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
 	} scheduleDataStruct;
         
-	typedef struct powerSubDataStruct {
-		void* panelStatePtr;
-		void* panelDeployPtr;
-		void* panelRetractPtr;
-		void* battLevelPtr;
-		void* battTempPtr0;
-		void* battTempPtr1;
-		void* battOverTempPtr;
-		void* powerConsumptionPtr;
-		void* powerGenerationPtr;
-	} powerSubDataStruct;
+	typedef struct DebugWorkGodDamnit {
+		Bool* panelStatePtr;
+		Bool* panelDeployPtr;
+		Bool* panelRetractPtr;
+		unsigned int* battLevelPtr;
+		unsigned int* battTempPtr0;
+		unsigned int* battTempPtr1;
+		Bool* battOverTempPtr;
+		unsigned short* powerConsumptionPtr;
+		unsigned short* powerGenerationPtr;
+	} DebugWorkGodDamnit;
+        
+        
+        typedef struct whatsWrongWithThisPOS {
+		Bool* panelStatePtr;
+		Bool* panelDeployPtr;
+		Bool* panelRetractPtr;
+		unsigned int* battLevelPtr;
+		unsigned int* battTempPtr0;
+		unsigned int* battTempPtr1;
+		Bool* battOverTempPtr;
+		unsigned short* powerConsumptionPtr;
+		unsigned short* powerGenerationPtr;
+	} whatsWrongWithThisPOS;
 
 	typedef struct solarPanelStruct {
-		void* panelStatePtr;
-		void* panelDeployPtr;
-		void* panelRetractPtr;
-		void* panelMotorSpeedUpPtr;
-		void* panelMotorSpeedDownPtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		Bool* panelStatePtr;
+		Bool* panelDeployPtr;
+		Bool* panelRetractPtr;
+		Bool* panelMotorSpeedUpPtr;
+		Bool* panelMotorSpeedDownPtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
 	} solarPanelStruct;
 
 	typedef struct keyboardDataStruct {
-		void* panelMotorSpeedUpPtr;
-		void* panelMotorSpeedDownPtr;
+		Bool* panelMotorSpeedUpPtr;
+		Bool* panelMotorSpeedDownPtr;
 	} keyboardDataStruct;
 	
 	typedef struct satelliteCommsDataStruct {
-		void* fuelLowPtr;
-		void* battLowPtr;
-		void* panelStatePtr;
-		void* battLevelPtr;
-		void* battTempPtr0;
-		void* battTempPtr1;
-		void* fuelLevelPtr;
-		void* powerConsumptionPtr;
-		void* powerGenerationPtr;
-		void* thrustPtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		Bool* fuelLowPtr;
+		Bool* battLowPtr;
+		Bool* panelStatePtr;
+		Bool* battLevelPtr;
+		unsigned int* battTempPtr0;
+		unsigned int* battTempPtr1;
+		uint32_t* fuelLevelPtr;
+		unsigned short* powerConsumptionPtr;
+		unsigned short* powerGenerationPtr;
+		uint16_t* thrustPtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
 	} satelliteCommsDataStruct;
 
 	typedef struct thrusterSubDataStruct {
-		void* thrustPtr;
-		void* fuelLevelPtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		uint16_t* thrustPtr;
+		uint32_t* fuelLevelPtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
 	} thrusterSubDataStruct;
 
 	typedef struct vehicleCommsStruct {
-		void* vehicleCommandPtr;
-		void* vehicleResponsePtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		unsigned char* vehicleCommandPtr;
+		unsigned char* vehicleResponsePtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
 	} vehicleCommsStruct;
 
 	typedef struct oledDisplayDataStruct {
-		void* fuelLowPtr;
-		void* battLowPtr;
-		void* panelStatePtr;
-		void* panelDeployPtr;
-		void* panelRetractPtr;
-		void* battLevelPtr;
-		void* battTempPtr0;
-		void* battTempPtr1;
-		void* fuelLevelPtr;
-		void* powerConsumptionPtr;
-		void* powerGenerationPtr;
-		void* transportDistancePtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		Bool* fuelLowPtr;
+		Bool* battLowPtr;
+		Bool* panelStatePtr;
+		Bool* panelDeployPtr;
+		Bool* panelRetractPtr;
+		unsigned int* battLevelPtr;
+		unsigned int* battTempPtr0;
+		unsigned int* battTempPtr1;
+		uint32_t* fuelLevelPtr;
+		unsigned short* powerConsumptionPtr;
+		unsigned short* powerGenerationPtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
+		unsigned int* transportDistancePtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct {
-		void* fuelLowPtr;
-		void* battLowPtr;
-		void* battLevelPtr;
-		void* battOverTempPtr;
-		void* fuelLevelPtr;
-		void* globalCountPtr;
-		void* isMajorCyclePtr;
+		Bool* fuelLowPtr;
+		Bool* battLowPtr;
+		unsigned int* battLevelPtr;
+		uint32_t* fuelLevelPtr;
+		unsigned short* globalCountPtr;
+		Bool* isMajorCyclePtr;
+		Bool* battOverTempPtr;
 	} warningAlarmDataStruct;
         
         
@@ -113,8 +125,7 @@
 	void enableTimer();
 	void initializeGlobalVariables();
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
-	unsigned short randomInteger(int, int);
-	
+	void debugDataCorruptionSponge(void* taskDataPtr);
 	void schedule(void* taskDataPtr);
     void transport(void* taskDataPtr);
 	void powerSub(void* taskDataPtr);
@@ -126,5 +137,8 @@
 	void consoleKeyboard(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
 	void Timer0IntHandler(void);
+
+	int max(int, int);
+	unsigned short randomInteger(int, int);
 
 #endif

@@ -30,11 +30,11 @@ extern Bool panelDone;
 extern xQueueHandle xOLEDQueue;
 extern xTaskHandle solarPanelHandle;
 extern xTaskHandle consoleKeyboardHandle;
+extern Bool battOverTemp;
 
 void powerSub(void* taskDataPtr)
 {
-  
-    powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
+    whatsWrongWithThisPOS* dataPtr = (whatsWrongWithThisPOS*) taskDataPtr;
     unsigned int* battLevel = dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
     unsigned int* battTempArr0 = dataPtr->battTempPtr0; // Points to address of battTempPtr0[0]
     unsigned int* battTempArr1 = dataPtr->battTempPtr1; // Points to address of battTempPtr1[0]
@@ -169,6 +169,15 @@ void powerSub(void* taskDataPtr)
         // TODO stored temps specified to be in millivolts...
         battTempArr0[0] = temp0;
         battTempArr1[0] = temp1;
+
+        // Check battery overtemp condition: if current temp reading 
+        //  exceeds largest of previous 2 values by more than 20%
+        if ((temp0 > 1.2 * max(battTempArr0[1], battTempArr0[2])) ||
+            (temp1 > 1.2 * max(battTempArr1[1], battTempArr1[2])))
+            battOverTemp = TRUE;
+        else
+            battOverTemp = FALSE;
+
         vTaskDelay(100);
     }
 }

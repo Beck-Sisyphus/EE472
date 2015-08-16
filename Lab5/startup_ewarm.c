@@ -83,7 +83,7 @@ extern void Timer0IntHandler( void );
 //
 //*****************************************************************************
 #ifndef STACK_SIZE
-#define STACK_SIZE                              100
+#define STACK_SIZE                              500
 #endif
 static unsigned long pulStack[STACK_SIZE] @ ".noinit";
 

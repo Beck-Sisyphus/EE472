@@ -90,26 +90,7 @@ void enableGPIO()
 }
 
 void enablePWM(){
-    //Enable PWM
-    SysCtlPWMClockSet(SYSCTL_PWMDIV_64); //SYSCTL_PWMDIV_32
-    
-    //Enable PWM and GPIO pins to carry panel motor signal
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-    //Set GPIO pin F0 as output PWM
-    GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_0);
-
-    //Enable GPIO pin for batt temp buzzer
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
-    GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1);
-
-    //Set the PWM period to 2 Hz.
-    unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 2Hz
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod);    
-    PWMGenConfigure(PWM0_BASE, PWM_GEN_0, PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
-
-    PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT | PWM_OUT_1_BIT, true);
+//not using this any more
 }
 
 

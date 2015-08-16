@@ -19,7 +19,6 @@
 #include "queue.h"
 #include "semphr.h"
 
-
 // Constants defined in main
 extern Bool hasNewKeyboardInput;
 

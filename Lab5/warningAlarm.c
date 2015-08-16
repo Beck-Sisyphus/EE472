@@ -23,7 +23,7 @@
 // Constants defined in main
 extern const unsigned short HALF_BATT_LEVEL;
 extern const unsigned short BATT_WARN_LEVEL;
-extern const uint32_t HALF_FUEL_LEVEL;
+extern const uint32_t MAX_FUEL_LEVEL;
 extern const uint32_t FUEL_WARN_LEVEL;
 extern unsigned short globalCount;
 extern unsigned short blinkTimer8;
@@ -51,12 +51,6 @@ void warningAlarm(void* taskDataPtr)
         
     while(1) 
     {  
-        //TODO add battery temp warning state 
-        //use PWMGenEnable(PWM0_BASE, PWM_GEN_0); 
-        //unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 2Hz
-        //PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod * 3 / 4); to start buzzing
-        //PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, 0); to stop buzzing
-
         if (*fuelLevel < FUEL_WARN_LEVEL) { *fuelLow = TRUE; } else { *fuelLow = FALSE; }
         if (*battLevel < BATT_WARN_LEVEL) { *battLow = TRUE; } else { *battLow = FALSE; }
         
@@ -105,12 +99,24 @@ void warningAlarm(void* taskDataPtr)
         }
 
         // Part 4 audible alarm if battery is over temperature
-        if ((*battOverTemp))
+        if (*battOverTemp)
         {
-            // TODO set audible alarm
+            //Start Alarm
+            unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 2Hz
+            SysCtlPWMClockSet(SYSCTL_PWMDIV_64); //SYSCTL_PWMDIV_32
+        
+            //Enable PWM and GPIO pins to carry signal
+            SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
+            SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
+            GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1);
+            PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
+            PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod * 3 / 4);
+            PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
+                        PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
+            PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT | PWM_OUT_1_BIT, true);
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
 
-
-            // TODO button to acknowledge alarm & reset tempAlarm to 0
+            // TODO button to acknowledge alarm & reset tempAlarm to 0                            DO THIS!!!!
 
 
             // tempAlarm has been unacknowledged for >15s
