@@ -21,19 +21,7 @@
 
 
 // Constants defined in main
-extern const unsigned short MAX_BATT_LEVEL;
-extern const unsigned short HALF_BATT_LEVEL;
-extern const unsigned short BATT_WARN_LEVEL;
-extern const uint32_t MAX_FUEL_LEVEL;
-extern const uint32_t HALF_FUEL_LEVEL;
-extern const uint32_t FUEL_WARN_LEVEL;
-extern const unsigned short TASK_QUEUE_LENGTH;
-extern unsigned short globalCount;
-extern unsigned short blinkTimer;
 extern uint32_t fuelLevellll;
-extern Bool panelDone;
-extern Bool hasNewKeyboardInput;
-extern unsigned int* battLevelPtr;
 
 /* 
   The queue used to send messages to the OLED task.
@@ -58,7 +46,8 @@ void oledDisplay(void* taskDataPtr)
     xOLEDMessage xMsgBlank;
     xOLEDMessage xMsgPanelState;
     xOLEDMessage xMsgBattLev;
-    xOLEDMessage xMsgBattTemp;
+    xOLEDMessage xMsgBattTemp0;
+    xOLEDMessage xMsgBattTemp1;
     xOLEDMessage xMsgFuelLev;
     xOLEDMessage xMsgDist;
     xOLEDMessage xMsgFuelLow;
@@ -72,32 +61,36 @@ void oledDisplay(void* taskDataPtr)
         // Pushed = 0, released = 2 from our measurement
         buttonRead = GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1);
 
-        xMsgBlank.pcMessage = "                ";
+        xMsgBlank.pcMessage = "                    ";
      
         if (2 == buttonRead)    // Status display mode
         {
           // Display panel state.
           if (1== *panelState)
           {
-              xMsgPanelState.pcMessage = "Panel: Deployed";
+              xMsgPanelState.pcMessage = "Panel: Deployed    ";
           }
           else
           {
-              xMsgPanelState.pcMessage = "Panel: Retracted  ";
+              xMsgPanelState.pcMessage = "Panel: Retracted    ";
           }
           xQueueSend( xOLEDQueue, &xMsgPanelState, 0 );
           
           // Display battery level
           char battBuffer [18];
-          snprintf(battBuffer, 18, "Battery: %d    ", *battLevel);
+          snprintf(battBuffer, 18, "Batt Voltage: %d    ", *battLevel);
           xMsgBattLev.pcMessage = battBuffer;
           xQueueSend( xOLEDQueue, &xMsgBattLev, 0 );
 
           // Display battery temperature
-          char tempBuffer [20];
-          snprintf(tempBuffer, 20, "Battery Temp: %d  ", *battTemp0);
-          xMsgBattTemp.pcMessage = tempBuffer;
-          xQueueSend( xOLEDQueue, &xMsgBattTemp, 0 );
+          char tempBuffer0 [20];
+          snprintf(tempBuffer0, 20, "Batt Temp A: %d        ", *battTemp0);
+          xMsgBattTemp0.pcMessage = tempBuffer0;
+          xQueueSend( xOLEDQueue, &xMsgBattTemp0, 0 );
+          char tempBuffer1 [20];
+          snprintf(tempBuffer1, 20, "Batt Temp B: %d        ", *battTemp1);
+          xMsgBattTemp1.pcMessage = tempBuffer1;
+          xQueueSend( xOLEDQueue, &xMsgBattTemp1, 0 );
 
           // Display fuel level
           char fuelBuffer [12];
@@ -109,7 +102,6 @@ void oledDisplay(void* taskDataPtr)
           char transBuffer [16];
           snprintf(transBuffer, 16, "Distance: %d", *distance);
           xMsgDist.pcMessage = transBuffer;
-          xQueueSend( xOLEDQueue, &xMsgDist, 0 );
 
           xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
           xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
@@ -124,11 +116,11 @@ void oledDisplay(void* taskDataPtr)
             // Display fuel low flag.
             if (1 == *fuelLow)
             {
-                xMsgFuelLow.pcMessage = "FUEL LOW!    ";
+                xMsgFuelLow.pcMessage = "FUEL LOW!       ";
             }
             else
             {
-                xMsgFuelLow.pcMessage = "Fuel Good :)    ";
+                xMsgFuelLow.pcMessage = "Fuel Good :)       ";
             }
             xQueueSend( xOLEDQueue, &xMsgFuelLow, 0 );
 
@@ -136,11 +128,11 @@ void oledDisplay(void* taskDataPtr)
             // Display battery low flag.
             if (1 == *battLow)
             {
-                xMsgBattLow.pcMessage = "BATTERY LOW!  ";
+                xMsgBattLow.pcMessage = "BATTERY LOW!     ";
             }
             else
             {
-                xMsgBattLow.pcMessage = "Battery Good :)  ";
+                xMsgBattLow.pcMessage = "Battery Good :)     ";
             }
             xQueueSend( xOLEDQueue, &xMsgBattLow, 0 );
 

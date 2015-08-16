@@ -238,7 +238,7 @@ int main( void )
 
     initializeGlobalVariables();
     
-    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
+    transportDataStruct transportData           = {&globalCount};
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
     satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
     thrusterSubDataStruct thrusterSubData       = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
@@ -247,7 +247,8 @@ int main( void )
     keyboardDataStruct keyboardData             = {&panelMotorSpeedUp, &panelMotorSpeedDown};
     warningAlarmDataStruct warningAlarmData     = {&fuelLow, &battLow, &batteryLevelArray, &battOverTemp, &fuelLevel, &globalCount, &isMajorCycle};
     scheduleDataStruct scheduleData             = {&globalCount, &isMajorCycle};
-    transportDataStruct transportData           = {&globalCount};
+    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
+
 
     // Create Handles for temp tasks
     solarPanelHandle = NULL;
@@ -257,7 +258,7 @@ int main( void )
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
     xTaskCreate(schedule,          "schedule",          100, (void*)&scheduleData,       1, NULL);
-    xTaskCreate(powerSub,          "powerSub",          100, (void*)&powerSubData,       2, NULL);
+    xTaskCreate(powerSub,          "powerSub",          200, (void*)&satelliteCommsData,       2, NULL);
     xTaskCreate(solarPanelControl, "solarPanelControl", 100, (void*)&solarPanelData,     2, &solarPanelHandle);
     vTaskSuspend(solarPanelHandle);
     xTaskCreate(satelliteComms,    "satelliteComms",    100, (void*)&satelliteCommsData, 3, NULL);

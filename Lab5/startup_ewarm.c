@@ -83,7 +83,7 @@ extern void Timer0IntHandler( void );
 //
 //*****************************************************************************
 #ifndef STACK_SIZE
-#define STACK_SIZE                              1200
+#define STACK_SIZE                              100
 #endif
 static unsigned long pulStack[STACK_SIZE] @ ".noinit";
 
@@ -144,7 +144,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     ADC0IntHandler,                         // ADC Sequence 0
     ADC1IntHandler,                         // ADC Sequence 1
     ADC2IntHandler,                         // ADC Sequence 2
-    IntDefaultHandler,                      // ADC Sequence 3
+    ADC0IntHandler,                         // ADC Sequence 3
     IntDefaultHandler,                      // Watchdog timer
     Timer0IntHandler,                       // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B

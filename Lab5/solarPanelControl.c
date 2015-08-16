@@ -21,19 +21,8 @@
 
 
 // Constants defined in main
-extern const unsigned short MAX_BATT_LEVEL;
-extern const unsigned short HALF_BATT_LEVEL;
-extern const unsigned short BATT_WARN_LEVEL;
-extern const uint32_t MAX_FUEL_LEVEL;
-extern const uint32_t HALF_FUEL_LEVEL;
-extern const uint32_t FUEL_WARN_LEVEL;
-extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
-extern unsigned short blinkTimer;
-extern uint32_t fuelLevellll;
 extern Bool panelDone;
-extern Bool hasNewKeyboardInput;
-extern unsigned int* battLevelPtr;
 
 /* 
   The queue used to send messages to the OLED task.
@@ -44,13 +33,13 @@ extern xQueueHandle xOLEDQueue;
 void solarPanelControl(void* taskDataPtr)
 {
     solarPanelStruct* solarPanelPtr = (solarPanelStruct*) taskDataPtr;
+    unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
     Bool* isMajorCycle = (Bool*) solarPanelPtr->isMajorCyclePtr;
     Bool* panelState = (Bool*) solarPanelPtr->panelStatePtr;
     Bool* panelDeploy = (Bool*) solarPanelPtr->panelDeployPtr;
     Bool* panelRetract = (Bool*) solarPanelPtr->panelRetractPtr;
     Bool* panelMotorSpeedUp = (Bool*) solarPanelPtr->panelMotorSpeedUpPtr;
     Bool* panelMotorSpeedDown = (Bool*) solarPanelPtr->panelMotorSpeedDownPtr;
-    unsigned short* globalCount = (unsigned short*) solarPanelPtr->globalCountPtr;
     
     while(1)
     {
@@ -68,17 +57,18 @@ void solarPanelControl(void* taskDataPtr)
         }
         dutyCycle = dutyCycle % 100;
         
-        PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod * dutyCycle / 100);
+        // TODO FIXME enters ISR
+        //PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, ulPeriod * dutyCycle / 100);
 
         //Enable the PWM generator.
         if(panelDeploy||panelRetract){
-            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+            //PWMGenEnable(PWM0_BASE, PWM_GEN_0);
         }
         
         else if(panelDone){
-            PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
-            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
-        }    
+            //PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
+            //PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+        }
         vTaskDelay(100);
     }
 }

@@ -21,19 +21,7 @@
 
 
 // Constants defined in main
-extern const unsigned short MAX_BATT_LEVEL;
-extern const unsigned short HALF_BATT_LEVEL;
-extern const unsigned short BATT_WARN_LEVEL;
-extern const uint32_t MAX_FUEL_LEVEL;
-extern const uint32_t HALF_FUEL_LEVEL;
-extern const uint32_t FUEL_WARN_LEVEL;
-extern const unsigned short TASK_QUEUE_LENGTH;
-extern unsigned short globalCount;
-extern unsigned short blinkTimer;
-extern uint32_t fuelLevellll;
 extern Bool panelDone;
-extern Bool hasNewKeyboardInput;
-//extern unsigned int* battLevelPtr;
 
 /* 
   The queue used to send messages to the OLED task.
@@ -47,42 +35,50 @@ void powerSub(void* taskDataPtr)
 {
   
     powerSubDataStruct* dataPtr = (powerSubDataStruct*) taskDataPtr;
-    unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
-    unsigned int* battTempArr0 = (unsigned int*) dataPtr->battTempPtr0; // Points to address of battTempPtr0[0]
-    unsigned int* battTempArr1 = (unsigned int*) dataPtr->battTempPtr1; // Points to address of battTempPtr1[0]
-    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
-    unsigned short* powerGeneration = (unsigned short*) dataPtr->powerGenerationPtr;
-    Bool* panelState = (Bool*) dataPtr->panelStatePtr;
-    Bool* panelDeploy = (Bool*) dataPtr->panelDeployPtr;
-    Bool* panelRetract = (Bool*) dataPtr->panelRetractPtr;
+    unsigned int* battLevel = dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
+    unsigned int* battTempArr0 = dataPtr->battTempPtr0; // Points to address of battTempPtr0[0]
+    unsigned int* battTempArr1 = dataPtr->battTempPtr1; // Points to address of battTempPtr1[0]
+    unsigned short* powerConsumption = dataPtr->powerConsumptionPtr;
+    unsigned short* powerGeneration = dataPtr->powerGenerationPtr;
+    Bool* panelStatePtr = dataPtr->panelStatePtr;
+    Bool* panelDeployPtr = dataPtr->panelDeployPtr;
+    Bool* panelRetractPtr = dataPtr->panelRetractPtr;
     
     while(1)
     {
-        if (!(*panelState) && panelDone)
+        if (!(*panelStatePtr) && panelDone)
         {
-            *panelState = TRUE;
+            *panelStatePtr = TRUE;
             panelDone = FALSE;
+            PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+            vTaskSuspend(solarPanelHandle);
+            vTaskSuspend(consoleKeyboardHandle);
         }
-        else if ((*panelState) && panelDone)
+        else if ((*panelStatePtr) && panelDone)
         {
-            *panelState = FALSE;
+            *panelStatePtr = FALSE;
             panelDone = FALSE;
+            PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, 0);
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+            vTaskSuspend(solarPanelHandle);
+            vTaskSuspend(consoleKeyboardHandle);
         }
         
         //powerGeneration
-        if (!(panelState)&&((*battLevel)<=20)) {                       //else solar panel not deployed...
+        if (!(*panelStatePtr)&&((*battLevel)<=20)) {                       //else solar panel not deployed...
               //if battery less than/equal to 20%
+              (*panelDeployPtr) = TRUE;              //deploy solar panel
+              (*panelRetractPtr) = FALSE;
               vTaskResume(solarPanelHandle);
               vTaskResume(consoleKeyboardHandle);
-              (*panelDeploy) = TRUE;              //deploy solar panel
-              (*panelRetract) = FALSE;
         } 
-        if (panelState&&((*battLevel)>95)) {                          //if solar panel is deployed...
+        if ((*panelStatePtr)&&((*battLevel)>95)) {                          //if solar panel is deployed...
               //if battery greater than 95%
+              (*panelDeployPtr) = FALSE;
+              (*panelRetractPtr)=TRUE;               //retract solar panel
               vTaskResume(solarPanelHandle);
               vTaskResume(consoleKeyboardHandle);
-              (*panelDeploy) = FALSE;
-              (*panelRetract)=TRUE;               //retract solar panel
         }
         
         static unsigned long adc0Reading[8] = {0};
@@ -167,13 +163,12 @@ void powerSub(void* taskDataPtr)
         ADCSequenceDataGet(ADC0_BASE, 2, adc2Reading);
 
         // Convert raw temp readings to temperatures in Celsius
-        int temp0 = (int) (adc1Reading[0] * 32 + 33);
-        int temp1 = (int) (adc2Reading[0] * 32 + 33);
+        int temp0 = (int) (adc1Reading[1] * 32 + 33);
+        int temp1 = (int) (adc2Reading[2] * 32 + 33);
         // Store temperature readings in arrays
         // TODO stored temps specified to be in millivolts...
         battTempArr0[0] = temp0;
         battTempArr1[0] = temp1;
-
         vTaskDelay(100);
     }
 }

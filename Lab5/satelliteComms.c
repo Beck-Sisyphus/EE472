@@ -21,19 +21,7 @@
 
 
 // Constants defined in main
-extern const unsigned short MAX_BATT_LEVEL;
-extern const unsigned short HALF_BATT_LEVEL;
-extern const unsigned short BATT_WARN_LEVEL;
-extern const uint32_t MAX_FUEL_LEVEL;
-extern const uint32_t HALF_FUEL_LEVEL;
-extern const uint32_t FUEL_WARN_LEVEL;
-extern const unsigned short TASK_QUEUE_LENGTH;
 extern unsigned short globalCount;
-extern unsigned short blinkTimer;
-extern uint32_t fuelLevellll;
-extern Bool panelDone;
-extern Bool hasNewKeyboardInput;
-extern unsigned int* battLevelPtr;
 
 /* 
   The queue used to send messages to the OLED task.

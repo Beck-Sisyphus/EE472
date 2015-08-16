@@ -11,13 +11,6 @@
 
 	//Declare data structure structs
 
-	typedef struct TCB {
-		void* taskDataPtr; 		  //ptr to generic data
-		void (*taskPtr)(void*);    //ptr to generic function
-		struct TCB* next;
-		struct TCB* prev;
-	} TCB;
-
 	typedef struct transportDataStruct {
 		void* globalCountPtr;
 	}	transportDataStruct;
@@ -95,19 +88,19 @@
 		void* fuelLevelPtr;
 		void* powerConsumptionPtr;
 		void* powerGenerationPtr;
+		void* transportDistancePtr;
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
-		void* transportDistancePtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct {
 		void* fuelLowPtr;
 		void* battLowPtr;
 		void* battLevelPtr;
+		void* battOverTempPtr;
 		void* fuelLevelPtr;
 		void* globalCountPtr;
 		void* isMajorCyclePtr;
-		void* battOverTempPtr;
 	} warningAlarmDataStruct;
         
         
@@ -120,8 +113,6 @@
 	void enableTimer();
 	void initializeGlobalVariables();
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
-	void insertTask(TCB* node, TCB** head, TCB** tail);
-	void deleteTask(TCB* node, TCB** head, TCB** tail);
 	unsigned short randomInteger(int, int);
 	
 	void schedule(void* taskDataPtr);
