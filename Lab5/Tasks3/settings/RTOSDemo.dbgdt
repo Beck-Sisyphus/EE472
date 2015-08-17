@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log><ColumnWidth0>19</ColumnWidth0><ColumnWidth1>1601</ColumnWidth1></Debug-Log>
+      <Build>
+        <ColumnWidth0>20</ColumnWidth0>
+        <ColumnWidth1>1006</ColumnWidth1>
+        <ColumnWidth2>268</ColumnWidth2>
+        <ColumnWidth3>67</ColumnWidth3>
+      </Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>135</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        <PreferedWindows>
+          
+          
+          
+          
+        <Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows>
+        
+        
+      <MixedMode>1</MixedMode><CodeCovShow>0</CodeCovShow><InstrProfShow>1</InstrProfShow><col-names><item>Disassembly</item><item>_I0</item></col-names><col-widths><item>500</item><item>20</item></col-widths><DisasmHistory/><ShowCodeCoverage>1</ShowCodeCoverage><ShowInstrProfiling>1</ShowInstrProfiling></Disassembly>
+    <Watch><Format><struct_types/><watch_formats/></Format></Watch><QuickWatch><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><Column0>100</Column0><Column1>100</Column1><Column2>100</Column2><Column3>100</Column3></QuickWatch><WATCH_1><expressions><item>panelRetract</item><item>panelDeploy</item><item>panelState</item><item>isMajorCycle</item><item>globalCount</item><item>panelState</item><item>panelDone</item><item>panelState</item><item>panelState</item><item>panelStatePtr</item><item>solarPanelData</item><item>thrusterSubData</item><item>transportDistance</item><item>period</item><item>transportTimeArray</item><item>transportTimeElement</item><item>time</item><item>transportTimeTicks</item><item>transportDistance</item><item>joe</item><item>jeff</item><item>frequency</item><item>transportDistance</item><item>battOverTemp</item><item>fuelLevel</item><item>fuelLevellll</item><item>isMajorCycle</item><item>duration</item><item>fuelPtr</item><item>thrustCommand</item><item>thrustPtr</item><item>magnitude</item><item>command</item><item>thrustPtr</item><item></item></expressions><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>184</item><item>150</item><item>100</item><item>187</item></col-widths></WATCH_1></Static>
+    <Windows>
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-10465-12018</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-9942-12028</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-21213-12021</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>RTOSDemo</ExpandedNode><ExpandedNode>RTOSDemo/Demo files</ExpandedNode><ExpandedNode>RTOSDemo/Library files</ExpandedNode><ExpandedNode>RTOSDemo/System files</ExpandedNode><ExpandedNode>RTOSDemo/uIP files</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd4><Tabs><Tab><Identity>TabID-4412-20270</Identity><TabName>Disassembly</TabName><Factory>Disassembly</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd4><Wnd5><Tabs><Tab><Identity>TabID-19202-3512</Identity><TabName>Watch 1</TabName><Factory>WATCH_1</Factory></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd5></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\schedule.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>1195</SelStart2><SelEnd2>1195</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\vehicleComms.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>9</YPos2><SelStart2>1038</SelStart2><SelEnd2>1038</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\powerSub.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>121</YPos2><SelStart2>458</SelStart2><SelEnd2>458</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\oledDisplay.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>42</YPos2><SelStart2>1887</SelStart2><SelEnd2>1887</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\solarPanelControl.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>50</YPos2><SelStart2>2543</SelStart2><SelEnd2>2543</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\lab4Interrupt.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>271</YPos2><SelStart2>9255</SelStart2><SelEnd2>9255</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\warningAlarm.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>103</YPos2><SelStart2>5593</SelStart2><SelEnd2>5593</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>213</YPos2><SelStart2>8267</SelStart2><SelEnd2>8267</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\transport.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>5</YPos2><SelStart2>1105</SelStart2><SelEnd2>1105</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\consoleKeyboard.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>2</YPos2><SelStart2>994</SelStart2><SelEnd2>994</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\Source\tasks.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>1927</YPos2><SelStart2>64513</SelStart2><SelEnd2>64513</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\satelliteComms.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>17</YPos2><SelStart2>1863</SelStart2><SelEnd2>1863</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\randomInteger.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>441</SelStart2><SelEnd2>441</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\thrusterSub.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>58</YPos2><SelStart2>2630</SelStart2><SelEnd2>2630</SelEnd2></Tab><ActiveTab>13</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\lab4.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>42</YPos2><SelStart2>1853</SelStart2><SelEnd2>1862</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\startup_ewarm.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>171</YPos2><SelStart2>9377</SelStart2><SelEnd2>9377</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-00FEA958><key>iaridepm.enu1</key></Toolbar-00FEA958></Sizes></Row0><Row1><Sizes><Toolbar-1A985580><key>debuggergui.enu1</key></Toolbar-1A985580></Sizes></Row1><Row2><Sizes/></Row2></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>645</Bottom><Right>226</Right><x>-2</x><y>-2</y><xscreen>228</xscreen><yscreen>227</yscreen><sizeHorzCX>142500</sizeHorzCX><sizeHorzCY>203041</sizeHorzCY><sizeVertCX>142500</sizeVertCX><sizeVertCY>578712</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes><Wnd4><Rect><Top>-2</Top><Left>-2</Left><Bottom>645</Bottom><Right>51</Right><x>-2</x><y>-2</y><xscreen>228</xscreen><yscreen>227</yscreen><sizeHorzCX>142500</sizeHorzCX><sizeHorzCY>203041</sizeHorzCY><sizeVertCX>33125</sizeVertCX><sizeVertCY>578712</sizeVertCY></Rect></Wnd4></Sizes></Row0><Row1><Sizes><Wnd5><Rect><Top>-2</Top><Left>49</Left><Bottom>645</Bottom><Right>547</Right><x>49</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>125000</sizeHorzCX><sizeHorzCY>178891</sizeHorzCY><sizeVertCX>311250</sizeVertCX><sizeVertCY>578712</sizeVertCY></Rect></Wnd5></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>404</Bottom><Right>1602</Right><x>-2</x><y>-2</y><xscreen>1604</xscreen><yscreen>406</yscreen><sizeHorzCX>1002500</sizeHorzCX><sizeHorzCY>363148</sizeHorzCY><sizeVertCX>142500</sizeVertCX><sizeVertCY>203041</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+
