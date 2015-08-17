@@ -16,7 +16,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=2132870408
+Checksum=-1993280922
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -48,26 +48,27 @@ mode=1
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\..\E\Dev\FreeRTOS\WorkingCopy2\Demo\Common\Minimal\IntQueue.c}.363.2@1" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "{$PROJ_DIR$\lab4Funct.c}.111.9" 0 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\powerSub.c}.183.1" 0 0 0 0 "" 0 ""
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\powerSub.c}.181.1" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\oledDisplay.c}.149.1" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\warningAlarm.c}.1.1" 0 0 0 0 "" 0 ""
 Bp5=_ "STD_CODE" "{$PROJ_DIR$\oledDisplay.c}.149.1" 0 0 0 0 "" 0 ""
-Bp6=_ "STD_CODE" "{$PROJ_DIR$\powerSub.c}.183.1" 0 0 0 0 "" 0 ""
+Bp6=_ "STD_CODE" "{$PROJ_DIR$\powerSub.c}.181.1" 0 0 0 0 "" 0 ""
 Bp7=_ "STD_CODE" "{$PROJ_DIR$\warningAlarm.c}.1.1" 0 0 0 0 "" 0 ""
 Bp8=_ "STD_CODE" "{$PROJ_DIR$\satelliteComms.c}.59.1" 0 0 0 0 "" 0 ""
 Bp9=_ "STD_CODE" "{$PROJ_DIR$\consoleKeyboard.c}.52.1" 0 0 0 0 "" 0 ""
 Bp10=_ "STD_CODE" "{$PROJ_DIR$\schedule.c}.45.9" 0 0 0 0 "" 0 ""
-Bp11=_ "STD_CODE" "{$PROJ_DIR$\solarPanelControl.c}.49.9" 0 0 0 0 "" 0 ""
+Bp11=_ "STD_CODE" "{$PROJ_DIR$\solarPanelControl.c}.66.9" 0 0 0 0 "" 0 ""
 Bp12=_ "STD_CODE" "{$PROJ_DIR$\vehicleComms.c}.40.9" 0 0 0 0 "" 0 ""
 Bp13=_ "STD_CODE" "{$PROJ_DIR$\transport.c}.41.6" 0 0 0 0 "" 0 ""
-Bp14=_ "STD_CODE" "{$PROJ_DIR$\randomInteger.c}.19.3" 1 0 0 0 "" 0 ""
-Bp15=_ "STD_CODE" "{$PROJ_DIR$\randomInteger.c}.34.3" 1 0 0 0 "" 0 ""
-Bp16=_ "STD_CODE" "{$PROJ_DIR$\satelliteComms.c}.57.9" 1 0 0 0 "" 0 ""
-Count=17
+Bp14=_ "STD_CODE" "{$PROJ_DIR$\powerSub.c}.177.13" 1 0 0 0 "" 0 ""
+Count=15
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Aliases]
 A0=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\adc.c" ""
 A1=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\cpu.S" ""
@@ -86,6 +87,3 @@ Mode=0
 Graph=0
 Symbiont=0
 Exclusions=
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""

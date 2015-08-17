@@ -117,16 +117,14 @@ void warningAlarm(void* taskDataPtr)
         // Part 4 audible alarm if battery is over temperature
         if (*battOverTemp)
         {
-            //Start Alarm
-            unsigned long ulPeriod = SysCtlClockGet() / 80; //run at 2Hz
-            SysCtlPWMClockSet(SYSCTL_PWMDIV_64); //SYSCTL_PWMDIV_32
-        
             //Enable PWM and GPIO pins to carry signal
             PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod * 3 / 4);
+            PWMGenEnable(PWM0_BASE, PWM_GEN_0);
 
             //button to acknowledge alarm & reset tempAlarm to 0
             if (!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_1)){
               PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod * 0);
+              PWMGenEnable(PWM0_BASE, PWM_GEN_0);
               *battOverTemp = FALSE;
             }
 
@@ -139,15 +137,13 @@ void warningAlarm(void* taskDataPtr)
                 // Flash red and yellow LEDs for 5s at 10Hz
                 if (6 > blinkTimer10)
                 {
-                    // Red
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
-                    vTaskDelay(50); // Delay 50ms
-                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
-
                     // Yellow
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
-                    vTaskDelay(50); // Delay 50ms
+                    // Red
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
+                    vTaskDelay(5); // Delay 50ms
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
                 }
 
                 // Hold red and yellow LEDs solid for 5s
@@ -157,6 +153,9 @@ void warningAlarm(void* taskDataPtr)
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0xFF);
                     // Yellow
                     GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0xFF);
+                    vTaskDelay(500); // Delay 50ms
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_6, 0x00);
+                    GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_7, 0x00);
                 }
             }
         }
