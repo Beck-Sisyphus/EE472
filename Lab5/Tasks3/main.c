@@ -38,7 +38,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 //  set this value to non 0 to include the web server
 
-#define mainINCLUDE_WEB_SERVER    0
+#define mainINCLUDE_WEB_SERVER      1
 
 
 /* Standard includes. */
@@ -157,10 +157,10 @@ uint32_t fuelLevellll;
 
 
 //  The maximum number of messages that can be waiting for display at any one time.
-  #define mainOLED_QUEUE_SIZE         ( 10 )
+#define mainOLED_QUEUE_SIZE         ( 10 )
 
 // Dimensions the buffer into which the jitter time is written. 
-  #define mainMAX_MSG_LEN           25
+#define mainMAX_MSG_LEN           25
 
 /* 
   The period of the system clock in nano seconds.  This is used to calculate
@@ -263,19 +263,31 @@ int main( void )
     /* Start the tasks */
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-    xTaskCreate(schedule,          "schedule",          40, (void*)&scheduleData,       1, NULL);
-    xTaskCreate(powerSub,          "powerSub",          100,(void*)&powerSubData,       2, NULL);
-    xTaskCreate(solarPanelControl, "solarPanelControl", 60, (void*)&solarPanelData,     2, &solarPanelHandle);         
+    xTaskCreate(schedule,          "schedule",          40, (void*)&scheduleData,       mainCHECK_TASK_PRIORITY - 1, NULL);
+    xTaskCreate(powerSub,          "powerSub",          100,(void*)&powerSubData,       mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(solarPanelControl, "solarPanelControl", 60, (void*)&solarPanelData,     mainCHECK_TASK_PRIORITY, &solarPanelHandle);         
     vTaskSuspend(solarPanelHandle);
-    xTaskCreate(satelliteComms,    "satelliteComms",    60, (void*)&satelliteCommsData, 3, NULL);
-    xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   2, NULL);
-    xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    2, NULL);
-    xTaskCreate(oledDisplay,       "oledDisplay",       100,(void*)&oledDisplayData,    2, NULL);
-    xTaskCreate(consoleKeyboard,   "consoleKeyboard",   60, (void*)&keyboardData,       2, &consoleKeyboardHandle);    
+    xTaskCreate(satelliteComms,    "satelliteComms",    60, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
+    xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(oledDisplay,       "oledDisplay",       100,(void*)&oledDisplayData,    mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(consoleKeyboard,   "consoleKeyboard",   60, (void*)&keyboardData,       mainCHECK_TASK_PRIORITY, &consoleKeyboardHandle);    
     vTaskSuspend(consoleKeyboardHandle);
-    xTaskCreate(warningAlarm,      "warningAlarm",      100,(void*)&warningAlarmData,   2, NULL);
-    xTaskCreate(transport,         "transport",         100, (void*)&transportData,     2, NULL);
+    xTaskCreate(warningAlarm,      "warningAlarm",      100,(void*)&warningAlarmData,   mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(transport,         "transport",         100, (void*)&transportData,     mainCHECK_TASK_PRIORITY, NULL);
     
+    #if mainINCLUDE_WEB_SERVER != 0
+    {
+      /* 
+          Create the uIP task if running on a processor that includes a MAC and PHY. 
+      */
+      
+      if( SysCtlPeripheralPresent( SYSCTL_PERIPH_ETH ) )
+      {
+          xTaskCreate( vuIP_Task, ( signed portCHAR * ) "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
+      }
+    }
+    #endif
     /* 
       Configure the high frequency interrupt used to measure the interrupt
       jitter time. 
@@ -399,10 +411,10 @@ void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed portCHAR *pcTask
 
 void prvSetupHardware( void )
 {
-    // /* 
-    //   If running on Rev A2 silicon, turn the LDO voltage up to 2.75V.  This is
-    //   a workaround to allow the PLL to operate reliably. 
-    // */
+    /* 
+      If running on Rev A2 silicon, turn the LDO voltage up to 2.75V.  This is
+      a workaround to allow the PLL to operate reliably. 
+    */
   
     // if( DEVICE_IS_REVA2 )
     // {
@@ -413,15 +425,15 @@ void prvSetupHardware( void )
     
     // SysCtlClockSet( SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ );
     
-    // /*   
-    //   Enable Port F for Ethernet LEDs
-    //         LED0        Bit 3   Output
-    //         LED1        Bit 2   Output 
-    // */
+    /*   
+      Enable Port F for Ethernet LEDs
+            LED0        Bit 3   Output
+            LED1        Bit 2   Output 
+    */
     
-    // SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOF );
-    // GPIODirModeSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3), GPIO_DIR_MODE_HW );
-    // GPIOPadConfigSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3 ), GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD ); 
+    SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOF );
+    GPIODirModeSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3), GPIO_DIR_MODE_HW );
+    GPIOPadConfigSet( GPIO_PORTF_BASE, (GPIO_PIN_2 | GPIO_PIN_3 ), GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD ); 
   
     enableSysClock();
     enableGPIO();

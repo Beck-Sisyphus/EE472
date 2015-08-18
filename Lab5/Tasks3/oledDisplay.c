@@ -103,10 +103,10 @@ void oledDisplay(void* taskDataPtr)
           snprintf(transBuffer, 16, "Distance: %d", *distance);
           xMsgDist.pcMessage = transBuffer;
 
-          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
             
         } 
         else if (0 == buttonRead) // Annunciation mode
@@ -136,13 +136,13 @@ void oledDisplay(void* taskDataPtr)
             }
             xQueueSend( xOLEDQueue, &xMsgBattLow, 0 );
 
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
         }        
         vTaskDelay(100);
     }
