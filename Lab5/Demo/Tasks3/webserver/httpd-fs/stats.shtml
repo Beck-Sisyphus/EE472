@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Lab 5 source Display</title>
+    </head>
+
+    <BODY bgcolor="#CCCCff">
+        <font face="arial">
+        <a href="index.shtml">RTOS Stats</a> <b>|</b> <a href="stats.shtml">Sate Comm</a> <b>|</b> <a href="io.shtml">Command</a>
+        <br><p>
+            <hr>
+        <br><p>
+
+        <h2>Network statistics</h2>
+        <table width="300" border="1px">
+            <thead>
+                <th>Variable</th>
+                <th>Value</th>
+            </thead>
+            <tbody align="left"><font face="courier">
+				%! pow-stats
+                </font>
+            </tbody>
+        </table>
+        </font>
+    </body>
+</html>

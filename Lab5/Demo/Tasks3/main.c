@@ -139,7 +139,7 @@ unsigned short tempAlarm;
 uint32_t fuelLevellll;
 
 // Global variable for the website		
-char systemInfo[ 500 ] = {'\0'};
+char systemInfo[ 430 ] = {'\0'};
 
 /*--------------------------------------------------------*/
 
@@ -150,7 +150,7 @@ char systemInfo[ 500 ] = {'\0'};
 #define mainCHECK_DELAY ( ( portTickType ) 5000 / portTICK_RATE_MS )
 
 // Size of the stack allocated to the uIP task.
-#define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 3 + 500)
+#define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 3 + 430)
 
 // The OLED task uses the sprintf function so requires a little more stack too.
 #define mainOLED_TASK_STACK_SIZE      ( configMINIMAL_STACK_SIZE + 50 )
@@ -279,7 +279,7 @@ int main( void )
     xTaskCreate(powerSub,          "powerSub",          100,(void*)&powerSubData,       mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(solarPanelControl, "solarPanelControl", 60, (void*)&solarPanelData,     mainCHECK_TASK_PRIORITY, &solarPanelHandle);         
     vTaskSuspend(solarPanelHandle);
-    xTaskCreate(satelliteComms,    "satelliteComms",    60, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
+    xTaskCreate(satelliteComms,    "satelliteComms",    430, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
     xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(oledDisplay,       "oledDisplay",       120,(void*)&oledDisplayData,    mainCHECK_TASK_PRIORITY, NULL);

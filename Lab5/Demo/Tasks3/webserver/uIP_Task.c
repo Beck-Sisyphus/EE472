@@ -48,11 +48,17 @@ struct timer {
 // #define uipIP_ADDR2		1
 // #define uipIP_ADDR3		108	
 
-/// Prepared for running in Lab 345 inner ethernet
-#define uipIP_ADDR0		128
-#define uipIP_ADDR1		95
-#define uipIP_ADDR2		141
-#define uipIP_ADDR3		230	
+///// Prepared for running in Lab 345 inner ethernet
+//#define uipIP_ADDR0		128
+//#define uipIP_ADDR1		95
+//#define uipIP_ADDR2		141
+//#define uipIP_ADDR3		230	
+
+/// Prepared for running on Grant's Laptop
+#define uipIP_ADDR0		169
+#define uipIP_ADDR1		254
+#define uipIP_ADDR2		213
+#define uipIP_ADDR3		185	
 
 /* How long to wait before attempting to connect the MAC again. */
 #define uipINIT_WAIT    100

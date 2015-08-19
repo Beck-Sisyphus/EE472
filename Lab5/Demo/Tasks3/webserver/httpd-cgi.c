@@ -60,7 +60,7 @@ HTTPD_CGI_CALL(tcp, "tcp-connections", tcp_stats);
 HTTPD_CGI_CALL(net, "net-stats", net_stats);
 HTTPD_CGI_CALL(rtos, "rtos-stats", rtos_stats );
 HTTPD_CGI_CALL(io, "led-io", led_io );
-extern char systemInfo[ 500 ];
+extern char systemInfo[ 430 ];
 
 
 char vBuffer[ 32 ];
@@ -83,7 +83,7 @@ PT_THREAD(pow_stats(struct httpd_state *s, char *ptr))
 {
   PSOCK_BEGIN(&s->sout);
 
-  PSOCK_GENERATOR_SEND(&s->sout, generate_pow_stats, strchr(ptr, ' ') + 1);
+  PSOCK_GENERATOR_SEND(&s->sout, generate_pow_stats, strchr(ptr, '\0') + 1);
 
   PSOCK_END(&s->sout);
 }
@@ -257,11 +257,18 @@ PT_THREAD(rtos_stats(struct httpd_state *s, char *ptr))
 /*---------------------------------------------------------------------------*/
 
 char *pcStatus;
-//extern unsigned long uxParTestGetLED( unsigned long uxLED );
+extern unsigned long uxParTestGetLED( unsigned long uxLED );
 
 static unsigned short generate_io_state( void *arg )
 {
-	pcStatus = "";
+//	if( uxParTestGetLED( 0 ) )
+//	{
+//		pcStatus = "checked";
+//	}
+//	else
+//	{
+		pcStatus = "";
+//	}
 
 	sprintf( uip_appdata,
 		"<input type=\"checkbox\" name=\"LED0\" value=\"1\" %s>LED"\
