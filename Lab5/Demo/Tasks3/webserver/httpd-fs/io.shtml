@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Lab 5 I/O function</title>
+	</head>
+	<BODY bgcolor="#CCCCff">
+		<font face="arial">
+		<a href="index.shtml">RTOS Stats</a> <b>|</b> <a href="stats.shtml">Sate Comm</a> <b>|</b> <a href="tcp.shtml">Connections</a> <b>|</b> <a href="http://www.freertos.org/">FreeRTOS.org Homepage</a> <b>|</b> <a href="io.shtml">Command</a>
+		<br><p>
+		<hr>
+		<b>LED and LCD IO</b><br></p>
+		<p>
+		Use the check box to turn on or off the LED, enter text to display on the OLED display, then click "Update IO".
+		</p>
+		<!-- <form name="aForm" action="/io.shtml" method="get"> -->
+		<form action="/io.shtml" method="get">
+			%! led-io
+			<p>
+			<!-- <input type="checkbox" name="LED0" value="1" checked>LED: <br> -->
+			<!-- <input type="text" name="LCD" value="Enter LCD text" size="16">Command: <br> -->
+			<input type="submit" value="Update IO">
+		</form>
+		<br><p>
+		</font>
+	</body>
+</html>
+

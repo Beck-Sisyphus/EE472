@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Lab 5 source Display</title>
+    </head>
+
+    <BODY bgcolor="#CCCCff">
+        <font face="arial">
+        <a href="index.shtml">RTOS Stats</a> <b>|</b> <a href="stats.shtml">Sate Comm</a> <b>|</b> <a href="tcp.shtml">Connections</a> <b>|</b> <a href="http://www.freertos.org/">FreeRTOS.org Homepage</a> <b>|</b> <a href="io.shtml">Command</a>
+        <br><p>
+            <hr>
+        <br><p>
+
+        <h2>Network statistics</h2>
+        <table width="300" border="1px">
+            <thead>
+                <th>Variable</th>
+                <th>Value</th>
+            </thead>
+            <tbody align="left"><font face="courier">
+				%! pow-stats
+                <tr>
+                    <td>Fuel Low</td>            
+                    <td>TRUE</td>
+                </tr>
+                <tr>
+                    <td>Battery Low</td>
+                    <td>FALSE</td>
+                </tr>
+                <tr>
+                    <td>Solar Panel State</td>
+                    <td>Released</td>
+                </tr>
+                <tr>
+                    <td>Fuel Level</td>
+                    <td>100</td>
+                </tr>
+                <tr>
+                    <td>Power Consumption</td>
+                    <td>100%</td>
+                </tr>
+				<tr>
+                    <td>Battery Level</td>
+                    <td>100</td>
+                </tr>
+                <tr>
+                    <td>Battery Temperature</td>
+                    <td>37</td>
+                </tr>
+                <tr>
+                    <td>Transport Distance</td>
+                    <td>1000</td>
+                </tr>
+                <tr>
+                    <td>Image Data</td>
+                    <td>300Hz</td>
+                </tr>
+
+                </font>
+            </tbody>
+        </table>
+        </font>
+    </body>
+</html>
