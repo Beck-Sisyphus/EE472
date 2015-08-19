@@ -93,9 +93,8 @@ const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 unsigned int batteryLevelArray[16] = {100};
 unsigned int battTempArray0[16] = {0};
 unsigned int battTempArray1[16] = {0};
-//unsigned int rawImageData[256] = {0};		
 signed int processedImageData[256] = {0};		
-double imageFrequency;
+double imageFrequency = 0.0;
 unsigned long transportTimeArray[2] = {0};
 unsigned long transportTimeTicks = 0;
 double frequency = 0;
@@ -251,15 +250,15 @@ int main( void )
     //Depricated, but included out of love <3
     //DebugWorkGodDamnit DebugWork                = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
     
-    satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &thrust, &globalCount, &isMajorCycle};
+    satelliteCommsDataStruct satelliteCommsData = {&fuelLow, &battLow, &panelState, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &thrust, &globalCount, &isMajorCycle, &processedImageData};
     thrusterSubDataStruct thrusterSubData       = {&thrust, &fuelLevel, &globalCount, &isMajorCycle};
     vehicleCommsStruct vehicleCommsData         = {&vehicleCommand, &vehicleResponse, &globalCount, &isMajorCycle};
-    oledDisplayDataStruct oledDisplayData       = {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &powerConsumption, &powerGeneration, &transportDistance, &globalCount, &isMajorCycle};
+    oledDisplayDataStruct oledDisplayData       = {&fuelLow, &battLow, &panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &fuelLevel, &transportDistance};
     keyboardDataStruct keyboardData             = {&panelMotorSpeedUp, &panelMotorSpeedDown};
     warningAlarmDataStruct warningAlarmData     = {&fuelLow, &battLow, &batteryLevelArray, &battOverTemp, &fuelLevel, &globalCount, &isMajorCycle};
     scheduleDataStruct scheduleData             = {&globalCount, &isMajorCycle, &battOverTemp};
     transportDataStruct transportData           = {&globalCount};
-    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
+    powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp};
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
     pirateDataStruct pirateData                 = {&pirateProximity};
     imageCaptureDataStruct imageCaptureData     = {&processedImageData, &imageFrequency};
@@ -267,6 +266,7 @@ int main( void )
     // Create Handles for temp tasks
     solarPanelHandle = NULL;
     consoleKeyboardHandle = NULL;
+    imageCaptureHandle = NULL;
     pirateHandle = NULL;
 
     /* Start the tasks */
@@ -285,8 +285,8 @@ int main( void )
     xTaskCreate(warningAlarm,      "warningAlarm",      100,(void*)&warningAlarmData,   mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(transport,         "transport",         100,(void*)&transportData,      mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(pirates,           "pirates",           100,(void*)&pirateData,         mainCHECK_TASK_PRIORITY, &pirateHandle);
-    //vTaskSuspend(pirateHandle);
-    xTaskCreate(imageCapture,      "imageCapture",      4000,(void*)&imageCaptureData,   2, &imageCaptureHandle);
+    vTaskSuspend(pirateHandle);
+    xTaskCreate(imageCapture,      "imageCapture",      800,(void*)&imageCaptureData,   2, &imageCaptureHandle);
     vTaskSuspend(imageCaptureHandle);
     
     #if mainINCLUDE_WEB_SERVER != 0

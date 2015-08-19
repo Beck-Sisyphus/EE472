@@ -23,7 +23,7 @@
         
 	typedef struct pirateDataStruct {
 		unsigned short* pirateProximity;
-	}	pirateDataStruct;
+	} pirateDataStruct;
         
         typedef struct powerSubDataStruct {
 		Bool* panelStatePtr;
@@ -33,8 +33,6 @@
 		unsigned int* battTempPtr0;
 		unsigned int* battTempPtr1;
 		Bool* battOverTempPtr;
-		unsigned short* powerConsumptionPtr;
-		unsigned short* powerGenerationPtr;
 	} powerSubDataStruct;
 
 	typedef struct solarPanelStruct {
@@ -60,11 +58,10 @@
 		unsigned int* battTempPtr0;
 		unsigned int* battTempPtr1;
 		uint32_t* fuelLevelPtr;
-		unsigned short* powerConsumptionPtr;
-		unsigned short* powerGenerationPtr;
 		unsigned long* thrustPtr;
 		unsigned short* globalCountPtr;
 		Bool* isMajorCyclePtr;
+                signed int* processedImageDataPtr;
 	} satelliteCommsDataStruct;
 
 	typedef struct thrusterSubDataStruct {
@@ -91,12 +88,7 @@
 		unsigned int* battTempPtr0;
 		unsigned int* battTempPtr1;
 		uint32_t* fuelLevelPtr;
-		unsigned short* powerConsumptionPtr;
-		unsigned short* powerGenerationPtr;
-		unsigned short* globalCountPtr;
-		Bool* isMajorCyclePtr;
 		unsigned int* transportDistancePtr;
-                //double* frequencyPtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct {
@@ -110,13 +102,12 @@
 	} warningAlarmDataStruct;
         
         typedef struct imageCaptureDataStruct {		
-		//unsigned int* rawDataPtr;		
 		signed int* processedDataPtr;		
 		double* frequencyPtr;		
 	} imageCaptureDataStruct;
         
 	//Function Prototypes
-    void enableSysClock();
+        void enableSysClock();
 	void enableOLED();
 	void enableGPIO();
 	void enableADC();

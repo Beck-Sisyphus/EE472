@@ -22,6 +22,7 @@
 
 // Constants defined in main
 extern uint32_t fuelLevellll;
+extern double imageFrequency;
 
 /* 
   The queue used to send messages to the OLED task.
@@ -35,14 +36,13 @@ void oledDisplay(void* taskDataPtr)
         
     unsigned int* battLevel = (unsigned int*) dataPtr->battLevelPtr;
     uint32_t* fuelLevelPtr2 = (uint32_t*) dataPtr->fuelLevelPtr;
-    unsigned short* powerConsumption = (unsigned short*) dataPtr->powerConsumptionPtr;
     Bool* panelState = (Bool*) dataPtr->panelStatePtr;
     Bool* fuelLow = (Bool*) dataPtr->fuelLowPtr;
     Bool* battLow = (Bool*) dataPtr->battLowPtr;
     unsigned int* battTemp0 = (unsigned int*) dataPtr->battTempPtr0;
     unsigned int* battTemp1 = (unsigned int*) dataPtr->battTempPtr1;
-    unsigned int* distance = (unsigned int*) dataPtr->transportDistancePtr;
-    //double* imageFrequency = (double*) dataPtr->frequencyPtr;
+    unsigned int* transDistance = (unsigned int*) dataPtr->transportDistancePtr;
+    //double* frequency = (double*) dataPtr->frequencyPtr;
   
     xOLEDMessage xMsgBlank;
     xOLEDMessage xMsgPanelState;
@@ -51,7 +51,7 @@ void oledDisplay(void* taskDataPtr)
     xOLEDMessage xMsgBattTemp1;
     xOLEDMessage xMsgFuelLev;
     xOLEDMessage xMsgDist;
-    xOLEDMessage xMsgFreq;	
+    xOLEDMessage xMsgFreq;
     xOLEDMessage xMsgFuelLow;
     xOLEDMessage xMsgBattLow;
     
@@ -96,22 +96,23 @@ void oledDisplay(void* taskDataPtr)
 
           // Display fuel level
           char fuelBuffer [12];
-          snprintf(fuelBuffer, 12, "Fuel: %d", fuelLevellll);
+          snprintf(fuelBuffer, 12, "Fuel: %d      ", fuelLevellll);
           xMsgFuelLev.pcMessage = fuelBuffer;
           xQueueSend( xOLEDQueue, &xMsgFuelLev, 0 );
 
           // Display transport distance ptr
           char transBuffer [16];
-          snprintf(transBuffer, 16, "Distance: %d", *distance);
+          snprintf(transBuffer, 16, "Distance: %d      ", *transDistance);
           xMsgDist.pcMessage = transBuffer;
-          
-          xQueueSend( xOLEDQueue, &xMsgDist, 0 );		
-          // Display computed image frequency
-          //char freqBuffer [16];
-          //snprintf(freqBuffer, 16, "Image Freq: %f", *imageFrequency);		
-          //xMsgFreq.pcMessage = freqBuffer;		
-          //xQueueSend( xOLEDQueue, &xMsgFreq, 0 );		
-          // Fill rest of screen with blank lines		
+          xQueueSend( xOLEDQueue, &xMsgDist, 0 );
+
+          //Display computed image frequency
+          char freqBuffer [24];
+          snprintf(freqBuffer, 24, "Image Freq: %d      ", (unsigned int) imageFrequency);
+          xMsgFreq.pcMessage = freqBuffer;
+          xQueueSend( xOLEDQueue, &xMsgFreq, 0 );
+
+          // Fill rest of screen with blank lines
           //xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
           xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
           xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
@@ -143,6 +144,7 @@ void oledDisplay(void* taskDataPtr)
                 xMsgBattLow.pcMessage = "Battery Good :)     ";
             }
             xQueueSend( xOLEDQueue, &xMsgBattLow, 0 );
+
             // Fill rest of screen with blank lines
             xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
             xQueueSend( xOLEDQueue, &xMsgBlank, 0 );

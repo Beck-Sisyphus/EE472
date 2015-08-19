@@ -54,17 +54,20 @@ void pirates(void* taskDataPtr)
         ADCSequenceDataGet(ADC0_BASE, 2, adc2Reading);
         converted = (double) (1023 - adc2Reading[2]) * (200.0 / 1023);
         *pirateProximityPtr = (unsigned short) converted;
+        //disable phasor and photon
+        GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_5, 0x00);
+        GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_6, 0x00);
         if(*pirateProximityPtr>100){
           //disable phasor and photon
           GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_5, 0x00);
           GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_6, 0x00);
           //xTaskSuspend(piratesHandle);
         }
-        else if((*pirateProximityPtr<30)&&(*pirateProximityPtr>5)){
+        else if(*pirateProximityPtr<30){
           //fire phasors fault pin
           GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_6, 0xFF);
         }
-        else if(*pirateProximityPtr<5){
+        if(*pirateProximityPtr<5){
           //fire photons PD5
           GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_5, 0xFF);
         }

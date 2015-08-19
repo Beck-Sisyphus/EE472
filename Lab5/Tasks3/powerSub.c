@@ -30,7 +30,7 @@ extern Bool panelDone;
 extern xQueueHandle xOLEDQueue;
 extern xTaskHandle solarPanelHandle;
 extern xTaskHandle consoleKeyboardHandle;
-extern xTaskHandle imageCaptureHandle;
+extern xTaskHandle pirateHandle;
 extern Bool battOverTemp;
 
 void powerSub(void* taskDataPtr)
@@ -39,8 +39,6 @@ void powerSub(void* taskDataPtr)
     unsigned int* battLevel = dataPtr->battLevelPtr; // Points to address of battLevelPtr[0]
     unsigned int* battTempArr0 = dataPtr->battTempPtr0; // Points to address of battTempPtr0[0]
     unsigned int* battTempArr1 = dataPtr->battTempPtr1; // Points to address of battTempPtr1[0]
-    unsigned short* powerConsumption = dataPtr->powerConsumptionPtr;
-    unsigned short* powerGeneration = dataPtr->powerGenerationPtr;
     Bool* panelStatePtr = dataPtr->panelStatePtr;
     Bool* panelDeployPtr = dataPtr->panelDeployPtr;
     Bool* panelRetractPtr = dataPtr->panelRetractPtr;
@@ -140,28 +138,32 @@ void powerSub(void* taskDataPtr)
         // Read ADC Value.
         ADCSequenceDataGet(ADC0_BASE, 1, adc1Reading);
 
-//        // 
-//        // Start of ADC2
-//        //
-//        static unsigned long adc2Reading[4] = {0};
-//
-//
-//        // interrupt flag is cleared before we sample.
-//        ADCIntClear(ADC0_BASE, 2);
-//
-//        // Trigger the ADC conversion.
-//        ADCProcessorTrigger(ADC0_BASE, 2);
-//
-//        // Wait for conversion to be completed.
-//        while(!ADCIntStatus(ADC0_BASE, 2, false))
-//        {
-//        }
-//
-//        // Clear the ADC interrupt flag.
-//        ADCIntClear(ADC0_BASE, 2);
-//
-//        // Read ADC Value.
-//        ADCSequenceDataGet(ADC0_BASE, 2, adc2Reading);
+        // 
+        // Start of ADC2
+        //
+        static unsigned long adc2Reading[4] = {0};
+
+
+        // interrupt flag is cleared before we sample.
+        ADCIntClear(ADC0_BASE, 2);
+
+        // Trigger the ADC conversion.
+        ADCProcessorTrigger(ADC0_BASE, 2);
+
+        // Wait for conversion to be completed.
+        while(!ADCIntStatus(ADC0_BASE, 2, false))
+        {
+        }
+
+        // Clear the ADC interrupt flag.
+        ADCIntClear(ADC0_BASE, 2);
+
+        // Read ADC Value.
+        ADCSequenceDataGet(ADC0_BASE, 2, adc2Reading);
+        
+        if(adc2Reading[2]>300){
+             vTaskResume(pirateHandle);
+        }
 
         // Convert raw temp readings to temperatures in Celsius
         int temp0 = (int) (adc1Reading[1] * 32 + 33);
@@ -176,8 +178,6 @@ void powerSub(void* taskDataPtr)
         if ((temp0 > 1.2 * max(battTempArr0[1], battTempArr0[2])) ||
             (temp1 > 1.2 * max(battTempArr1[1], battTempArr1[2])))
             battOverTemp = TRUE;
-        
-        vTaskResume(imageCaptureHandle);
         
         vTaskDelay(100);
     }

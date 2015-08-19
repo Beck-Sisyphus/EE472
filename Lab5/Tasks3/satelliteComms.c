@@ -41,9 +41,8 @@ void satelliteComms(void* taskDataPtr)
     unsigned short* battLevelSignal = (unsigned short*)commPtr->battLevelPtr;
     uint32_t* fuelLevelSignal = (uint32_t*)commPtr->fuelLevelPtr;
     unsigned long* thrustPtr = (unsigned long*) commPtr->thrustPtr;
-    unsigned short* powerConsumptionSignal = (unsigned short*)commPtr->powerConsumptionPtr;
-    unsigned short* powerGenerationSignal = (unsigned short*)commPtr->powerGenerationPtr;
     Bool* panelStateSignal = (Bool*)commPtr->panelStatePtr;
+    signed int* processedImageData = (signed int*) commPtr->processedImageDataPtr;
     
     volatile unsigned long rand = 0;
     while(1)

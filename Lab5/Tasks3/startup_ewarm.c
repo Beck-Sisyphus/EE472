@@ -56,6 +56,7 @@ extern void ADC1IntHandler(void);
 extern void ADC2IntHandler(void);
 extern void IntGPIOa(void);
 extern void IntGPIOd(void);
+extern void IntGPIOe(void);
 //*****************************************************************************
 //
 // External declaration for the interrupt handler used by the application.
@@ -131,7 +132,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntGPIOd,                               // GPIO Port D
-    IntDefaultHandler,                      // GPIO Port E
+    IntGPIOe,                               // GPIO Port E
     UARTIntHandler,                         // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI Rx and Tx

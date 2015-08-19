@@ -9,7 +9,6 @@
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/sysctl.h"
-#include "lcd_message.h" // messages to OLED
 // FFT
 #include "optfft.h"
 
@@ -19,14 +18,13 @@
 #include "queue.h"
 #include "semphr.h"
 
-// Bring into scope handle for image cap task
+// Bring image frequency global variable into scope
+extern double imageFrequency;
 extern xTaskHandle imageCaptureHandle;
-// TODO DEBUGGING send frequency to OLED
-extern xQueueHandle xOLEDQueue;
 
 #define NUM_SAMPLES 256
 // Sample rate in Hz
-#define SAMPLE_FREQ 36600
+#define SAMPLE_FREQ 34500
 
 double
 computeFrequency(signed int);
@@ -35,9 +33,7 @@ void
 imageCapture(void* taskDataPtr)
 {
 	imageCaptureDataStruct* dataPtr = (imageCaptureDataStruct*) taskDataPtr;
-	//unsigned int* rawDataPtr = dataPtr->rawDataPtr;
-	//signed int* realData = dataPtr->processedDataPtr;
-	signed int realData[256] = {0};
+	signed int* realData = dataPtr->processedDataPtr;
 	double* frequency = dataPtr->frequencyPtr;
 
 	while(1)
@@ -77,32 +73,21 @@ imageCapture(void* taskDataPtr)
 		    signed int adcReadingConverted = ((signed int)adcReading[0]) / 16 - 31;
 
 		    realData[i] = adcReadingConverted;
-		    
-		    // TODO Delay 500us between readings; DELAY MUST BE CONSISTENT
-		    // The function delay (in cycles) = 3 * parameter
-		    //SysCtlDelay(SysCtlClockGet() / 12);
 		}
 
 		// Range of samples is -31 to 32
 		signed int maxIndex = optfft(realData, imaginaryData);
 
 		// Get frequency of signal
-		*frequency = (SAMPLE_FREQ * maxIndex) / SAMPLE_FREQ; // TODO do anything with frequency or compute in oled display funct?
+		*frequency = (SAMPLE_FREQ * maxIndex) / NUM_SAMPLES;
 
-        // Display computed image frequency
-        char freqBuffer [24];
-        xOLEDMessage xMsgFreq;
-        unsigned int freq = (unsigned int) *frequency;
-        // int nDigits = floor(log10(abs(freq))) + 1;
-        // unsigned int freqInt = freq;
-        // unsigned int freqDec = freq * pow(10, nDigits) - freqInt * pow(10, nDigits);
-        snprintf(freqBuffer, 24, "Image Freq: %d      ", freq);
-        xMsgFreq.pcMessage = freqBuffer;
-        xQueueSend( xOLEDQueue, &xMsgFreq, 0 );
+		// Update global variable
+        imageFrequency = *frequency;
 
-		IntMasterEnable();
-
-		vTaskDelay(100);
+        // Re-enable interrupts
+        IntMasterEnable();
+        vTaskSuspend(imageCaptureHandle);
+        vTaskDelay(100);
 	}
 }
 

@@ -33,6 +33,8 @@ extern unsigned int* battLevelPtr;
 extern unsigned long* transportTimeArray;
 extern unsigned short transportTimeElement;
 extern unsigned long transportTimeTicks;
+extern xTaskHandle imageCaptureHandle;
+extern xTaskHandle pirateHandle;
 
 void enableSysClock()
 {
@@ -55,6 +57,12 @@ void enableGPIO()
     // Set pins C4, C5, C6, C7 as an output
     GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|
                           GPIO_PIN_7);
+    
+    // Eanble GPIO port/pins for Phasor and Photon Torpedo Pirate Deterents
+    // Enable GPIO D
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    // Set pins D5, D6 as an output
+    GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE, GPIO_PIN_5|GPIO_PIN_6);
 
     // Enable GPIO port/pin for OLED mode switch button
     // Set select button as input with a pull up resistor 
@@ -62,6 +70,15 @@ void enableGPIO()
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_1);
     GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_STRENGTH_2MA,
                          GPIO_PIN_TYPE_STD_WPU);
+    
+    //
+    // Configure the GPIOs used to read the state of the on-board push buttons.
+    //
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    GPIOPinTypeGPIOInput(GPIO_PORTE_BASE, GPIO_PIN_0);
+    GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_0, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOPinIntEnable(GPIO_PORTE_BASE, GPIO_PIN_0);
+    IntEnable(INT_GPIOE);
         
     
     // Enable GPIO Pins B2 and B3 for input from keypad for PWM control
@@ -301,6 +318,16 @@ void IntGPIOd(void)
 {
     GPIOPinIntClear(GPIO_PORTD_BASE, GPIO_PIN_4);
     transportTimeTicks++;
+}
+
+// //*****************************************************************************
+// // The Image Capture interrupt handler.
+// //
+// //*****************************************************************************
+void IntGPIOe(void)
+{
+    GPIOPinIntClear(GPIO_PORTE_BASE, GPIO_PIN_0);
+    vTaskResume(imageCaptureHandle);
 }
 
 
