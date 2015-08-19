@@ -8,6 +8,7 @@
 	//Define Boolean Values
 	enum myBool { FALSE = 0, TRUE = 1 };
 	typedef enum myBool Bool;
+        
 
 	//Declare data structure structs
 	typedef struct transportDataStruct {
@@ -19,6 +20,10 @@
 		Bool* isMajorCyclePtr;
                 Bool* battOverTempPtr;
 	} scheduleDataStruct;
+        
+	typedef struct pirateDataStruct {
+		unsigned short* pirateProximity;
+	}	pirateDataStruct;
         
         typedef struct powerSubDataStruct {
 		Bool* panelStatePtr;
@@ -91,6 +96,7 @@
 		unsigned short* globalCountPtr;
 		Bool* isMajorCyclePtr;
 		unsigned int* transportDistancePtr;
+                //double* frequencyPtr;
 	} oledDisplayDataStruct;
 
 	typedef struct warningAlarmDataStruct {
@@ -103,6 +109,11 @@
 		Bool* isMajorCyclePtr;
 	} warningAlarmDataStruct;
         
+        typedef struct imageCaptureDataStruct {		
+		//unsigned int* rawDataPtr;		
+		signed int* processedDataPtr;		
+		double* frequencyPtr;		
+	} imageCaptureDataStruct;
         
 	//Function Prototypes
     void enableSysClock();
@@ -124,8 +135,11 @@
 	void oledDisplay(void* taskDataPtr);
 	void consoleKeyboard(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
+        void imageCapture(void* taskDataPtr);
+        void pirates(void* taskDataPtr);
+        
 	void Timer0IntHandler(void);
-
+        
 	int max(int, int);
 	unsigned long randomInteger(int, int);
 

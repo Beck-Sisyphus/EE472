@@ -993,6 +993,9 @@
       <name>$PROJ_DIR$\..\Common\drivers\LuminaryMicro\IAR\grlib.a</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\imageCapture.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\lab4.h</name>
     </file>
     <file>
@@ -1002,7 +1005,16 @@
       <name>$PROJ_DIR$\oledDisplay.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\optfft.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\optfft.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\osram128x64x4.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\pirates.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\powerSub.c</name>

@@ -103,7 +103,7 @@ void enablePWM(){
 void enableADC() 
 {
     //
-    // Enable ADC0
+    // Enable ADC0 for Batt Level
     //
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
     //
@@ -145,7 +145,7 @@ void enableADC()
     ADCIntEnable(ADC0_BASE, 0);
 
     //
-    // Enable ADC1
+    // Enable ADC1 for Batt Temp
     //
     ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_PROCESSOR, 1); 
     //
@@ -157,7 +157,7 @@ void enableADC()
     ADCIntEnable(ADC0_BASE, 1);
 
     //
-    // Enable ADC2
+    // Enable ADC2 for Pirate Scanner
     //
     ADCSequenceConfigure(ADC0_BASE, 2, ADC_TRIGGER_PROCESSOR, 2); 
     //
@@ -167,6 +167,18 @@ void enableADC()
                              ADC_CTL_END);
     ADCSequenceEnable(ADC0_BASE, 2);
     ADCIntEnable(ADC0_BASE, 2);
+    
+    //		
+    // Enable ADC3 for FFT		
+    //		
+    ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0); 		
+    //		
+    //  Open up ADC3 at channel 3		
+    //		
+    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH3 | ADC_CTL_IE |		
+                             ADC_CTL_END);		
+    ADCSequenceEnable(ADC0_BASE, 3);		
+    ADCIntEnable(ADC0_BASE, 3);
 }
 
 void enableUART()

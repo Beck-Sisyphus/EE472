@@ -93,6 +93,9 @@ const uint32_t FUEL_WARN_LEVEL = 1166400; // below 10% is warnning level
 unsigned int batteryLevelArray[16] = {100};
 unsigned int battTempArray0[16] = {0};
 unsigned int battTempArray1[16] = {0};
+//unsigned int rawImageData[256] = {0};		
+signed int processedImageData[256] = {0};		
+double imageFrequency;
 unsigned long transportTimeArray[2] = {0};
 unsigned long transportTimeTicks = 0;
 double frequency = 0;
@@ -100,6 +103,7 @@ unsigned long transportDistance = 0;
 uint32_t fuelLevel;
 unsigned short powerConsumption;
 unsigned short powerGeneration;
+unsigned short pirateProximity;
 Bool battOverTemp;
 Bool panelState;
 Bool panelDeploy;
@@ -109,6 +113,9 @@ Bool panelMotorSpeedDown;
 Bool panelDone;
 xTaskHandle solarPanelHandle;
 xTaskHandle consoleKeyboardHandle;
+xTaskHandle pirateHandle;
+xTaskHandle imageCaptureHandle;
+
 // 16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 unsigned long thrust; 
 Bool fuelLow;
@@ -254,11 +261,13 @@ int main( void )
     transportDataStruct transportData           = {&globalCount};
     powerSubDataStruct powerSubData             = {&panelState, &panelDeploy, &panelRetract, &batteryLevelArray, &battTempArray0, &battTempArray1, &battOverTemp, &powerConsumption, &powerGeneration};
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
-
+    pirateDataStruct pirateData                 = {&pirateProximity};
+    imageCaptureDataStruct imageCaptureData     = {&processedImageData, &imageFrequency};
     
     // Create Handles for temp tasks
     solarPanelHandle = NULL;
     consoleKeyboardHandle = NULL;
+    pirateHandle = NULL;
 
     /* Start the tasks */
     
@@ -270,11 +279,15 @@ int main( void )
     xTaskCreate(satelliteComms,    "satelliteComms",    60, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
     xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    mainCHECK_TASK_PRIORITY, NULL);
-    xTaskCreate(oledDisplay,       "oledDisplay",       100,(void*)&oledDisplayData,    mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(oledDisplay,       "oledDisplay",       120,(void*)&oledDisplayData,    mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(consoleKeyboard,   "consoleKeyboard",   60, (void*)&keyboardData,       mainCHECK_TASK_PRIORITY, &consoleKeyboardHandle);    
     vTaskSuspend(consoleKeyboardHandle);
     xTaskCreate(warningAlarm,      "warningAlarm",      100,(void*)&warningAlarmData,   mainCHECK_TASK_PRIORITY, NULL);
-    xTaskCreate(transport,         "transport",         100, (void*)&transportData,     mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(transport,         "transport",         100,(void*)&transportData,      mainCHECK_TASK_PRIORITY, NULL);
+    xTaskCreate(pirates,           "pirates",           100,(void*)&pirateData,         mainCHECK_TASK_PRIORITY, &pirateHandle);
+    //vTaskSuspend(pirateHandle);
+    xTaskCreate(imageCapture,      "imageCapture",      4000,(void*)&imageCaptureData,   2, &imageCaptureHandle);
+    vTaskSuspend(imageCaptureHandle);
     
     #if mainINCLUDE_WEB_SERVER != 0
     {
@@ -314,8 +327,10 @@ void initializeGlobalVariables()
   transportDistance = 0;
 
   fuelLevel = MAX_FUEL_LEVEL;
+  imageFrequency = 0.0;
   powerConsumption = 0;
   powerGeneration = 0;
+  pirateProximity = 0;
   panelState = FALSE;
   panelDeploy = FALSE;
   panelRetract = FALSE;
@@ -468,9 +483,7 @@ void vApplicationTickHook( void )
 int max(int a, int b)
 {
   int result = a;
-  if (a > b)
-    result = a;
-  else if (b < a)
+  if (a < b)
     result = b;
   // If a == b, return a
   return result;

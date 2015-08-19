@@ -42,6 +42,7 @@ void oledDisplay(void* taskDataPtr)
     unsigned int* battTemp0 = (unsigned int*) dataPtr->battTempPtr0;
     unsigned int* battTemp1 = (unsigned int*) dataPtr->battTempPtr1;
     unsigned int* distance = (unsigned int*) dataPtr->transportDistancePtr;
+    //double* imageFrequency = (double*) dataPtr->frequencyPtr;
   
     xOLEDMessage xMsgBlank;
     xOLEDMessage xMsgPanelState;
@@ -50,6 +51,7 @@ void oledDisplay(void* taskDataPtr)
     xOLEDMessage xMsgBattTemp1;
     xOLEDMessage xMsgFuelLev;
     xOLEDMessage xMsgDist;
+    xOLEDMessage xMsgFreq;	
     xOLEDMessage xMsgFuelLow;
     xOLEDMessage xMsgBattLow;
     
@@ -102,11 +104,17 @@ void oledDisplay(void* taskDataPtr)
           char transBuffer [16];
           snprintf(transBuffer, 16, "Distance: %d", *distance);
           xMsgDist.pcMessage = transBuffer;
-
-//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+          
+          xQueueSend( xOLEDQueue, &xMsgDist, 0 );		
+          // Display computed image frequency
+          //char freqBuffer [16];
+          //snprintf(freqBuffer, 16, "Image Freq: %f", *imageFrequency);		
+          //xMsgFreq.pcMessage = freqBuffer;		
+          //xQueueSend( xOLEDQueue, &xMsgFreq, 0 );		
+          // Fill rest of screen with blank lines		
+          //xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+          xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
             
         } 
         else if (0 == buttonRead) // Annunciation mode
@@ -135,14 +143,14 @@ void oledDisplay(void* taskDataPtr)
                 xMsgBattLow.pcMessage = "Battery Good :)     ";
             }
             xQueueSend( xOLEDQueue, &xMsgBattLow, 0 );
-
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
-//            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            // Fill rest of screen with blank lines
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
+            xQueueSend( xOLEDQueue, &xMsgBlank, 0 );
         }        
         vTaskDelay(100);
     }

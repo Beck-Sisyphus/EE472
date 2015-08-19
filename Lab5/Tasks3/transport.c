@@ -35,7 +35,7 @@ void transport(void* taskDataPtr)
     while (1){
     	//100Hz->0m  6.7KHz->2000m
         frequency = (transportTimeTicks-61) / 200 ;  
-    	transportDistance = 100 * frequency;
+    	transportDistance = (unsigned long) 100 * frequency;
         transportTimeTicks = 0;
         vTaskDelay(100);
     }
