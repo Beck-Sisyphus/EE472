@@ -2,6 +2,7 @@
 <html>
   	<head>
     	<title>FreeRTOS.org uIP WEB server demo</title>
+    	<META HTTP-EQUIV="refresh" CONTENT="5">
   	</head>
   	<BODY onLoad="window.setTimeout(&quot;location.href='index.shtml'&quot;,2000)"bgcolor="#CCCCff">
 		<font face="arial">

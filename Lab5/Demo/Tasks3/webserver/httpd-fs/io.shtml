@@ -20,6 +20,24 @@
 			<!-- <input type="text" name="LCD" value="Enter LCD text" size="16">Command: <br> -->
 			<input type="submit" value="Update IO">
 		</form>
+		<br><p>Only M command works are<br></p>
+		<ol>
+			<li>Fuel Low</li>
+			<li>Battery Low</li>
+			<li>Solar Panel State</li>
+			<li>Fuel Level</li>
+			<li>Battery Level</li>
+			<li>Battery Temperature</li>
+			<li>Transport Distance</li>
+			<li>Image Data</li>
+		</ol>	
+		<br><p>
+		<table width="300" border="0px">
+            <tbody align="left"><font face="courier">
+				%! file-stats
+                </font>
+            </tbody>
+        </table>
 		<br><p>
 		</font>
 	</body>

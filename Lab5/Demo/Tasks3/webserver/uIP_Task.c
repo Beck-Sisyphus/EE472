@@ -2,12 +2,14 @@
 Changed for Lab5 2015.
 */
 /* Standard includes. */
+#include <stdio.h>
 #include <string.h>
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "lab4.h"
 
 /* uip includes. */
 #include "hw_types.h"
@@ -32,6 +34,9 @@ struct timer {
   clock_time_t interval;
 };
 
+// For command process
+extern char remoteCommand[ 100 ];
+extern Bool newCommand;
 
 /*-----------------------------------------------------------*/
 
@@ -54,7 +59,7 @@ struct timer {
 //#define uipIP_ADDR2		141
 //#define uipIP_ADDR3		230	
 
-/// Prepared for running on Grant's Laptop
+/// Prepared for running in Laptop
 #define uipIP_ADDR0		169
 #define uipIP_ADDR1		254
 #define uipIP_ADDR2		213
@@ -109,7 +114,6 @@ clock_time_t clock_time( void )
 extern void timer_set(struct timer *t, clock_time_t interval);
 extern int timer_expired(struct timer *t);
 extern void timer_reset(struct timer *t);
-
 
 
 
@@ -268,19 +272,9 @@ xOLEDMessage xOLEDMessage;
 
     if( c )
     {
-		/* Turn LED's on or off in accordance with the check box status. */
-		if( strstr( c, "LED0=1" ) != NULL )
-		{
-			//vParTestSetLED( 0, 1 );
-		}
-		else
-		{
-			//vParTestSetLED( 0, 0 );
-		}		
-		
-		/* Find the start of the text to be displayed on the LCD. */
-        pcText = strstr( c, "LCD=" );
-        pcText += strlen( "LCD=" );
+		// Find the start to decode the command
+        pcText = strstr( c, "Command=" );
+        pcText += strlen( "Command=" );
 
         /* Terminate the file name for further processing within uIP. */
         *c = 0x00;
@@ -298,10 +292,11 @@ xOLEDMessage xOLEDMessage;
             *c = ' ';
         }
 
-        /* Write the message to the LCD. */
-		strcpy( cMessageForDisplay, pcText );
-		xOLEDMessage.pcMessage = ( signed portCHAR * ) cMessageForDisplay;
-        xQueueSend( xOLEDQueue, &xOLEDMessage, portMAX_DELAY );
-    }
+        // if (strncmp(remoteCommand, pcText, 100))
+        // {
+		snprintf(remoteCommand, 100, pcText);
+        newCommand = TRUE;
+        // }	
+	}
 }
 

@@ -110,10 +110,13 @@ Bool panelRetract;
 Bool panelMotorSpeedUp;
 Bool panelMotorSpeedDown;
 Bool panelDone;
+
 xTaskHandle solarPanelHandle;
 xTaskHandle consoleKeyboardHandle;
 xTaskHandle pirateHandle;
 xTaskHandle imageCaptureHandle;
+xTaskHandle commandHandle;
+xTaskHandle transportHandle;
 
 // 16bit encoded thrust command [15:8]Duration,[7:4]Magnitude,[3:0]Direction
 unsigned long thrust; 
@@ -140,6 +143,12 @@ uint32_t fuelLevellll;
 
 // Global variable for the website		
 char systemInfo[ 430 ] = {'\0'};
+char remoteCommand[100] = {'\0'};
+char commandResponse[4] = {'\0'};
+char specificInfo[100] = {'\0'};
+char mResponse[40] = {'\0'};
+Bool newCommand;
+
 
 /*--------------------------------------------------------*/
 
@@ -150,7 +159,7 @@ char systemInfo[ 430 ] = {'\0'};
 #define mainCHECK_DELAY ( ( portTickType ) 5000 / portTICK_RATE_MS )
 
 // Size of the stack allocated to the uIP task.
-#define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 3 + 430)
+#define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 3 + 530)
 
 // The OLED task uses the sprintf function so requires a little more stack too.
 #define mainOLED_TASK_STACK_SIZE      ( configMINIMAL_STACK_SIZE + 50 )
@@ -265,13 +274,16 @@ int main( void )
     solarPanelStruct solarPanelData             = {&panelState, &panelDeploy, &panelRetract, &panelMotorSpeedUp, &panelMotorSpeedDown, &globalCount, &isMajorCycle};
     pirateDataStruct pirateData                 = {&pirateProximity};
     imageCaptureDataStruct imageCaptureData     = {&processedImageData, &imageFrequency};
+    commandDataStruct commandData               = {&remoteCommand};
     
     // Create Handles for temp tasks
     solarPanelHandle = NULL;
     consoleKeyboardHandle = NULL;
     imageCaptureHandle = NULL;
     pirateHandle = NULL;
-
+    commandHandle = NULL;
+    transportHandle = NULL;
+      
     /* Start the tasks */
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
@@ -279,7 +291,7 @@ int main( void )
     xTaskCreate(powerSub,          "powerSub",          100,(void*)&powerSubData,       mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(solarPanelControl, "solarPanelControl", 60, (void*)&solarPanelData,     mainCHECK_TASK_PRIORITY, &solarPanelHandle);         
     vTaskSuspend(solarPanelHandle);
-    xTaskCreate(satelliteComms,    "satelliteComms",    430, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
+    xTaskCreate(satelliteComms,    "satelliteComms",    mainBASIC_WEB_STACK_SIZE, (void*)&satelliteCommsData, mainCHECK_TASK_PRIORITY + 1, NULL);
     xTaskCreate(vehicleComms,      "vehicleComms",      50, (void*)&vehicleCommsData,   mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(thrusterSub,       "thrusterSub",       60, (void*)&thrusterSubData,    mainCHECK_TASK_PRIORITY, NULL);
     xTaskCreate(oledDisplay,       "oledDisplay",       120,(void*)&oledDisplayData,    mainCHECK_TASK_PRIORITY, NULL);
@@ -291,6 +303,8 @@ int main( void )
     vTaskSuspend(pirateHandle);
     xTaskCreate(imageCapture,      "imageCapture",      800,(void*)&imageCaptureData,   2, &imageCaptureHandle);
     vTaskSuspend(imageCaptureHandle);
+    xTaskCreate(command,           "command",           800,(void*)&commandData,        2, &commandHandle);
+    vTaskSuspend(commandHandle);
     
     #if mainINCLUDE_WEB_SERVER != 0
     {
@@ -339,6 +353,7 @@ void initializeGlobalVariables()
   panelRetract = FALSE;
   panelMotorSpeedUp = FALSE;
   panelMotorSpeedDown = FALSE;
+  newCommand = FALSE;
 
   thrust = 0;
   fuelLow = FALSE;

@@ -330,6 +330,14 @@ void IntGPIOe(void)
     vTaskResume(imageCaptureHandle);
 }
 
+//void Timer0IntHandler(void)
+//{
+//  // Clear the timer interrupt flag.
+//  TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+//  
+//  // Update the periodic interrupt counter.
+//  cycleDone = TRUE;
+//}
 
 // //*****************************************************************************
 // //

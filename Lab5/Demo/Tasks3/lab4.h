@@ -25,6 +25,10 @@
 		unsigned short* pirateProximity;
 	} pirateDataStruct;
         
+        typedef struct commandDataStruct {
+		char* remoteCommandPtr;
+	} commandDataStruct;
+        
         typedef struct powerSubDataStruct {
 		Bool* panelStatePtr;
 		Bool* panelDeployPtr;
@@ -109,7 +113,7 @@
 	} imageCaptureDataStruct;
         
 	//Function Prototypes
-    void enableSysClock();
+        void enableSysClock();
 	void enableOLED();
 	void enableGPIO();
 	void enableADC();
@@ -119,7 +123,7 @@
 	void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount);
 	void debugDataCorruptionSponge(void* taskDataPtr);
 	void schedule(void* taskDataPtr);
-    void transport(void* taskDataPtr);
+        void transport(void* taskDataPtr);
 	void powerSub(void* taskDataPtr);
 	void solarPanelControl(void* taskDataPtr);
 	void satelliteComms(void* taskDataPtr);
@@ -128,8 +132,10 @@
 	void oledDisplay(void* taskDataPtr);
 	void consoleKeyboard(void* taskDataPtr);
 	void warningAlarm(void* taskDataPtr);
-    void imageCapture(void* taskDataPtr);
-    void pirates(void* taskDataPtr);
+        void imageCapture(void* taskDataPtr);
+        void pirates(void* taskDataPtr);
+        void command(void* taskDataPtr);
+        void hardwareTimer(void);
         
 	void Timer0IntHandler(void);
         

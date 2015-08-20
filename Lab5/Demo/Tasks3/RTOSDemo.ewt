@@ -95,6 +95,9 @@
   <group>
     <name>Library files</name>
     <file>
+      <name>$PROJ_DIR$\command.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\consoleKeyboard.c</name>
     </file>
     <file>

@@ -24,17 +24,23 @@
   Defined and initialized in main.c 
 */
 extern xQueueHandle xOLEDQueue;
-extern unsigned long thrust; 
-extern char systemInfo[ 430 ];
+
 extern Bool fuelLow;
 extern Bool battLow;
 extern Bool panelState;
 extern uint32_t fuelLevel;
-extern unsigned short powerConsumption;
 extern unsigned int batteryLevelArray[16];
 extern unsigned int battTempArray0[16];
 extern unsigned long transportDistance;
+extern double imageFrequency;
 
+extern char systemInfo[ 430 ];
+extern char specificInfo[ 100 ];
+
+extern char commandResponse[4];
+extern char mResponse[40];
+extern Bool newCommand;
+extern xTaskHandle commandHandle;
 
 // Communication only store the command without decoding it
 // Require : satellite communication data struct,
@@ -63,33 +69,40 @@ void satelliteComms(void* taskDataPtr)
     volatile unsigned long rand = 0;
     while(1)
     {    
-        if (isMajorCycle)
+        if (newCommand)
         {
-            // receive (rando) thrust commands, generate from 0 to 2^16 -1
-            rand = randomInteger(0,65535);
-            thrust = rand;
-        }    
+            vTaskResume(commandHandle);
+        }
+
+        newCommand = FALSE;
+
         snprintf(systemInfo,  430, 
                  "<tr><td>Fuel Low</td><td> %s </td></tr>\
 <tr><td>Battery Low</td><td> %s </td></tr>\
 <tr><td>Solar Panel State</td><td> %s </td></tr>\
 <tr><td>Fuel Level</td><td> %u </td></tr>\
-<tr><td>Power Consumption</td><td> %hu </td></tr>\
 <tr><td>Battery Level</td><td> %hu </td></tr>\
 <tr><td>Battery Temperature</td><td> %hu </td></tr>\
 <tr><td>Transport Distance</td><td> %lu </td></tr>\
-<tr><td>Image Data</td><td> %s </td></tr>", 
+<tr><td>Image Frequency</td><td> %d </td></tr>", 
                  fuelLow ? "TRUE" : "FALSE",
                  battLow ? "TRUE" : "FALSE",
                  panelState ? "DEPLOYED" : "RETRACTED",
                  fuelLevel,
-                 powerConsumption,
                  batteryLevelArray[0],
                  battTempArray0[0],
                  transportDistance,
-                 "None"
+                 (int)imageFrequency
                  );
+
         
+        snprintf(specificInfo, 100,
+        "<tr><td>%s</td></tr><tr><td>%s</td></tr>",
+        commandResponse,
+        mResponse
+        );
+        
+
         vTaskDelay(100);    
     }
 }

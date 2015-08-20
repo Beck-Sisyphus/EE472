@@ -61,6 +61,7 @@ HTTPD_CGI_CALL(net, "net-stats", net_stats);
 HTTPD_CGI_CALL(rtos, "rtos-stats", rtos_stats );
 HTTPD_CGI_CALL(io, "led-io", led_io );
 extern char systemInfo[ 430 ];
+extern char specificInfo[ 100 ];
 
 
 char vBuffer[ 32 ];
@@ -114,7 +115,7 @@ static unsigned short
 generate_file_stats(void *arg)
 {
   char *f = (char *)arg;
-  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE, "%5u", httpd_fs_count(f));
+  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE, specificInfo);
 }
 /*---------------------------------------------------------------------------*/
 static
@@ -257,26 +258,26 @@ PT_THREAD(rtos_stats(struct httpd_state *s, char *ptr))
 /*---------------------------------------------------------------------------*/
 
 char *pcStatus;
-extern unsigned long uxParTestGetLED( unsigned long uxLED );
+// extern unsigned long uxParTestGetLED( unsigned long uxLED );
 
 static unsigned short generate_io_state( void *arg )
 {
-//	if( uxParTestGetLED( 0 ) )
-//	{
-//		pcStatus = "checked";
-//	}
-//	else
-//	{
-		pcStatus = "";
-//	}
+	// if( uxParTestGetLED( 0 ) )
+	// {
+	// 	pcStatus = "checked";
+	// }
+	// else
+	// {
+	// 	pcStatus = "";
+	// }
 
-	sprintf( uip_appdata,
-		"<input type=\"checkbox\" name=\"LED0\" value=\"1\" %s>LED"\
-		"<p>"\
-		"<input type=\"text\" name=\"LCD\" value=\"Enter LCD text\" size=\"16\">",
-		pcStatus );
+    sprintf( uip_appdata,
+        "<input type=\"checkbox\" name=\"LED0\" value=\"1\" %s>LED"\
+        "<p>"\
+        "<input type=\"text\" name=\"Command\" value=\"Enter Command\" size=\"16\">",
+        pcStatus );
 
-	return strlen( uip_appdata );
+    return strlen( uip_appdata );
 }
 /*---------------------------------------------------------------------------*/
 
