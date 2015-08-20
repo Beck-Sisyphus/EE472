@@ -40,7 +40,7 @@ extern unsigned long transportDistance;
 extern double imageFrequency;
 
 void command(void* taskDataPtr) {
-	static unsigned short OLEDon = 1; // Assign it to 0x00
+	static Bool OLEDon = TRUE; // Assign it to 0x00
 	while (1) {
 		commandDataStruct* commPtr = (commandDataStruct*) taskDataPtr;
 		// char* remoteCommandPtr = commPtr->remoteCommandPtr;
@@ -61,13 +61,16 @@ void command(void* taskDataPtr) {
 			} 
 			else if (remoteCommand[0] == 'D' && remoteCommand[1] == '\0')
 			{
+                                RIT128x96x4DisplayOn();
 				if (OLEDon)
 				{
 					RIT128x96x4DisplayOff();
+                                        OLEDon = FALSE;
 				} else {
 					RIT128x96x4DisplayOn();
+                                        OLEDon = TRUE;
 				}
-				OLEDon = ~OLEDon;
+//				OLEDon = ~OLEDon;
 				snprintf(commandResponse, 4, "A D");
 			} 
 			else if (remoteCommand[0] == 'T')
@@ -166,6 +169,7 @@ void command(void* taskDataPtr) {
 			}
 			else {
 				snprintf(commandResponse, 4, "E");
+                                snprintf(mResponse, 40, "No command found.");
 			}
 		}
 		vTaskSuspend(commandHandle);

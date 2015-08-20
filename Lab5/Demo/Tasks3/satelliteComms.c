@@ -97,7 +97,9 @@ void satelliteComms(void* taskDataPtr)
 
         
         snprintf(specificInfo, 100,
-        "<tr><td>%s</td></tr><tr><td>%s</td></tr>",
+        "<tr><td>%s</td></tr><tr><td>%s</td></tr>\
+<meta http-equiv=\"Pragma\" content0=\"no-cache\">\
+<meta http-equiv=\"Expires\" content=\"-1\">",
         commandResponse,
         mResponse
         );
